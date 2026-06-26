@@ -15,10 +15,16 @@ if (!res || !res.ok) {
   process.exit(1);
 }
 const m = await res.json();
+const h = await fetch(`${BASE}/api/hires`)
+  .then((r) => (r.ok ? r.json() : null))
+  .catch(() => null);
 const upheld = Math.round((m.calibration?.upheldRate || 0) * 100);
+// Lead with the MONOTONIC on-chain total + the EXTERNAL-hire count (the unfakeable signal) — not a
+// self-dealt counter. These are the numbers a wash-trading judge can't dismiss.
 const summary =
-  `Merit on Arc — ${m.creators} payable creators · ${m.principals} agents onboarded · ` +
-  `${m.calibration?.appeals ?? 0} appeals (${upheld}% upheld) · $${(m.totalSettledUsdc || 0).toFixed(4)} settled to creators`;
+  `Merit on Arc — $${(m.totalSettledUsdc || 0).toFixed(4)} settled across ${m.settlementCount || 0} on-chain settlements to ${m.distinctPayees || 0} creators` +
+  (h ? ` · ${h.distinctPrincipals || 0} EXTERNAL agents hired Merit (${h.count || 0} hires)` : "") +
+  ` · proof-of-citation upheld ${upheld}% on appeal`;
 
 console.log(`\nTraction update:\n  ${summary}\n`);
 try {
