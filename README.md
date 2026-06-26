@@ -44,6 +44,26 @@ Two markets, one trust layer: the lead **hires + pays its crew** (agent → agen
 creators** it cited (agent → creator) — every payment gated on proof-of-work. Anyone can pay; only
 Merit decides who *earned* it.
 
+## Live on Arc testnet — the moat, connected on-chain
+
+Merit's settlement is a native **ERC-8183 job** whose escrow release is gated by an **`IACPHook`**
+that embodies proof-of-citation — so money moves *only* if the cited work verifies. This isn't
+asserted; it's deployed and proven:
+
+- **7 contracts live on Arc testnet** (chain 5042002) — `MeritJob`, `MeritVerificationHook`, Escrow,
+  Stake, Insurance, PredictionMarket, AttestationVerifier. Addresses + explorer links in
+  [`contracts/deployments.json`](contracts/deployments.json).
+- **A verified run RELEASES the escrow; a failed citation REVERTS `complete()` and refunds** — proven
+  on-chain: `MeritJob` job 1 = `Completed` (citation verified), job 2 = `Rejected` (citation failed,
+  the hook blocked the release). The release is bound to `keccak256` of the signed receipt — anyone
+  can verify via `jobs(id)` + `verdictOf(host, id)`. Enable with `MERIT_HOOK_ONCHAIN=1`.
+- **The evaluator is measured, not asserted** — a forkable, false-negative-gated benchmark scoring
+  **100%** precision/recall on a balanced gold set. See [`BENCHMARK.md`](BENCHMARK.md) (`npm run judge-eval`).
+
+Nobody else in the Arc / agent-economy ecosystem gates settlement on whether the *work* is correct —
+they gate on identity, a reputation score, or attested execution. **Proof-of-citation as the
+settlement gate is Merit's unoccupied moat.**
+
 ## The agent-labor market (the leap)
 
 The lead agent doesn't do the work itself — it **hires a crew** from an open pool of specialist

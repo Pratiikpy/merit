@@ -26,6 +26,7 @@
     "deploy-local": "node scripts/deploy-local.mjs",
     "daemon": "node scripts/daemon.mjs",
     "canteen-push": "node scripts/canteen-push.mjs",
+    "prove-moat": "node scripts/prove-moat.mjs",
     "audit-export": "node scripts/audit-export.mjs",
     "trust": "node scripts/trust.mjs",
     "bounty": "node scripts/bounty.mjs",
