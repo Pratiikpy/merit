@@ -1,0 +1,12 @@
+[profile.default]
+src = "src"
+out = "out"
+test = "test"
+libs = ["lib"]
+solc = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+
+# Arc testnet (chain 5042002). Used by deploy scripts; tests run on the local forge EVM (free).
+[rpc_endpoints]
+arc_testnet = "${ARC_RPC_URL}"

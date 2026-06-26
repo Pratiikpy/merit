@@ -1,0 +1,27 @@
+{
+  "network": "arc-testnet",
+  "chainId": 5042002,
+  "rpc": "https://rpc.testnet.arc.network",
+  "explorer": "https://testnet.arcscan.app",
+  "deployedAt": "2026-06-26",
+  "usdc": "0x3600000000000000000000000000000000000000",
+  "contracts": {
+    "Escrow": "0xbCaEA25F7D3E64B337BeB4342945544970B03Cd8",
+    "Stake": "0xFb1090d03f0915cBd3930231Cf0A388B7a07ED6c",
+    "Insurance": "0xB90Fd2a103750a4a9a0Bb368B9bADA0a786A58A2",
+    "PredictionMarket": "0xb67C595d1F13E01fFF1a5690B938A249fE1eEE6e",
+    "AttestationVerifier": "0xD632eabAb9431aFa724522a196CEf7518016a297",
+    "MeritVerificationHook": "0xA30f58f60725a978Ac09034F4FDd32efc29e9ab1",
+    "MeritJob": "0xdF81dCCFf8c8ea9e1fB6B5b2B790fAfF1Ebe6A05"
+  },
+  "explorerLinks": {
+    "Escrow": "https://testnet.arcscan.app/address/0xbCaEA25F7D3E64B337BeB4342945544970B03Cd8",
+    "Stake": "https://testnet.arcscan.app/address/0xFb1090d03f0915cBd3930231Cf0A388B7a07ED6c",
+    "Insurance": "https://testnet.arcscan.app/address/0xB90Fd2a103750a4a9a0Bb368B9bADA0a786A58A2",
+    "PredictionMarket": "https://testnet.arcscan.app/address/0xb67C595d1F13E01fFF1a5690B938A249fE1eEE6e",
+    "AttestationVerifier": "https://testnet.arcscan.app/address/0xD632eabAb9431aFa724522a196CEf7518016a297",
+    "MeritVerificationHook": "https://testnet.arcscan.app/address/0xA30f58f60725a978Ac09034F4FDd32efc29e9ab1",
+    "MeritJob": "https://testnet.arcscan.app/address/0xdF81dCCFf8c8ea9e1fB6B5b2B790fAfF1Ebe6A05"
+  },
+  "note": "Broadcast record in contracts/broadcast/Deploy.s.sol/5042002/run-latest.json. ERC-8183 reference impl (AgenticCommerce) lives at 0x0747EEf0706327138c69792bF28Cd525089e4583; MeritJob is Merit's own ERC-8183 job + MeritVerificationHook is the proof-of-citation IACPHook."
+}

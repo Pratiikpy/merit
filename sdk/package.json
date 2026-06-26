@@ -1,0 +1,13 @@
+{
+  "name": "@merit/sdk",
+  "version": "0.1.0",
+  "description": "Client for the Merit trust layer — verification, reputation, and settlement for agent commerce on Arc.",
+  "type": "module",
+  "main": "merit.mjs",
+  "exports": {
+    ".": "./merit.mjs"
+  },
+  "files": ["merit.mjs", "README.md"],
+  "license": "MIT",
+  "keywords": ["ai-agents", "x402", "arc", "circle", "reputation", "proof-of-citation", "agent-commerce"]
+}

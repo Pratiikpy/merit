@@ -1,0 +1,52 @@
+# One-click deploy on Render (no Docker needed — native Node buildpack).
+# Set the `sync: false` secrets in the Render dashboard after the first deploy.
+services:
+  - type: web
+    name: merit
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    # Persistent disk so the source registry, the specialist agents' wallets +
+    # reputation, cached agentIds, and per-publisher identities survive
+    # restarts/redeploys. Without it, .data is ephemeral and state resets each restart
+    # — fine for a single-session demo, not for durable on-chain reputation. Requires a
+    # paid instance type (starter+); delete this block and the MERIT_DATA_DIR var below
+    # to run ephemeral instead.
+    disk:
+      name: merit-data
+      mountPath: /var/merit-data
+      sizeGB: 1
+    envVars:
+      - key: MERIT_DATA_DIR
+        value: /var/merit-data
+      - key: STUB
+        value: "0"
+      - key: REPUTATION_ONCHAIN
+        value: "1"
+      - key: ARC_RPC_URL
+        value: https://rpc.testnet.arc.network
+      - key: LLM_BASE_URL
+        value: https://integrate.api.nvidia.com/v1
+      - key: LLM_MODEL
+        value: moonshotai/kimi-k2.6
+      - key: EMBED_MODEL
+        value: nvidia/nv-embedqa-e5-v5
+      - key: EMBED_INPUT_TYPE
+        value: query
+      # --- secrets: set these in the dashboard (never commit) ---
+      - key: BUYER_ADDRESS
+        sync: false
+      - key: BUYER_PRIVATE_KEY
+        sync: false
+      - key: OPERATOR_PRIVATE_KEY
+        sync: false
+      - key: OPERATOR_ADDRESS
+        sync: false
+      - key: SELLER_ADDRESS
+        sync: false
+      - key: SELLER_PRIVATE_KEY
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
