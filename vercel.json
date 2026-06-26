@@ -1,0 +1,10 @@
+{
+  "experimentalServices": {
+    "merit": {
+      "type": "web",
+      "routePrefix": "/",
+      "framework": "nextjs",
+      "buildCommand": "npm install && npm run build"
+    }
+  }
+}
