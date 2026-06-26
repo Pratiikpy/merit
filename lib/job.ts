@@ -95,6 +95,8 @@ export async function settleViaHook(opts: {
     await pub().waitForTransactionReceipt({ hash });
     return hash;
   };
+  let fundedJobId: bigint | undefined; // set once escrow holds funds → any later failure must refund (cleanup below)
+  let submitted = false;
   try {
     const block = await pub().getBlock();
     const expiredAt = block.timestamp + BigInt(3600);
@@ -120,7 +122,9 @@ export async function settleViaHook(opts: {
     await send(provider, job, JOB_ABI, "setBudget", [jobId, opts.amountAtomic, "0x"], "setBudget");
     await send(client, ARC.usdc as `0x${string}`, USDC_ABI, "approve", [job, opts.amountAtomic], "approveUSDC");
     await send(client, job, JOB_ABI, "fund", [jobId, "0x"], "fund(escrow)");
+    fundedJobId = jobId; // escrow now funded — a failure past this point triggers the refund cleanup
     await send(provider, job, JOB_ABI, "submit", [jobId, opts.deliverableHash, "0x"], "submit(deliverable)");
+    submitted = true;
     // 5. the validator records the proof-of-citation verdict on the hook
     await send(evaluator, hook, HOOK_ABI, "recordVerdict", [job, jobId, opts.verified, opts.proofHash], "recordVerdict");
     // 6. the evaluator completes — the hook GATES the release on the verdict
@@ -141,6 +145,18 @@ export async function settleViaHook(opts: {
     return { jobId: jobId.toString(), outcome: "gate-reverted-then-refunded", verified: false, proofHash: opts.proofHash, txs, job, explorer: `${ARC.explorer}/address/${job}` };
   } catch (e) {
     console.error("[job] hook-gated settlement failed:", (e as Error).message);
+    // Best-effort cleanup: if escrow was already funded, refund it so funds aren't stranded. reject() needs
+    // the Submitted state, so move a still-Funded job to Submitted first. If cleanup itself fails, the job's
+    // expiredAt (now + 1h) claimRefund is the ultimate backstop — funds are never permanently lost.
+    if (fundedJobId !== undefined) {
+      try {
+        if (!submitted) await send(provider, job, JOB_ABI, "submit", [fundedJobId, keccak256(toHex("cleanup")), "0x"], "cleanup-submit");
+        await send(evaluator, job, JOB_ABI, "reject", [fundedJobId, keccak256(toHex("cleanup-refund")), "0x"], "cleanup-reject");
+        console.error(`[job] partial failure — escrow refunded via cleanup (job ${fundedJobId})`);
+      } catch (ce) {
+        console.error("[job] cleanup-refund failed; escrow reclaimable via the expiry path:", (ce as Error).message);
+      }
+    }
     return null;
   }
 }
