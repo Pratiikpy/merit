@@ -21,6 +21,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Pin the workspace root to this app dir (multiple lockfiles exist higher up).
   turbopack: { root: import.meta.dirname },
+  // @circle-fin/x402-batching's server build pulls a module Turbopack can't resolve at bundle time on
+  // Vercel; keep it external (required from node_modules at runtime, never bundled into the server
+  // chunks). It's only invoked for real STUB=0 settlement, so the STUB demo never touches it.
+  serverExternalPackages: ["@circle-fin/x402-batching", "@circle-fin/developer-controlled-wallets"],
   // Serve the hand-authored Merit frontend (public/index.html) at "/".
   // beforeFiles runs before app routes, so the static file wins.
   async rewrites() {
