@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     }
   };
 
-  let question = "What is driving stablecoin payment adoption in 2026?";
+  let question = ""; // no default — a question is required (guard below); never run a paid default on garbage input
   let budget = 0.5;
   let discover = false;
   let tier: "pro" | "budget" | undefined;
@@ -78,7 +78,18 @@ export async function POST(req: NextRequest) {
     if (body?.tier === "budget" || body?.tier === "pro") tier = body.tier;
     policy = parsePolicy(body?.policy);
   } catch {
-    /* use defaults */
+    /* use defaults for budget/tier/policy; question stays empty → the required-check below rejects it */
+  }
+
+  // Launch-safety: require an explicit, non-empty question. A missing/empty/malformed body must NOT silently
+  // run a paid default-question job (real money on garbage input). The UI and every script always send a
+  // question, so this rejects only buggy/abusive callers. Release the slot first so it never leaks.
+  if (!question.trim()) {
+    releaseSlot();
+    return new Response(JSON.stringify({ error: "question is required" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // Fail-closed per-key budget: an authenticated principal cannot start a run beyond its remaining budget.

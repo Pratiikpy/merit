@@ -52,3 +52,7 @@ contracts/out/
 # stray build artifacts + local sim
 .next/
 contracts/deployments.local.json
+
+# local test-server artifacts
+sv.log
+.sv.pid
