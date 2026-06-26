@@ -28,7 +28,7 @@
   body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;}
   input,button{font-family:inherit;}
   a{color:inherit;text-decoration:none;}
-  ::placeholder{color:#9CA3AF;}
+  ::placeholder{color:#6B7280;}
   .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
   h1,h2,h3{font-family:'Hanken Grotesk',sans-serif;letter-spacing:-.028em;}
   nav a{white-space:nowrap;}
@@ -52,7 +52,8 @@
   [data-card]{transition:transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .2s cubic-bezier(.2,.7,.2,1);}
   [data-card]:hover{transform:translateY(-3px);box-shadow:0 18px 40px -14px rgba(16,24,40,.22)!important;}
   @media(max-width:980px){#hero-grid{grid-template-columns:1fr;gap:36px;}#demo-grid{grid-template-columns:1fr;}#how-grid,#feat-grid{grid-template-columns:1fr 1fr;}#prob-grid,#persona-grid{grid-template-columns:1fr;}#proof-grid{grid-template-columns:1fr 1fr;}}
-  @media(max-width:600px){#how-grid,#feat-grid{grid-template-columns:1fr;}#nav-links{display:none!important;}#merit-h1{font-size:42px!important;}}
+  @media(max-width:900px){#nav-links{display:none!important;}}
+  @media(max-width:600px){#how-grid,#feat-grid{grid-template-columns:1fr;}#merit-h1{font-size:42px!important;}}
 </style>
 </head>
 <body>
@@ -101,13 +102,13 @@
     </div>
     <div data-card id="hero-card" style="background:#fff;border:1px solid #ECECEE;border-radius:18px;box-shadow:0 20px 50px -24px rgba(10,10,10,.22),0 4px 14px -8px rgba(10,10,10,.08);padding:20px;max-width:600px;margin:44px auto 0;text-align:left;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div><div style="font-size:12px;font-weight:600;color:#9CA3AF;">Total released to creators</div><div class="mono" id="hc-total" style="font-size:25px;font-weight:600;letter-spacing:-.01em;color:#0A0A0A;margin-top:2px;">$0.00</div><div style="font-size:11.5px;font-weight:600;color:#047857;margin-top:3px;">▲ <span id="hc-paid">0</span> creators paid</div></div>
+        <div><div style="font-size:12px;font-weight:600;color:#6B7280;">Total released to creators</div><div class="mono" id="hc-total" style="font-size:25px;font-weight:600;letter-spacing:-.01em;color:#0A0A0A;margin-top:2px;">$0.00</div><div style="font-size:11.5px;font-weight:600;color:#047857;margin-top:3px;">▲ <span id="hc-paid">0</span> creators paid</div></div>
         <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#10B981;"><span style="width:6px;height:6px;border-radius:50%;background:#10B981;animation:mblink 1.4s infinite;"></span>live</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
-        <div style="border:1px solid #ECECEE;border-radius:11px;padding:11px;background:#FFFFFF;"><div style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;">Escrowed</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#0A0A0A;">$0.1970</div></div>
-        <div style="border:1px solid #D1FAE5;border-radius:11px;padding:11px;background:#F0FDF4;"><div style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;">Released</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#047857;">$0.1550</div></div>
-        <div style="border:1px solid #FECDD3;border-radius:11px;padding:11px;background:#FFF1F2;"><div style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;">Refunded</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#BE123C;">$0.0420</div></div>
+        <div style="border:1px solid #ECECEE;border-radius:11px;padding:11px;background:#FFFFFF;"><div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Escrowed</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#0A0A0A;">$0.1970</div></div>
+        <div style="border:1px solid #D1FAE5;border-radius:11px;padding:11px;background:#F0FDF4;"><div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Released</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#047857;">$0.1550</div></div>
+        <div style="border:1px solid #FECDD3;border-radius:11px;padding:11px;background:#FFF1F2;"><div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Refunded</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#BE123C;">$0.0420</div></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #ECECEE;border-radius:11px;padding:11px 13px;">
@@ -134,21 +135,21 @@
     <div style="background:#FFFFFF;border:1px solid #ECECEE;border-radius:20px;padding:20px;">
       <div data-card style="background:#fff;border:1px solid #ECECEE;border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);padding:18px;margin-bottom:18px;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;">
-          <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;">Agent task</span>
+          <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;">Agent task</span>
           <span class="mono" id="phase-label" style="font-size:12px;font-weight:500;background:#F5F5F5;border:1px solid #E4E4E7;border-radius:999px;padding:4px 10px;color:#52525B;">Idle — ready</span>
         </div>
         <input id="question-input" aria-label="Agent research question" style="width:100%;border:1px solid #E4E4E7;border-radius:10px;padding:13px 14px;font-size:15.5px;font-weight:500;background:#fff;outline:none;color:#0A0A0A;" />
         <div style="display:flex;gap:12px;margin-top:13px;align-items:flex-end;flex-wrap:wrap;">
           <div>
-            <label style="display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF;margin-bottom:6px;">Budget</label>
+            <label style="display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#6B7280;margin-bottom:6px;">Budget</label>
             <div style="display:flex;align-items:stretch;border:1px solid #E4E4E7;border-radius:10px;overflow:hidden;">
               <span class="mono" style="padding:0 12px;font-size:15px;font-weight:600;background:#FAFAFA;color:#52525B;display:flex;align-items:center;border-right:1px solid #E4E4E7;">$</span>
               <input id="budget-input" aria-label="Budget in USDC" class="mono" style="width:96px;border:0;background:transparent;padding:11px;font-size:15px;font-weight:600;outline:none;color:#0A0A0A;" />
-              <span class="mono" style="padding:0 11px;font-size:12px;color:#9CA3AF;display:flex;align-items:center;">USDC</span>
+              <span class="mono" style="padding:0 11px;font-size:12px;color:#6B7280;display:flex;align-items:center;">USDC</span>
             </div>
           </div>
           <div>
-            <label style="display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#9CA3AF;margin-bottom:6px;">Sources</label>
+            <label style="display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#6B7280;margin-bottom:6px;">Sources</label>
             <button id="discover-toggle" type="button" aria-pressed="false" aria-label="Toggle live web sources" title="Curated demo sources, or discover real publishers live from the web" style="cursor:pointer;border:1px solid #E4E4E7;background:#FAFAFA;border-radius:10px;padding:12px 14px;font-size:13.5px;font-weight:600;color:#52525B;display:flex;align-items:center;gap:8px;white-space:nowrap;transition:all .2s ease;">
               <span id="discover-dot" style="width:8px;height:8px;border-radius:999px;background:#D4D4D8;flex:none;"></span>
               <span id="discover-label">Curated</span>
@@ -156,11 +157,11 @@
           </div>
           <button id="run-btn" data-card style="cursor:pointer;flex:1 1 190px;min-width:170px;border:0;background:#0A0A0A;color:#fff;border-radius:10px;padding:14px 18px;font-size:15.5px;font-weight:600;box-shadow:0 1px 2px rgba(16,24,40,.12),0 4px 12px rgba(10,10,10,.26);">Run agent</button>
         </div>
-        <div style="margin-top:11px;text-align:center;"><button id="compare-btn" type="button" title="Run the same question with the pro crew (LLM-judge verify) and the economy crew (similarity-only) and compare" style="background:none;border:0;cursor:pointer;font-size:12px;font-weight:600;color:#6B7280;">Compare crews ⇄ <span style="color:#9CA3AF;font-weight:500;">pro vs economy</span></button></div>
+        <div style="margin-top:11px;text-align:center;"><button id="compare-btn" type="button" title="Run the same question with the pro crew (LLM-judge verify) and the economy crew (similarity-only) and compare" style="background:none;border:0;cursor:pointer;font-size:12px;font-weight:600;color:#6B7280;">Compare crews ⇄ <span style="color:#6B7280;font-weight:500;">pro vs economy</span></button></div>
         <div style="margin-top:18px;border-top:1px solid #ECECEE;padding-top:15px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
             <span id="step-heading" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;">The 6-step loop</span>
-            <span class="mono" style="font-size:11px;color:#9CA3AF;">autonomous</span>
+            <span class="mono" style="font-size:11px;color:#6B7280;">autonomous</span>
           </div>
           <div id="steps-row" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
         </div>
@@ -172,16 +173,16 @@
         <div>
           <div data-card style="background:#fff;border:1px solid #ECECEE;border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);padding:18px;margin-bottom:18px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;">
-              <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;">Agent crew</span>
-              <span class="mono" style="font-size:11px;color:#9CA3AF;">hired by the lead</span>
+              <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;">Agent crew</span>
+              <span class="mono" style="font-size:11px;color:#6B7280;">hired by the lead</span>
             </div>
             <div id="crew-mount" style="display:flex;flex-direction:column;gap:8px;"></div>
           </div>
 
           <div data-card style="background:#fff;border:1px solid #ECECEE;border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);padding:18px;margin-bottom:18px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;">
-              <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;">Candidate sources</span>
-              <span class="mono" style="font-size:11px;color:#9CA3AF;">ranked by the agent</span>
+              <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;">Candidate sources</span>
+              <span class="mono" style="font-size:11px;color:#6B7280;">ranked by the agent</span>
             </div>
             <div id="sources-mount"></div>
           </div>
@@ -191,14 +192,14 @@
 
         <div>
           <div data-card style="background:#fff;border:1px solid #ECECEE;border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);padding:18px;margin-bottom:18px;">
-            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;"><span style="font-size:15px;font-weight:700;">Live settlement</span><span class="mono" id="budget-label" style="font-size:11px;color:#9CA3AF;">of $0.50</span></div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;"><span style="font-size:15px;font-weight:700;">Live settlement</span><span class="mono" id="budget-label" style="font-size:11px;color:#6B7280;">of $0.50</span></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-              <div style="border:1px solid #FDE68A;background:#FFFBEB;border-radius:11px;padding:11px;"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#9CA3AF;">Escrowed</div><div class="mono" id="led-escrowed" style="font-size:19px;font-weight:600;margin-top:5px;color:#B45309;">$0.0000</div></div>
-              <div style="border:1px solid #A7F3D0;background:#F0FDF4;border-radius:11px;padding:11px;"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#9CA3AF;">Released</div><div class="mono" id="led-released" style="font-size:19px;font-weight:600;margin-top:5px;color:#047857;">$0.0000</div></div>
-              <div style="border:1px solid #FECDD3;background:#FFF1F2;border-radius:11px;padding:11px;"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#9CA3AF;">Refunded</div><div class="mono" id="led-refunded" style="font-size:19px;font-weight:600;margin-top:5px;color:#BE123C;">$0.0000</div></div>
-              <div style="border:1px solid #E4E4E7;background:#F4F4F5;border-radius:11px;padding:11px;"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#9CA3AF;">Nanopay</div><div class="mono" id="led-nano" style="font-size:19px;font-weight:600;margin-top:5px;color:#1D1D1F;">0</div></div>
+              <div style="border:1px solid #FDE68A;background:#FFFBEB;border-radius:11px;padding:11px;"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;">Escrowed</div><div class="mono" id="led-escrowed" style="font-size:19px;font-weight:600;margin-top:5px;color:#B45309;">$0.0000</div></div>
+              <div style="border:1px solid #A7F3D0;background:#F0FDF4;border-radius:11px;padding:11px;"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;">Released</div><div class="mono" id="led-released" style="font-size:19px;font-weight:600;margin-top:5px;color:#047857;">$0.0000</div></div>
+              <div style="border:1px solid #FECDD3;background:#FFF1F2;border-radius:11px;padding:11px;"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;">Refunded</div><div class="mono" id="led-refunded" style="font-size:19px;font-weight:600;margin-top:5px;color:#BE123C;">$0.0000</div></div>
+              <div style="border:1px solid #E4E4E7;background:#F4F4F5;border-radius:11px;padding:11px;"><div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;">Nanopay</div><div class="mono" id="led-nano" style="font-size:19px;font-weight:600;margin-top:5px;color:#1D1D1F;">0</div></div>
             </div>
-            <div style="margin-top:14px;"><div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#9CA3AF;margin-bottom:6px;"><span>Released</span><span>Refunded</span></div><div style="display:flex;height:8px;border-radius:999px;background:#F5F5F5;overflow:hidden;"><div id="bar-released" style="width:0%;background:#10B981;transition:width .6s ease;"></div><div id="bar-refunded" style="width:0%;background:#F43F5E;transition:width .6s ease;"></div></div></div>
+            <div style="margin-top:14px;"><div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;margin-bottom:6px;"><span>Released</span><span>Refunded</span></div><div style="display:flex;height:8px;border-radius:999px;background:#F5F5F5;overflow:hidden;"><div id="bar-released" style="width:0%;background:#10B981;transition:width .6s ease;"></div><div id="bar-refunded" style="width:0%;background:#F43F5E;transition:width .6s ease;"></div></div></div>
           </div>
 
           <div data-card style="background:#fff;border:1px solid #ECECEE;border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);padding:18px;margin-bottom:18px;">
@@ -207,7 +208,7 @@
           </div>
 
           <div data-card style="background:#fff;border:1px solid #ECECEE;border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);padding:18px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span style="font-size:15px;font-weight:700;">Receipts</span><span class="mono" id="receipt-count" style="font-size:11px;color:#9CA3AF;">0</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span style="font-size:15px;font-weight:700;">Receipts</span><span class="mono" id="receipt-count" style="font-size:11px;color:#6B7280;">0</span></div>
             <div id="receipts-mount" aria-live="polite" style="display:flex;flex-direction:column;gap:9px;max-height:300px;overflow:auto;"></div>
           </div>
 
@@ -260,9 +261,9 @@
         <div style="display:inline-block;border:1px solid #E4E4E7;background:#FAFAFA;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:16px;">Today · pay-then-pray</div>
         <p style="font-size:16px;line-height:1.55;color:#52525B;margin:0 0 16px;">Creators get scraped. Agents pay flat fees with no proof the work was used. No receipts, no recourse, no track record.</p>
         <div style="display:flex;flex-direction:column;gap:11px;">
-          <div style="display:flex;gap:9px;font-size:14px;color:#6B7280;"><span style="color:#A1A1AA;">✕</span>Payment is blind to whether value was delivered</div>
-          <div style="display:flex;gap:9px;font-size:14px;color:#6B7280;"><span style="color:#A1A1AA;">✕</span>No verifiable record either side can check</div>
-          <div style="display:flex;gap:9px;font-size:14px;color:#6B7280;"><span style="color:#A1A1AA;">✕</span>Reputation is locked inside platforms</div>
+          <div style="display:flex;gap:9px;font-size:14px;color:#6B7280;"><span style="color:#6B7280;">✕</span>Payment is blind to whether value was delivered</div>
+          <div style="display:flex;gap:9px;font-size:14px;color:#6B7280;"><span style="color:#6B7280;">✕</span>No verifiable record either side can check</div>
+          <div style="display:flex;gap:9px;font-size:14px;color:#6B7280;"><span style="color:#6B7280;">✕</span>Reputation is locked inside platforms</div>
         </div>
       </div>
       <div data-card style="background:#fff;border:1px solid #E4E4E7;border-radius:16px;padding:26px;box-shadow:0 12px 30px -16px rgba(10,10,10,.3);">
@@ -287,7 +288,7 @@
     <div id="feat-grid">
       <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:24px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div style="font-size:17px;font-weight:700;margin-bottom:8px;">Conditional payment</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">Money is escrowed up front and releases only for value that's verified and actually cited.</p></div>
       <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:24px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div style="font-size:17px;font-weight:700;margin-bottom:8px;">Signed receipts</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0 0 12px;">Every settlement is a verifiable record a judge or auditor could check.</p><div class="mono" style="font-size:11px;color:#6B7280;border:1px solid #ECECEE;border-radius:7px;padding:6px 9px;background:#FFFFFF;">0x4d3e…e1a2 · RELEASE</div></div>
-      <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:24px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div style="font-size:17px;font-weight:700;margin-bottom:8px;">Merit reputation</div><p style="font-size:14px;line-height:1.55;color:#9CA3AF;margin:0 0 12px;">A portable score from release-vs-refund history — every update verifiable on-chain.</p><div style="display:flex;align-items:baseline;gap:6px;"><span class="mono" style="font-size:26px;font-weight:600;">92</span><span class="mono" style="font-size:12px;font-weight:600;color:#047857;">▲ +2</span></div></div>
+      <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:24px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div style="font-size:17px;font-weight:700;margin-bottom:8px;">Merit reputation</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0 0 12px;">A portable score from release-vs-refund history — every update verifiable on-chain.</p><div style="display:flex;align-items:baseline;gap:6px;"><span class="mono" style="font-size:26px;font-weight:600;">92</span><span class="mono" style="font-size:12px;font-weight:600;color:#047857;">▲ +2</span></div></div>
       <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:24px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div style="font-size:17px;font-weight:700;margin-bottom:8px;">Sub-cent nanopayments</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0 0 12px;">Pay fractions of a cent, per use, settled in real time.</p><div class="mono" style="font-size:24px;font-weight:600;color:#1D1D1F;">$0.0090</div></div>
       <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:24px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div style="font-size:17px;font-weight:700;margin-bottom:8px;">Both sides, one receipt</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">Works for agents paying and creators earning — the same proof serves everyone.</p></div>
       <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:24px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div style="font-size:17px;font-weight:700;margin-bottom:8px;">Built on Arc</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">Sub-second finality on Circle's stablecoin L1, in USDC. Legible to humans and machines.</p></div>
@@ -298,17 +299,17 @@
 <section id="refusal" data-screen-label="The refusal" style="padding:100px 24px;background:#0A0A0A;color:#E4E4E7;">
   <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;" id="ref-grid">
     <div>
-      <div style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#A1A1AA;margin-bottom:14px;">The hero moment</div>
+      <div style="font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;margin-bottom:14px;">The hero moment</div>
       <h2 style="font-size:44px;line-height:1.05;letter-spacing:-.03em;font-weight:700;margin:0 0 16px;color:#fff;">It refuses to pay.</h2>
-      <p style="font-size:17px;line-height:1.6;color:#9CA3AF;max-width:46ch;margin:0;">When a source isn't cited or fails verification, Merit refunds it — and tells you exactly why. That refusal is the point: proof the system has judgment, and protects the buyer. Anyone can pay. Only Merit decides who <span style="color:#fff;font-weight:600;">earned</span> it.</p>
+      <p style="font-size:17px;line-height:1.6;color:#6B7280;max-width:46ch;margin:0;">When a source isn't cited or fails verification, Merit refunds it — and tells you exactly why. That refusal is the point: proof the system has judgment, and protects the buyer. Anyone can pay. Only Merit decides who <span style="color:#fff;font-weight:600;">earned</span> it.</p>
     </div>
     <div data-card style="background:#161618;border:1px solid #2A2A2D;border-radius:16px;padding:18px;box-shadow:0 24px 60px -24px rgba(0,0,0,.6);">
       <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2A2A2D;padding-bottom:13px;margin-bottom:13px;">
         <div style="display:flex;align-items:center;gap:10px;"><div class="mono" style="width:34px;height:34px;border-radius:9px;background:#52525B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">CB</div><div><div style="font-size:14px;font-weight:600;color:#fff;">CryptoBuzz Daily</div><div class="mono" style="font-size:11px;color:#6B7280;">@cryptobuzz</div></div></div>
         <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#FDA4AF;background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.3);border-radius:999px;padding:3px 9px;">✕ Refunded</span>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:13px;color:#9CA3AF;margin-bottom:6px;"><span>Amount returned</span><span class="mono" style="color:#FDA4AF;font-weight:600;">$0.0300</span></div>
-      <div style="background:#0A0A0A;border:1px solid #2A2A2D;border-radius:10px;padding:11px 12px;font-size:12.5px;line-height:1.5;color:#A1A1AA;margin-top:8px;">Not cited — the agent judged the content irrelevant and excluded it from the answer.</div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#6B7280;margin-bottom:6px;"><span>Amount returned</span><span class="mono" style="color:#FDA4AF;font-weight:600;">$0.0300</span></div>
+      <div style="background:#0A0A0A;border:1px solid #2A2A2D;border-radius:10px;padding:11px 12px;font-size:12.5px;line-height:1.5;color:#6B7280;margin-top:8px;">Not cited — the agent judged the content irrelevant and excluded it from the answer.</div>
       <div class="mono" style="display:flex;justify-content:space-between;font-size:11px;color:#52525B;margin-top:12px;"><span>0x7b10…aa92</span><span>verified on Arc</span></div>
     </div>
   </div>
@@ -331,7 +332,7 @@
         <div style="display:inline-block;border:1px solid #E4E4E7;background:#F4F4F5;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;color:#1D1D1F;margin-bottom:16px;">For developers</div>
         <h3 style="font-size:24px;line-height:1.15;letter-spacing:-.02em;font-weight:700;margin:0 0 10px;">Route your agent's payments through Merit.</h3>
         <p style="font-size:15px;line-height:1.55;color:#6B7280;margin:0 0 18px;">Your agent only pays for verified, used work — and gets a receipt for every settlement.</p>
-        <div class="mono" style="border:1px solid #E4E4E7;border-radius:11px;background:#fff;padding:14px;font-size:12.5px;line-height:1.8;color:#52525B;overflow:auto;">merit.escrow(sources, budget)<br><span style="color:#9CA3AF;">// answer + cite…</span><br>merit.settle(citations) <span style="color:#BE123C;">→ release / refund</span></div>
+        <div class="mono" style="border:1px solid #E4E4E7;border-radius:11px;background:#fff;padding:14px;font-size:12.5px;line-height:1.8;color:#52525B;overflow:auto;">merit.escrow(sources, budget)<br><span style="color:#6B7280;">// answer + cite…</span><br>merit.settle(citations) <span style="color:#BE123C;">→ release / refund</span></div>
       </div>
     </div>
   </div>
@@ -365,11 +366,11 @@
       <p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">Trust, receipts and reputation for agent-to-creator commerce. Agents pay creators on merit.</p>
     </div>
     <div style="display:flex;gap:56px;flex-wrap:wrap;">
-      <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;margin-bottom:12px;">Product</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="#how">How it works</a><a href="#demo">Live demo</a><a href="#features">Features</a></div></div>
-      <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;margin-bottom:12px;">People</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="#creators">For creators</a><a href="#creators">For developers</a></div></div>
+      <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">Product</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="#how">How it works</a><a href="#demo">Live demo</a><a href="#features">Features</a></div></div>
+      <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">People</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="#creators">For creators</a><a href="#creators">For developers</a></div></div>
     </div>
   </div>
-  <div class="mono" style="max-width:1200px;margin:28px auto 0;border-top:1px solid #ECECEE;padding-top:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;color:#9CA3AF;">
+  <div class="mono" style="max-width:1200px;margin:28px auto 0;border-top:1px solid #ECECEE;padding-top:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;color:#6B7280;">
     <span>Arc testnet · sub-second finality · <span id="footer-addr">0x4d3e…e1a2</span></span>
     <span>Lepton Agents Hackathon · Canteen × Circle × Arc</span>
   </div>
@@ -390,7 +391,7 @@
     {id:'chainletter',name:'Chainletter Weekly',handle:'@chainletter',kind:'Newsletter',initials:'CL',avatarBg:'#0EA5E9',merit:92,price:0.0180,nano:3,cited:true,verdict:'release',meritUp:2,base:84.10},
     {id:'ortiz',name:'Dr. Lena Ortiz',handle:'@lortiz_pay',kind:'Researcher',initials:'LO',avatarBg:'#8B5CF6',merit:88,price:0.0250,nano:2,cited:true,verdict:'release',meritUp:1,base:210.70},
     {id:'ledgerlens',name:'Ledger Lens',handle:'@ledgerlens',kind:'Analyst',initials:'LL',avatarBg:'#0891B2',merit:79,price:0.0150,nano:1,cited:true,verdict:'release',meritUp:2,base:56.20},
-    {id:'cryptobuzz',name:'CryptoBuzz Daily',handle:'@cryptobuzz',kind:'Blog',initials:'CB',avatarBg:'#9CA3AF',merit:41,price:0.0300,nano:0,cited:false,verdict:'refund',meritUp:-4,base:1.10,reason:'Not cited — the agent judged the content irrelevant and excluded it from the answer.'},
+    {id:'cryptobuzz',name:'CryptoBuzz Daily',handle:'@cryptobuzz',kind:'Blog',initials:'CB',avatarBg:'#6B7280',merit:41,price:0.0300,nano:0,cited:false,verdict:'refund',meritUp:-4,base:1.10,reason:'Not cited — the agent judged the content irrelevant and excluded it from the answer.'},
     {id:'anon',name:'Anon Substack #4412',handle:'unverified',kind:'Unverified',initials:'??',avatarBg:'#6B7280',merit:63,price:0.0120,nano:0,cited:false,verdict:'refund',meritUp:-6,base:0.00,reason:'Failed verification — identity could not be authenticated on Arc.'},
   ];
 
@@ -483,6 +484,7 @@
 
   // Kicks off a REAL agent run against the backend (/api/run SSE stream).
   function run(){
+    if(!state.question || !state.question.trim()){ var qi=document.getElementById('question-input'); if(qi){ qi.focus(); qi.style.borderColor='#FB7185'; setTimeout(function(){ qi.style.borderColor=''; }, 1600); } return; } // guard: an empty question focuses the field instead of a confusing "Run failed (400)"
     clearTimers();
     state.sources = freshSources();
     state.creators = freshCreators();
@@ -665,7 +667,7 @@
     var btn = document.getElementById('run-btn');
     btn.textContent = run ? 'Running…' : (done ? 'Run again' : 'Run agent');
     btn.style.background = run ? '#E4E4E7' : '#0A0A0A';
-    btn.style.color = run ? '#9CA3AF' : '#fff';
+    btn.style.color = run ? '#6B7280' : '#fff';
     btn.style.boxShadow = run ? 'none' : '0 1px 2px rgba(16,24,40,.12),0 4px 12px rgba(10,10,10,.26)';
     btn.disabled = run;
     document.getElementById('budget-label').textContent = 'of $'+state.budget;
@@ -678,7 +680,7 @@
       var bg,fg,border;
       if(stt==='active'){ bg='#0A0A0A'; fg='#fff'; border='#0A0A0A'; }
       else if(stt==='done'){ bg='#F4F4F5'; fg='#1D1D1F'; border='#E4E4E7'; }
-      else { bg='#fff'; fg='#9CA3AF'; border='#E4E4E7'; }
+      else { bg='#fff'; fg='#6B7280'; border='#E4E4E7'; }
       return '<div style="flex:1 1 0;min-width:108px;border:1px solid '+border+';background:'+bg+';color:'+fg+';border-radius:10px;padding:9px 11px;transition:all .25s ease;">'
         +'<div class="mono" style="font-size:10px;font-weight:500;opacity:.7;">0'+(i+1)+'</div>'
         +'<div style="font-size:12.5px;font-weight:600;margin-top:4px;">'+esc(label)+'</div></div>';
@@ -721,7 +723,7 @@
     if(!host) return;
     function m(x){ return '$'+(Number(x)||0).toFixed(4); }
     if(!state.crew.length){
-      host.innerHTML = '<div style="font-size:12.5px;color:#9CA3AF;padding:2px;">The lead agent hires search, write &amp; verify specialists — and pays them only for verified work.</div>';
+      host.innerHTML = '<div style="font-size:12.5px;color:#6B7280;padding:2px;">The lead agent hires search, write &amp; verify specialists — and pays them only for verified work.</div>';
       return;
     }
     var roleName = {search:'Search', write:'Write', verify:'Verify'};
@@ -741,7 +743,7 @@
           +'<div style="display:flex;align-items:center;gap:7px;"><span style="font-size:14px;font-weight:700;">'+esc(c.name)+'</span>'
           +'<span style="border:1px solid #E4E4E7;border-radius:999px;padding:1px 7px;font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;">'+esc(roleName[c.role]||c.role)+'</span></div>'
           +'<div class="mono" style="font-size:11px;color:#6B7280;margin-top:2px;">merit '+merit+' · '+m(c.price)+'/job</div>'
-          +((c.passedOver&&c.passedOver.length)?'<div style="font-size:10px;color:#9CA3AF;margin-top:2px;">chosen over '+c.passedOver.map(function(p){return esc(p.name)+' ('+esc(p.merit)+')';}).join(', ')+'</div>':'')
+          +((c.passedOver&&c.passedOver.length)?'<div style="font-size:10px;color:#6B7280;margin-top:2px;">chosen over '+c.passedOver.map(function(p){return esc(p.name)+' ('+esc(p.merit)+')';}).join(', ')+'</div>':'')
         +'</div>'
         +'<div style="flex:none;text-align:right;">'+status+'</div></div>';
     }).join('');
@@ -766,10 +768,10 @@
         +'<div style="display:flex;gap:12px;align-items:flex-start;">'
         +'<div class="mono" style="width:40px;height:40px;flex:none;background:'+x.avatarBg+';color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;">'+esc(x.initials)+'</div>'
         +'<div style="flex:1 1 auto;min-width:0;">'
-        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-size:15px;font-weight:700;">'+esc(x.name)+'</span><span class="mono" style="font-size:11px;color:#9CA3AF;">'+esc(x.handle)+'</span><span style="border:1px solid #E4E4E7;border-radius:999px;padding:1px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;">'+esc(x.kind)+'</span></div>'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-size:15px;font-weight:700;">'+esc(x.name)+'</span><span class="mono" style="font-size:11px;color:#6B7280;">'+esc(x.handle)+'</span><span style="border:1px solid #E4E4E7;border-radius:999px;padding:1px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;">'+esc(x.kind)+'</span></div>'
         +'<div style="display:flex;gap:14px;margin-top:7px;font-size:12px;color:#6B7280;" class="mono"><span>price/use <b style="color:#52525B;">'+esc(x.priceLabel)+'</b></span><span>'+esc(x.escrowText)+'</span></div>'
         +'</div>'
-        +'<div style="flex:none;text-align:right;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#9CA3AF;">Merit</div>'
+        +'<div style="flex:none;text-align:right;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;">Merit</div>'
         +'<div style="display:flex;align-items:baseline;gap:5px;justify-content:flex-end;margin-top:3px;">'+((x.repTxUrl && x.repTxUrl.indexOf('https://')===0) ? '<a href="'+esc(x.repTxUrl)+'" target="_blank" rel="noopener" class="mono" title="reputation written on-chain — verify on Arc" style="font-size:22px;font-weight:600;color:#0A0A0A;text-decoration:none;border-bottom:1px dotted #10B981;">'+esc(x.meritNow)+'</a>' : '<span class="mono" style="font-size:22px;font-weight:600;">'+esc(x.meritNow)+'</span>')+deltaHtml+'</div></div>'
         +'</div>'+statusHtml+'</div>';
     }).join('') + '</div>';
@@ -790,7 +792,7 @@
     host.innerHTML = '<div data-card style="background:#fff;border:1px solid #ECECEE;border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);padding:18px;">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">'
       +'<span style="display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#0A0A0A;"><span style="display:inline-flex;width:20px;height:20px;border-radius:6px;background:#F4F4F5;align-items:center;justify-content:center;font-size:11px;font-weight:700;">A</span>Agent answer</span>'
-      +'<span class="mono" style="font-size:11px;color:#9CA3AF;">cited sources highlighted</span></div>'
+      +'<span class="mono" style="font-size:11px;color:#6B7280;">cited sources highlighted</span></div>'
       +'<p style="font-size:15.5px;line-height:1.7;margin:12px 0 0;color:#52525B;">'+segHtml+'</p>'+excluded+'</div>';
   }
 
@@ -813,9 +815,9 @@
       var rowBorder = c.flash?'#A7F3D0':(c.isYou?'#E4E4E7':'#ECECEE');
       var gain = c.flash ? '<div class="mono" style="font-size:10px;font-weight:600;color:#10B981;margin-top:1px;">'+esc('+'+usd(c.lastGain))+'</div>' : '';
       return '<div data-rep="'+esc(c.id)+'" role="button" tabindex="0" aria-label="View on-chain reputation for '+esc(c.name)+'" title="View on-chain reputation" style="display:flex;align-items:center;gap:10px;border:1px solid '+rowBorder+';border-radius:11px;padding:8px 10px;background:'+rowBg+';transition:all .4s ease;cursor:pointer;">'
-        +'<span class="mono" style="font-size:11px;width:20px;color:#9CA3AF;">#'+(i+1)+'</span>'
+        +'<span class="mono" style="font-size:11px;width:20px;color:#6B7280;">#'+(i+1)+'</span>'
         +'<div class="mono" style="width:28px;height:28px;flex:none;background:'+c.avatarBg+';color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">'+esc(c.initials)+'</div>'
-        +'<div style="flex:1 1 auto;min-width:0;"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(c.name)+'</div><div class="mono" style="font-size:11px;color:#9CA3AF;margin-top:1px;">merit '+esc(c.merit)+' · '+esc(usd(c.price))+'</div></div>'
+        +'<div style="flex:1 1 auto;min-width:0;"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(c.name)+'</div><div class="mono" style="font-size:11px;color:#6B7280;margin-top:1px;">merit '+esc(c.merit)+' · '+esc(usd(c.price))+'</div></div>'
         +'<div style="text-align:right;flex:none;"><div class="mono" style="font-size:13.5px;font-weight:600;">'+esc(usd(c.balance,2))+'</div>'+gain+'</div>'
         +'</div>';
     }).join('');
@@ -824,7 +826,7 @@
   function renderReceipts(){
     document.getElementById('receipt-count').textContent = String(state.receipts.length);
     var host = document.getElementById('receipts-mount');
-    if(!state.receipts.length){ host.innerHTML='<div style="font-size:12px;color:#9CA3AF;text-align:center;padding:20px 8px;">No receipts yet — run the agent to settle verified payments on-chain.</div>'; return; }
+    if(!state.receipts.length){ host.innerHTML='<div style="font-size:12px;color:#6B7280;text-align:center;padding:20px 8px;">No receipts yet — run the agent to settle verified payments on-chain.</div>'; return; }
     host.innerHTML = state.receipts.map(function(r){
       var tagBg = r.isRelease?'#ECFDF5':'#FFF1F2', tagFg = r.isRelease?'#047857':'#BE123C', tagBorder = r.isRelease?'#D1FAE5':'#FECDD3';
       var barColor = r.isRelease?'#10B981':'#F43F5E', amtColor = r.isRelease?'#047857':'#BE123C';
@@ -837,8 +839,8 @@
         +'<div style="font-size:13px;font-weight:600;margin-top:8px;">'+esc(r.name)+'</div>'
         +'<div style="font-size:12px;color:#6B7280;margin-top:1px;">'+esc(r.reason)+'</div>'
         +(r.audit?'<div class="mono" style="font-size:10.5px;color:'+(r.isRelease?'#059669':'#BE123C')+';margin-top:4px;">'+(r.isRelease?'✓':'✕')+' Auditor: '+esc(r.audit)+(r.isRelease&&r.support>0?' ('+r.support.toFixed(2)+')':'')+'</div>':'')
-        +(r.claim?'<div title="'+esc(r.claim)+'" style="font-size:10.5px;color:#9CA3AF;font-style:italic;margin-top:4px;border-left:2px solid #ECECEE;padding-left:8px;">cited for: “'+esc(r.claim.length>90?r.claim.slice(0,90)+'…':r.claim)+'”</div>':'')
-        +'<div class="mono" style="display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#9CA3AF;margin-top:7px;"><span>'+hashHtml+'</span><span>'+esc(r.time)+'</span></div>'
+        +(r.claim?'<div title="'+esc(r.claim)+'" style="font-size:10.5px;color:#6B7280;font-style:italic;margin-top:4px;border-left:2px solid #ECECEE;padding-left:8px;">cited for: “'+esc(r.claim.length>90?r.claim.slice(0,90)+'…':r.claim)+'”</div>':'')
+        +'<div class="mono" style="display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#6B7280;margin-top:7px;"><span>'+hashHtml+'</span><span>'+esc(r.time)+'</span></div>'
         +'</div>';
     }).join('');
   }
@@ -865,11 +867,11 @@
     }).join('');
     var sig = s.signature
       ? '<span class="mono" style="font-size:10.5px;color:#047857;" title="ECDSA over the canonical receipt — verify with npm run verify-receipt">✓ signed '+esc(String(s.signer||'').slice(0,10))+'…</span>'
-      : '<span class="mono" style="font-size:10.5px;color:#9CA3AF;">unsigned (keyless demo)</span>';
+      : '<span class="mono" style="font-size:10.5px;color:#6B7280;">unsigned (keyless demo)</span>';
     mount.innerHTML =
       '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;font-size:11px;color:#6B7280;">'
         +'<span>'+(t.releasedCount||0)+' paid · '+(t.refusedCount||0)+' refused · '+usd(t.released||0)+' settled</span>'+sig+'</div>'
-      +'<div class="mono" style="font-size:9.5px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;margin:11px 0 1px;">on-chain footprint · pay · ERC-8004 reputation · validation</div>'
+      +'<div class="mono" style="font-size:9.5px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin:11px 0 1px;">on-chain footprint · pay · ERC-8004 reputation · validation</div>'
       +rows;
     actions.innerHTML='<button id="dl-receipt" type="button" style="font-size:10.5px;font-weight:600;color:#0A0A0A;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:7px;padding:3px 10px;cursor:pointer;">Download</button>';
     var btn=document.getElementById('dl-receipt');
@@ -883,8 +885,8 @@
   function openProfile(id){
     var ov=document.getElementById('rep-overlay'), panel=document.getElementById('rep-panel');
     if(!ov||!panel) return;
-    var closeBtn='<button id="rep-close" type="button" aria-label="Close" style="font-size:20px;line-height:1;color:#9CA3AF;background:none;border:0;cursor:pointer;flex:none;">×</button>';
-    panel.innerHTML='<div style="font-size:13px;color:#9CA3AF;">Loading on-chain reputation…</div>';
+    var closeBtn='<button id="rep-close" type="button" aria-label="Close" style="font-size:20px;line-height:1;color:#6B7280;background:none;border:0;cursor:pointer;flex:none;">×</button>';
+    panel.innerHTML='<div style="font-size:13px;color:#6B7280;">Loading on-chain reputation…</div>';
     ov.style.display='block';
     fetch('/api/reputation/'+encodeURIComponent(id)).then(function(r){ if(!r.ok) throw new Error('not found'); return r.json(); }).then(function(j){
       var reg=j.registryExplorer?'<a href="'+esc(j.registryExplorer)+'" target="_blank" rel="noopener" class="mono" style="color:#0A0A0A;text-decoration:underline;text-underline-offset:2px;font-size:11px;word-break:break-all;">'+esc(j.reputationRegistry||'')+'</a>':'';
@@ -893,8 +895,8 @@
         var fb=j.onchain.feedback;
         var rows=fb.map(function(e){
           var pos=Number(e.score)>=0, col=pos?'#047857':'#BE123C';
-          var ln=(e.explorerUrl&&e.explorerUrl.indexOf('https://')===0)?'<a href="'+esc(e.explorerUrl)+'" target="_blank" rel="noopener" style="color:#9CA3AF;text-decoration:underline;">tx ↗</a>':'';
-          return '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F4F4F5;padding:7px 0;"><span class="mono" style="color:'+col+';font-size:12px;font-weight:600;">'+(pos?'▲ +':'▼ ')+esc(e.score)+'</span><span class="mono" style="font-size:10.5px;color:#9CA3AF;">'+(e.block?'block '+esc(e.block)+' · ':'')+ln+'</span></div>';
+          var ln=(e.explorerUrl&&e.explorerUrl.indexOf('https://')===0)?'<a href="'+esc(e.explorerUrl)+'" target="_blank" rel="noopener" style="color:#6B7280;text-decoration:underline;">tx ↗</a>':'';
+          return '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F4F4F5;padding:7px 0;"><span class="mono" style="color:'+col+';font-size:12px;font-weight:600;">'+(pos?'▲ +':'▼ ')+esc(e.score)+'</span><span class="mono" style="font-size:10.5px;color:#6B7280;">'+(e.block?'block '+esc(e.block)+' · ':'')+ln+'</span></div>';
         }).join('');
         body='<div style="font-size:11px;color:#6B7280;line-height:1.5;">'+fb.length+' on-chain feedback event'+(fb.length>1?'s':'')+' — recomputed live from Arc, replayable by anyone (no Merit server).</div>'+rows;
       } else {
@@ -902,9 +904,9 @@
           +'<div class="mono" style="background:#F4F4F5;border:1px solid #E4E4E7;border-radius:8px;padding:9px 11px;font-size:11.5px;margin-top:9px;color:#0A0A0A;word-break:break-all;">npm run recompute -- '+esc(j.agentId||'&lt;agentId&gt;')+'</div>';
       }
       panel.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">'
-        +'<div><div style="font-size:17px;font-weight:700;">'+esc(j.name||id)+'</div><div class="mono" style="font-size:11px;color:#9CA3AF;margin-top:2px;">'+esc(j.kind||'creator')+(j.role?' · '+esc(j.role):'')+(j.agentId?' · agent '+esc(j.agentId):'')+'</div></div>'+closeBtn+'</div>'
+        +'<div><div style="font-size:17px;font-weight:700;">'+esc(j.name||id)+'</div><div class="mono" style="font-size:11px;color:#6B7280;margin-top:2px;">'+esc(j.kind||'creator')+(j.role?' · '+esc(j.role):'')+(j.agentId?' · agent '+esc(j.agentId):'')+'</div></div>'+closeBtn+'</div>'
         +'<div style="display:flex;align-items:baseline;gap:8px;margin:12px 0 16px;"><span class="mono" style="font-size:30px;font-weight:700;">'+esc(j.merit!=null?j.merit:'—')+'</span><span style="font-size:12px;color:#6B7280;">merit</span></div>'
-        +'<div style="font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#9CA3AF;margin-bottom:3px;">ERC-8004 ReputationRegistry</div>'+reg
+        +'<div style="font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;margin-bottom:3px;">ERC-8004 ReputationRegistry</div>'+reg
         +'<div style="margin-top:16px;">'+body+'</div>';
       var cb=document.getElementById('rep-close'); if(cb){ cb.onclick=closeProfile; cb.focus(); }
     }).catch(function(){
@@ -915,12 +917,12 @@
 
   function closeCompare(){ var ov=document.getElementById('compare-overlay'); if(ov) ov.style.display='none'; }
   function compareCol(s,label,verify){
-    if(!s) return '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;margin-bottom:8px;">'+label+'</div><div style="font-size:12px;color:#9CA3AF;">run did not complete</div></div>';
+    if(!s) return '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;margin-bottom:8px;">'+label+'</div><div style="font-size:12px;color:#6B7280;">run did not complete</div></div>';
     var t=s.totals||{};
     var row=function(k,v){ return '<div style="display:flex;justify-content:space-between;gap:8px;border-top:1px solid #F4F4F5;padding:6px 0;font-size:12px;"><span style="color:#6B7280;">'+k+'</span><span class="mono" style="font-weight:600;">'+v+'</span></div>'; };
     return '<div style="flex:1;min-width:0;">'
       +'<div style="font-size:13px;font-weight:700;">'+label+'</div>'
-      +'<div style="font-size:10.5px;color:#9CA3AF;margin:2px 0 8px;">'+verify+'</div>'
+      +'<div style="font-size:10.5px;color:#6B7280;margin:2px 0 8px;">'+verify+'</div>'
       +row('Sources paid',(t.releasedCount||0)+' / '+((t.releasedCount||0)+(t.refusedCount||0)))
       +row('Released',usd(t.released||0))
       +row('Refused',(t.refusedCount||0))
@@ -931,7 +933,7 @@
   function renderCompare(pro,bud){
     var ov=document.getElementById('compare-overlay'), panel=document.getElementById('compare-panel');
     if(!ov||!panel) return;
-    panel.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;"><div><div style="font-size:16px;font-weight:700;">Crew comparison</div><div style="font-size:11px;color:#9CA3AF;margin-top:2px;">same question · same budget · the two-tier verification market</div></div><button id="compare-close" type="button" aria-label="Close" style="font-size:20px;line-height:1;color:#9CA3AF;background:none;border:0;cursor:pointer;flex:none;">×</button></div>'
+    panel.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;"><div><div style="font-size:16px;font-weight:700;">Crew comparison</div><div style="font-size:11px;color:#6B7280;margin-top:2px;">same question · same budget · the two-tier verification market</div></div><button id="compare-close" type="button" aria-label="Close" style="font-size:20px;line-height:1;color:#6B7280;background:none;border:0;cursor:pointer;flex:none;">×</button></div>'
       +'<div style="display:flex;gap:20px;margin-top:16px;">'+compareCol(pro,'Pro crew','LLM-judge proof-of-citation')+compareCol(bud,'Economy crew','similarity-only verify')+'</div>'
       +'<div style="font-size:11px;color:#6B7280;line-height:1.55;margin-top:16px;border-top:1px solid #ECECEE;padding-top:12px;">The pro crew runs the adversarial Auditor — it catches cited-but-unsupported sources a similarity check would wrongly pay. The economy crew is cheaper but verifies on similarity alone. You buy exactly the rigor you pay for.</div>';
     ov.style.display='flex';
@@ -1028,7 +1030,7 @@
     var stepHtml = '';
     if(state.drawerStep===0){
       stepHtml = '<div>'
-        +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;margin-bottom:12px;">Step 1 · Wallet</div>'
+        +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">Step 1 · Wallet</div>'
         +'<div style="border:1px solid #ECECEE;border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04);">'
         +'<div style="font-size:19px;font-weight:700;margin-bottom:9px;">Connect a USDC wallet</div>'
         +'<p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0 0 18px;">Where agents send your earnings on Arc. No gas, no setup — a smart wallet is created instantly.</p>'
@@ -1037,16 +1039,16 @@
     } else if(state.drawerStep===1){
       stepHtml = '<div>'
         +'<div class="mono" style="border:1px solid #A7F3D0;background:#ECFDF5;border-radius:10px;padding:11px 12px;margin-bottom:18px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#047857;"><span>●</span>Wallet connected · '+esc(state.walletAddr)+'</div>'
-        +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;margin-bottom:12px;">Step 2 · Register your source</div>'
+        +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">Step 2 · Register your source</div>'
         +'<label style="display:block;font-size:13px;font-weight:600;color:#52525B;margin-bottom:6px;">Creator / publication name</label>'
         +'<input id="dw-name" aria-label="Creator or source name" value="'+esc(state.onbName)+'" placeholder="e.g. Acme Research" style="width:100%;border:1px solid #E4E4E7;border-radius:9px;padding:12px;font-size:15px;background:#fff;outline:none;margin-bottom:14px;" />'
         +'<label style="display:block;font-size:13px;font-weight:600;color:#52525B;margin-bottom:6px;">Content source URL</label>'
         +'<input id="dw-url" aria-label="Source URL" value="'+esc(state.onbUrl)+'" placeholder="https://…" class="mono" style="width:100%;border:1px solid #E4E4E7;border-radius:9px;padding:12px;font-size:14px;background:#fff;outline:none;margin-bottom:14px;" />'
-        +'<label style="display:block;font-size:13px;font-weight:600;color:#52525B;margin-bottom:6px;">What you publish <span style="color:#9CA3AF;font-weight:500;">— a sample the agent can cite (needed to get paid)</span></label>'
+        +'<label style="display:block;font-size:13px;font-weight:600;color:#52525B;margin-bottom:6px;">What you publish <span style="color:#6B7280;font-weight:500;">— a sample the agent can cite (needed to get paid)</span></label>'
         +'<textarea id="dw-content" aria-label="Content sample the agent can cite" placeholder="Paste a paragraph of your data, research, or writing the agent can read and cite…" style="width:100%;border:1px solid #E4E4E7;border-radius:9px;padding:12px;font-size:13px;line-height:1.5;background:#fff;outline:none;margin-bottom:14px;min-height:72px;resize:vertical;font-family:inherit;box-sizing:border-box;">'+esc(state.onbContent||'')+'</textarea>'
         +'<label style="display:block;font-size:13px;font-weight:600;color:#52525B;margin-bottom:6px;">Price per use (USDC)</label>'
         +'<div style="display:flex;align-items:stretch;border:1px solid #E4E4E7;border-radius:9px;overflow:hidden;margin-bottom:14px;"><span class="mono" style="padding:0 12px;font-size:14px;background:#FAFAFA;color:#52525B;display:flex;align-items:center;border-right:1px solid #E4E4E7;">$</span><input id="dw-price" aria-label="Price per use in USDC" value="'+esc(state.onbPrice)+'" class="mono" style="flex:1;border:0;background:transparent;padding:12px;font-size:14px;outline:none;" /></div>'
-        +'<label style="display:block;font-size:13px;font-weight:600;color:#52525B;margin-bottom:6px;">Payout wallet <span style="color:#9CA3AF;font-weight:500;">— your address, or we create one</span></label>'
+        +'<label style="display:block;font-size:13px;font-weight:600;color:#52525B;margin-bottom:6px;">Payout wallet <span style="color:#6B7280;font-weight:500;">— your address, or we create one</span></label>'
         +'<input id="dw-wallet" aria-label="Payout wallet address" value="'+esc(state.onbWalletAddr||'')+'" placeholder="0x… (blank = auto-create)" class="mono" style="width:100%;border:1px solid #E4E4E7;border-radius:9px;padding:12px;font-size:13px;background:#fff;outline:none;margin-bottom:22px;" />'
         +'<button id="dw-finish" data-card style="cursor:pointer;width:100%;border:0;background:#0A0A0A;color:#fff;border-radius:10px;padding:13px;font-size:15px;font-weight:600;box-shadow:0 4px 12px rgba(10,10,10,.28);">Go live →</button>'
         +'</div>';
@@ -1057,11 +1059,11 @@
         +'<div style="font-size:24px;font-weight:700;letter-spacing:-.02em;color:#065F46;">You\'re live</div>'
         +'<div style="font-size:14px;line-height:1.5;color:#047857;margin-top:7px;max-width:26ch;">'+(state.onbEarnable ? 'Agents can now discover, cite, and pay you automatically.' : 'You\'re registered. Add a content sample so the agent can cite and pay you.')+'</div></div>'
         +'<div style="border:1px solid #ECECEE;border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04);">'
-        +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;margin-bottom:14px;">Your merit profile</div>'
+        +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:14px;">Your merit profile</div>'
         +'<div style="display:flex;align-items:center;gap:13px;">'
         +'<div class="mono" style="width:46px;height:46px;flex:none;background:#0A0A0A;color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;">'+esc(state.onbInitials)+'</div>'
-        +'<div style="flex:1 1 auto;min-width:0;"><div style="font-size:17px;font-weight:700;line-height:1.1;">'+esc(state.onbNameShow)+'</div><div class="mono" style="font-size:12px;color:#9CA3AF;margin-top:4px;">$'+esc(state.onbPrice||'0')+'/use · '+esc(state.walletAddr)+'</div></div>'
-        +'<div style="text-align:right;flex:none;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#9CA3AF;">Merit</div><div class="mono" style="font-size:26px;font-weight:600;margin-top:3px;">50</div></div>'
+        +'<div style="flex:1 1 auto;min-width:0;"><div style="font-size:17px;font-weight:700;line-height:1.1;">'+esc(state.onbNameShow)+'</div><div class="mono" style="font-size:12px;color:#6B7280;margin-top:4px;">$'+esc(state.onbPrice||'0')+'/use · '+esc(state.walletAddr)+'</div></div>'
+        +'<div style="text-align:right;flex:none;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;">Merit</div><div class="mono" style="font-size:26px;font-weight:600;margin-top:3px;">50</div></div>'
         +'</div>'
         +'<div style="margin-top:15px;display:inline-flex;align-items:center;gap:6px;border:1px solid #A7F3D0;background:#ECFDF5;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;color:#047857;">● Earnable now</div>'
         +'</div>'
