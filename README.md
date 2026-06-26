@@ -1,26 +1,57 @@
-# Merit — a proof-of-work economy for AI agents, on Arc
+<div align="center">
 
-Give Merit a question + a USDC budget and a **lead agent** runs an autonomous research
-firm. It **hires specialist agents** — search → write → verify — and pays each in sub-cent
-USDC **only for work that verifies**, then pays the **creators** whose sources it actually
-cited (proof-of-citation), refusing (refunding) everything that doesn't check out. Every
-payment is real, settles on Arc, is gated on proof-of-work, and writes **portable on-chain
-reputation** (ERC-8004) for *both* the agents and the creators. Anyone can pay; only Merit
-decides who *earned* it.
+<img src="public/favicon.svg" width="76" height="76" alt="Merit" />
 
-![Merit live demo: the agent decides who gets paid — releasing sub-cent USDC to cited sources (Chainletter +$0.054) and refusing the rest (CryptoBuzz −$0.030), a signed receipt for each decision](docs/demo.png)
+# Merit
 
-It's **two-sided**: **agent → agent** (the lead hiring its crew) and **agent → creator**
-(paying the cited sources) — a settlement + trust layer for an agent economy, not just an app.
+### Agents pay creators on merit.
 
-Built on **Arc testnet** with **Circle Nanopayments** (x402 + Gateway batching), real LLM
-reasoning + an **adversarial proof-of-citation judge** (the Auditor rules whether each source
-actually backs the claim citing it), and **all three ERC-8004 registries** (identity, reputation,
-and validation — the Auditor's verdict written on-chain). Frontend:
-the hand-authored design in `public/index.html` (served at `/`). Backend: Next.js API routes
-under `app/api/*`; the lead's loop streams over SSE.
+**A proof-of-work economy for AI agents, on Arc.** A lead agent escrows USDC, verifies every
+citation, and releases sub-cent payment **only for work that verifies** — refunding the rest —
+with a **signed, self-proving receipt** for every decision.
 
-## At a glance
+<p>
+<img src="https://img.shields.io/badge/Arc-testnet%205042002-0A0A0A?style=flat-square" alt="Arc" />
+<img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs" alt="Next.js" />
+<img src="https://img.shields.io/badge/Solidity-0.8.24-363636?style=flat-square&logo=solidity" alt="Solidity" />
+<img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+<img src="https://img.shields.io/badge/viem-2-2C2C2C?style=flat-square" alt="viem" />
+<img src="https://img.shields.io/badge/tests-277%20passing-3FB950?style=flat-square" alt="tests" />
+<img src="https://img.shields.io/badge/proof--of--citation-100%25%20P%2FR-3FB950?style=flat-square" alt="proof-of-citation" />
+<img src="https://img.shields.io/badge/license-Apache--2.0-3178C6?style=flat-square" alt="license" />
+</p>
+
+<br />
+
+<img src="docs/demo.png" width="840" alt="Merit live demo — the agent releases sub-cent USDC to cited sources (Chainletter +$0.054) and refuses the rest (CryptoBuzz −$0.030), with a signed receipt for each decision" />
+
+<br /><br />
+
+**[The moat ↓](#-the-moat--proof-of-citation-gates-settlement-on-chain) · [How it works ↓](#-at-a-glance) · [Quickstart ↓](#-run-it) · [Verify everything ↓](#-dont-trust--verify) · [Deployed contracts ↓](#deployed-on-arc-testnet-chain-5042002)**
+
+</div>
+
+---
+
+> **The one-liner:** anyone can pay — only Merit decides who *earned* it. Settlement is gated on
+> whether the cited **work is correct**, the one tier the agent economy leaves unguarded.
+
+## ⚡ What it is
+
+Give Merit a question + a USDC budget and a **lead agent** runs an autonomous research firm. It
+**hires specialist agents** — *search → write → verify* — and pays each in sub-cent USDC **only for
+work that verifies**, then pays the **creators** whose sources it actually cited
+(**proof-of-citation**), refunding everything that doesn't check out. Every payment is real, settles
+on **Arc**, and writes **portable on-chain reputation** (ERC-8004) for *both* the agents and the
+creators.
+
+It's **two-sided** — *agent → agent* (the lead hiring its crew) and *agent → creator* (paying the
+cited sources) — a settlement + trust layer for an agent economy, not just an app. Built on **Arc
+testnet** with **Circle Nanopayments** (x402 + Gateway batching), real LLM reasoning + an
+**adversarial proof-of-citation judge**, and **all three ERC-8004 registries** (identity, reputation,
+validation).
+
+## 🔭 At a glance
 
 ```text
    question + USDC budget
@@ -40,130 +71,153 @@ under `app/api/*`; the lead's loop streams over SSE.
    real USDC on Arc  ·  ERC-8004 reputation (agents + creators)  ·  signed summary receipt
 ```
 
-Two markets, one trust layer: the lead **hires + pays its crew** (agent → agent) *and* **pays the
-creators** it cited (agent → creator) — every payment gated on proof-of-work. Anyone can pay; only
-Merit decides who *earned* it.
-
-## Live on Arc testnet — the moat, connected on-chain
+## 🛡️ The moat — proof-of-citation gates settlement, on-chain
 
 Merit's settlement is a native **ERC-8183 job** whose escrow release is gated by an **`IACPHook`**
-that embodies proof-of-citation — so money moves *only* if the cited work verifies. This isn't
-asserted; it's deployed and proven:
+that embodies proof-of-citation — so money moves *only* if the cited work verifies. Not asserted —
+**deployed and proven**:
 
-- **7 contracts live on Arc testnet** (chain 5042002) — `MeritJob`, `MeritVerificationHook`, Escrow,
-  Stake, Insurance, PredictionMarket, AttestationVerifier. Addresses + explorer links in
-  [`contracts/deployments.json`](contracts/deployments.json).
-- **A verified run RELEASES the escrow; a failed citation REVERTS `complete()` and refunds** — proven
-  on-chain: `MeritJob` job 1 = `Completed` (citation verified), job 2 = `Rejected` (citation failed,
-  the hook blocked the release). The release is bound to `keccak256` of the signed receipt — anyone
-  can verify via `jobs(id)` + `verdictOf(host, id)`. Enable with `MERIT_HOOK_ONCHAIN=1`.
-- **The evaluator is measured, not asserted** — a forkable, false-negative-gated benchmark scoring
-  **100%** precision/recall on a balanced gold set. See [`BENCHMARK.md`](BENCHMARK.md) (`npm run judge-eval`).
+- ✅ **A verified run RELEASES the escrow; a failed citation REVERTS `complete()` and refunds.** Proven
+  on-chain: `MeritJob` job 1 = `Completed` (citation verified), job 2 = `Rejected` (citation failed —
+  the hook blocked the release). The release is bound to `keccak256` of the signed receipt; anyone can
+  verify via `jobs(id)` + `verdictOf(host, id)`. (`MERIT_HOOK_ONCHAIN=1`)
+- 📊 **The evaluator is *measured*, not asserted** — a forkable, false-negative-gated benchmark
+  scoring **100% precision / recall** on a balanced gold set. See
+  [`BENCHMARK.md`](BENCHMARK.md) · `npm run judge-eval`.
 
-Nobody else in the Arc / agent-economy ecosystem gates settlement on whether the *work* is correct —
-they gate on identity, a reputation score, or attested execution. **Proof-of-citation as the
-settlement gate is Merit's unoccupied moat.**
+> Nobody else in the Arc / agent-economy ecosystem gates settlement on whether the **work is correct**
+> — they gate on identity, a reputation score, or attested execution. **Proof-of-citation as the
+> settlement gate is Merit's unoccupied moat.**
 
-## The agent-labor market (the leap)
+### Deployed on Arc testnet (chain `5042002`)
+
+| Contract | Role | Address |
+|---|---|---|
+| **MeritJob** | ERC-8183 job + escrow | [`0xdF81…6A05`](https://testnet.arcscan.app/address/0xdF81dCCFf8c8ea9e1fB6B5b2B790fAfF1Ebe6A05) |
+| **MeritVerificationHook** | proof-of-citation settlement gate | [`0xA30f…9ab1`](https://testnet.arcscan.app/address/0xA30f58f60725a978Ac09034F4FDd32efc29e9ab1) |
+| Escrow | conditional release/refund | [`0xbCaE…03Cd8`](https://testnet.arcscan.app/address/0xbCaEA25F7D3E64B337BeB4342945544970B03Cd8) |
+| Stake | source staking + slashing | [`0xFb10…ED6c`](https://testnet.arcscan.app/address/0xFb1090d03f0915cBd3930231Cf0A388B7a07ED6c) |
+| Insurance | reputation-underwritten guarantees | [`0xB90F…58A2`](https://testnet.arcscan.app/address/0xB90Fd2a103750a4a9a0Bb368B9bADA0a786A58A2) |
+| PredictionMarket | crowd-confidence on contested citations | [`0xb67C…EE6e`](https://testnet.arcscan.app/address/0xb67C595d1F13E01fFF1a5690B938A249fE1eEE6e) |
+| AttestationVerifier | on-chain signed-verdict check | [`0xD632…a297`](https://testnet.arcscan.app/address/0xD632eabAb9431aFa724522a196CEf7518016a297) |
+
+Full record in [`contracts/deployments.json`](contracts/deployments.json).
+
+## 🚀 Run it
+
+```bash
+npm install
+npm run start          # production server (recommended); or: npm run dev
+#  →  http://localhost:3000
+```
+
+With `STUB=1` the whole loop runs **offline** (templated answer, simulated hashes, file-backed
+registries) — zero deps, good for building or recording. Open `/`, set a question + budget, hit
+**Run agent**, and watch the lead **hire + pay its crew**, settle to creators, refuse the rest, and
+write reputation — live on screen. Every run ends in a **signed, verifiable receipt** with a
+Download button; **click any creator** for its on-chain reputation, or hit **Compare crews** to see
+the pro-vs-economy verification market side by side.
+
+<details>
+<summary><b>Go live on Arc testnet</b> — real USDC settlement</summary>
+
+1. **Fund** at <https://faucet.circle.com> (Arc-testnet USDC):
+   - `BUYER_*` — the lead/buyer wallet (Gateway deposit + gas + pays specialists, creators, and
+     ERC-8004 feedback). Specialists + creators are receive-only.
+   - `OPERATOR_*` — identity registrar; a little native USDC for mint gas (only if `REPUTATION_ONCHAIN=1`).
+2. **Set keys** in `.env.local`:
+   - `LLM_API_KEY` — NVIDIA `nvapi-…` or OpenAI `sk-…` (auto-detected), with
+     `LLM_BASE_URL` / `LLM_MODEL` / `EMBED_MODEL` / `EMBED_INPUT_TYPE`.
+   - `STUB=0` to settle real USDC; `REPUTATION_ONCHAIN=1` to write ERC-8004 for real.
+   - Optional Supabase (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`) — durable receipts mirror.
+3. `npm run build && npm run start`.
+
+> ⚠️ Next does **not** override env vars already set in your shell. Unset a stale
+> `OPENAI_API_KEY` / `LLM_API_KEY` so `.env.local` wins.
+
+</details>
+
+## 🤝 The agent-labor market
 
 The lead agent doesn't do the work itself — it **hires a crew** from an open pool of specialist
 agents and pays them per job, exactly like it pays creators:
 
-- **Search / Write / Verify** specialists each expose a wallet, a price, a service, and a
-  **capability** (shown in `/api/agents`). The **write** and **verify** tiers genuinely differ:
-  the pro **Scribe** writes thoroughly (cites every supported claim) and the pro **Auditor** runs
-  the adversarial LLM judge; the budget **Quill** writes terser (cites fewer sources, so fewer
-  creators tend to earn) and the budget **Tally** checks by **similarity only** — with no judge it
-  can't catch a hollow citation the Auditor would. Cheaper labor, structurally weaker verification.
-- The lead **hires the highest-reputation** specialist per role — reputation *gates* the market;
-  a cheaper, unproven rival has to earn its merit before it wins work. A run can opt into the
-  **economy crew** with `{"tier":"budget"}` to `/api/run` (cheaper labor, terser writing,
-  similarity-only verification); the default hires the proven pros. `npm run compare-crews` shows
-  the two side by side.
-- Specialists **deliver first, are graded on verified output, then paid (release) or refused** —
-  the same escrow → verify → release Merit uses for creators (you don't pay for bad work).
-- Each accrues **on-chain ERC-8004 reputation** that compounds. The "Agent crew" panel shows it
-  live, and **labor + creator payouts always stay within your budget** (a single whole-run cap).
+- **Search / Write / Verify** specialists each expose a wallet, a price, and a **capability**. The
+  tiers genuinely differ: the pro **Scribe** cites every supported claim and the pro **Auditor**
+  runs the adversarial LLM judge; the budget **Quill** writes terser and the budget **Tally** checks
+  by **similarity only** — no judge, so it can't catch a hollow citation. *Cheaper labor,
+  structurally weaker verification.*
+- The lead **hires the highest-reputation** specialist per role — reputation *gates* the market. Opt
+  into the **economy crew** with `{"tier":"budget"}`; `npm run compare-crews` shows them side by side.
+- Specialists **deliver first, are graded on verified output, then paid or refused** — the same
+  escrow → verify → release Merit uses for creators. Each accrues **on-chain ERC-8004 reputation**.
 
-Each specialist is a **standalone x402 service**: its pay endpoint returns a real
-`payment-required` challenge (payTo = the specialist's own wallet, priced in USDC on Arc), so any
-external agent — not only this lead — can discover and pay it directly. The market is open, not
-internal plumbing.
+Each specialist is a **standalone x402 service** (its pay endpoint returns a real `payment-required`
+challenge, payTo = its own wallet), so any external agent — not just this lead — can discover and pay
+it. The market is open, not internal plumbing.
 
-**Why Arc:** one research job is dozens of sub-cent agent-to-agent payments. On card rails the
-fees exceed the labor; on a gas-metered chain, gas kills the loop. Arc's gasless, sub-cent,
-sub-second USDC settlement is what makes agent labor economically viable at all.
+> **Why Arc:** one research job is dozens of sub-cent agent-to-agent payments. On card rails the fees
+> exceed the labor; on a gas-metered chain, gas kills the loop. Arc's gasless, sub-cent, sub-second
+> USDC settlement is what makes agent labor economically viable at all.
 
-## Two source modes
+## 🌐 Two source modes
+
 - **Curated** (default) — a stable seven-source pool for a reliable demo (six publishers + a
-  cited-but-unsupported "trap" only the Auditor catches — see it refused in every run).
+  cited-but-unsupported **trap** only the Auditor catches — refused in every run).
 - **Live web** — the agent discovers **real publishers** live from RSS (CoinDesk, Cointelegraph,
   Decrypt, PYMNTS, The Block, CryptoSlate, Bitcoin Magazine), reads their content, and pays the ones
-  it cites (per-source wallet); each
-  publisher's reputation accrues **per domain**. A real creator can onboard with their own wallet
-  + a content sample to be paid directly. Toggle **Sources → Live web**, or send
-  `{"discover":true}` to `/api/run`.
+  it cites; reputation accrues **per domain**. Real creators can onboard with their own wallet + a
+  content sample. Toggle **Sources → Live web**, or send `{"discover":true}` to `/api/run`.
 
-## Run it
-```bash
-npm install
-npm run start          # production server (recommended); or: npm run dev
-# → http://localhost:3000
-```
-With `STUB=1` the whole loop runs **offline** (templated answer, simulated hashes, file-backed
-registries) — good for building/recording with zero deps. Open `/`, set a question + budget, hit
-**Run agent**, and watch the lead **hire + pay its crew**, then settle to creators, refuse the
-rest, and write reputation — all on screen. The run ends in a **signed, verifiable receipt**
-(every verdict + amount + all three registry txs, with a Download button); **click any creator**
-for its on-chain reputation, or hit **Compare crews** to see the pro-vs-economy verification
-market side by side.
+## 🔍 Don't trust — verify
 
-## Go live on Arc testnet
-1. **Fund** at https://faucet.circle.com (Arc-testnet USDC):
-   - `BUYER_*` — the lead/buyer wallet (Gateway deposit + gas + pays specialists, creators, and
-     ERC-8004 feedback). Specialists + creators are receive-only (no funding needed).
-   - `OPERATOR_*` — identity registrar; a little native USDC for mint gas (only if `REPUTATION_ONCHAIN=1`).
-2. **Set keys** in `.env.local`:
-   - `LLM_API_KEY` — NVIDIA `nvapi-…` or OpenAI `sk-…` (auto-detected), with
-     `LLM_BASE_URL` / `LLM_MODEL` / `EMBED_MODEL` / `EMBED_INPUT_TYPE` for the provider.
-   - `STUB=0` to settle real USDC; `REPUTATION_ONCHAIN=1` to write ERC-8004 for real.
-   - Optional Supabase (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`) — durable receipts mirror;
-     the app runs without it.
-3. `npm run build && npm run start`.
+Every claim Merit makes is independently recomputable from Arc, with **no Merit server**:
 
-> ⚠️ Next does **not** override env vars already set in your shell. Unset a stale
-> `OPENAI_API_KEY`/`LLM_API_KEY` so `.env.local` wins.
+| Command | Proves |
+|---|---|
+| `npm run verify-receipt -- <receipt.json> [buyer]` | the **signed receipt** offline — recovers the signer; any altered verdict/amount breaks the signature |
+| `npm run recompute -- <agentId>` | an agent's **ERC-8004 reputation** straight from Arc (raw `eth_getLogs`), no server, no cache |
+| `npm run verify-settlement -- <wallet>` | the **money moved** — sums the USDC Transfer logs a payout wallet actually received |
+| `npm run verify-all -- <receipt.json> [buyer]` | the **whole receipt** — signature + every paid/refused verdict cross-checked against the ValidationRegistry. The receipt *cannot lie* |
+| `npm run judge-eval` | the **moat, measured** — 16-pair gold set through the live Auditor → 100% P/R/F1 (a wrongful pay fails the run) |
+| `npm run prove -- <receipt.json>` | the **whole run** — facts from chain **plus** judgment re-audited live |
 
-## Scripts
+<details>
+<summary><b>All scripts</b> (25 — the full toolbox)</summary>
+
 | command | what it does |
 |---|---|
-| `npm test` | 160 unit tests (vitest) over the pure logic — the agency decision table, **the crew grade + whole-run budget-guard functions** (`gradeSpecialist`/`withinBudget`), **the run-receipt settlement-integrity rule** (`summarizeRelease` — an intended release whose settlement failed reports refunded, never a phantom paid), proof-of-citation matching (citation tags + the `citingSentence` claim extractor + the `parseJudgeVerdict` Auditor-reply parser + the batched `verifyCitations` scorer + **the pure `decideCitation` payment-decision logic** — embedding *and* lexical thresholds, the judge override, the injection guard, **and the deterministic numeric verifier** (`fabricatedFigures` — a $/% figure the source contradicts is refused with no LLM), all tested without a live LLM), RSS/Atom parsing, registry + per-publisher-identity persistence, **the specialist hiring/grading/merit logic** (incl. the tier preference), the shared run-context lifecycle + eviction, the run rate-limiter, the LLM circuit-breaker self-heal, the off-topic guard (`questionAddressedBy` — pays nothing when no source answers the question), provider detection, and the no-secret-leak views |
-| `npm run smoke` | end-to-end smoke test (54 checks: sources, full run, ledger consistency, the **summary receipt**, **no private-key leak in the run stream**, the agent-labor market — crew hired/paid + labor-within-budget + specialists are real x402 services, a zero-budget pays-nothing invariant, an **off-topic question pays no creators**, onboarding, on-chain reputation for creators **and** specialists, **the MCP server handshake**, **and `verify-all` running cleanly on the run's receipt**, **and the `leaderboard` ranking the two-sided market**, **and the `challenge` re-audit endpoint validating input + degrading gracefully without an LLM**) |
-| `npm run audit-demo` | proves the moat: feeds the Auditor's adversarial judge a genuine citation, two contradictory ones, and a **prompt-injection attempt**, and shows it pay the real citation while **refusing** the contradictions *and* the injection — proof-of-citation that's robust to manipulation, not a similarity score |
+| `npm test` | 277 unit tests (vitest) over the pure logic — the agency decision table, crew grade + whole-run budget-guard (`gradeSpecialist`/`withinBudget`), the run-receipt settlement-integrity rule (`summarizeRelease`), proof-of-citation matching (`citingSentence`, `parseJudgeVerdict`, `verifyCitations`, the pure `decideCitation` payment logic + the deterministic numeric verifier `fabricatedFigures`), RSS/Atom parsing, registry persistence, specialist hiring/grading/merit, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
+| `npm run smoke` | end-to-end (54 checks): sources, full run, ledger consistency, the summary receipt, no private-key leak, the agent-labor market, a zero-budget pays-nothing invariant, off-topic pays no creators, onboarding, on-chain reputation, the MCP handshake, `verify-all`, `leaderboard`, the `challenge` re-audit |
+| `npm run prove-moat` | one command: a verified run **releases** the ERC-8183 escrow; an off-topic run **reverts** `complete()` via the hook, then refunds — the moat enforced on-chain |
+| `npm run audit-demo` | feeds the Auditor a genuine citation, two contradictions, and a **prompt-injection** — pays the real one, refuses the rest |
 | `npm run prove-reputation` | mints an ERC-8004 identity + writes feedback on Arc, prints arcscan links |
-| `npm run reputation -- [id]` | print an agent's **portable track record** — its full on-chain feedback timeline recomputed live from Arc (each release/refuse event with its own tx link), proving reputation is replayable from chain by anyone, not asserted (no id → the top specialist) |
-| `npm run recompute -- <agentId>` | **server-free proof** — reconstruct an agent's ERC-8004 reputation straight from Arc with NO Merit server and NO cache (raw `eth_getLogs` + int128 decode). A judge runs this and gets the exact score Merit shows: "recomputable from chain by anyone" made literally runnable |
-| `npm run leaderboard` | **the reputation economy at a glance** — ranks the whole two-sided market (specialists *and* creators) by their ERC-8004 reputation on Arc, scoped to Merit's roster, on-chain score beside live local merit. Surfaces the moat as portable reputation: verified agents earn **+100**, the cited-but-contradicted trap and uncited sources **−20** — refusal becomes negative reputation that travels. Every row re-derivable with `recompute` |
-| `npm run verify-validation -- <validationTx>` | **verify the Auditor's verdict on-chain** — from a receipt's validation tx, decode the requestHash and read the ERC-8004 ValidationRegistry (`getValidationStatus`): prints the recorded verdict (100=paid / 0=refused) + tag + agent. Set `AUDITOR_ADDRESS`/`BUYER_ADDRESS` to **pin the validator** to Merit's Auditor (so an arbitrary caller's self-written verdict is rejected). No Merit server |
-| `npm run verify-receipt -- <receipt.json> [buyerAddress]` | **verify the signed receipt offline** — recovers the signer from the receipt's ECDSA signature over the canonical body. Pass the buyer address (or `BUYER_ADDRESS`) to **pin** it: confirms the signer is the wallet that actually paid (without the pin it only attests internal consistency). Zero network; any altered verdict or amount breaks the signature |
-| `npm run verify-settlement -- <wallet>` | **verify the money moved** — reads the USDC Transfer logs on Arc for a creator/specialist payout wallet and sums what it actually received, with NO Merit server. The money analogue of `recompute`: "real USDC settles on Arc" made independently recomputable (a batched payment resolves once the Gateway batch lands) |
-| `npm run verify-all -- <receipt.json> [buyer]` | **the whole receipt, one command** — recovers the signature offline and pins it to the payer, then reads **every** paid/refused decision back from the ERC-8004 ValidationRegistry and **cross-checks it against the receipt** (a "paid" source MUST read 100/100 on-chain, a "refused" 0/100, all written by the pinned Auditor). Any divergence is flagged: proof the receipt **cannot lie**. Composes the four verifiers above into a single "don't trust, verify" report; no Merit server |
-| `npm run prove -- <receipt.json> [buyer]` | **the whole run, proven, one command** — composes `verify-all` (the receipt's recorded facts re-checked against Arc: signature, validation verdicts, money) with `challenge` (the Auditor's *judgment* re-derived live on a refused-but-cited source). Facts from chain **plus** judgment re-audited → a run shown honest top to bottom from nothing but its receipt; degrades gracefully when a half is unavailable |
-| `npm run challenge -- "<source>" "<claim>"` | **re-audit the Auditor (appeal a verdict)** — re-runs the proof-of-citation judge on a (source, claim) pair independently of any run, and reports **SUPPORTED / REFUSED**. The one check that re-derives the Auditor's *judgment* rather than a recorded fact: a refused creator appeals; a skeptic confirms a refusal holds. Live-proven — the trap stays REFUSED, a matching claim SUPPORTED, an unrelated claim against a *trusted* source still REFUSED (no rubber-stamp). Needs the server's LLM judge |
-| `npm run judge-eval` | **measure the Auditor (judge the judge)** — runs a hand-labeled gold set of 16 (source, claim) pairs (supported + mis-cited: off-topic, contradictory, a **fabricated number**, and the trap, both directions) through the live Auditor and reports accuracy / precision / recall / F1. Proves the moat is **calibrated, not asserted** — currently **100 / 100 / 100**. A false-negative (a wrongful pay) fails the run; extend the gold set to harden it. (Adapted from FinGPT's HaluEval harness) |
-| `npm run mcp` | **MCP server** — exposes Merit as one callable tool (`merit_research`) over the Model Context Protocol (stdio), so any MCP client (Claude, Gemini CLI, Cursor) can run the full verified-research-and-pay loop and get the answer + on-chain receipt. Wire it into the client's `mcpServers` config (see the script header) |
-| `npm run preflight` | pre-deploy doctor — checks env, that each key derives to its declared address, wallet funding (gas + USDC), and LLM reachability; prints READY / NOT READY |
-| `npm run example -- "your question" [--discover]` | drive a run programmatically (no browser): prints the answer, the specialists hired + paid, and the creators paid (with proof-of-citation scores + Arc tx links) vs refused — Merit as a callable service. Add `--discover` to pull **live web sources** (real RSS publishers) instead of the curated pool |
-| `npm run external-hire -- scout` | act as an EXTERNAL agent (separate process): discover a specialist's x402 challenge and pay it directly — a real USDC settlement to the specialist's own wallet, proving the open agent-to-agent market |
-| `npm run creator-market` | the **creator side** of the open market: a brand-new creator onboards via the PUBLIC register endpoint with its own payout wallet (non-custodial, no team seeding), then a niche-question run cites + pays it for a verified citation — proof the creators aren't hand-placed |
-| `npm run compare-crews` | runs the same question with the **pro crew** vs the **economy crew** (`{"tier":"budget"}`) and prints them side by side — reputation, verification capability (LLM judge vs similarity-only), labor cost, and outcome — making the agent-labor market's price/quality trade-off tangible |
-| `npm run moat-value` | the **economic case** for proof-of-citation — runs a real run and quantifies what a *pay-then-pray* rail wastes paying the sources Merit **refused** (off-topic data + an unverifiable identity) vs Merit paying only for verified value. The moat as money protected, not a claim |
-| `npm run reset-demo` | restores a clean demo state (fresh merit, drops test creators, keeps cached agentIds) |
+| `npm run reputation -- [id]` | an agent's **portable track record** — its full on-chain feedback timeline recomputed live from Arc |
+| `npm run recompute -- <agentId>` | **server-free** reputation rebuild straight from Arc (`eth_getLogs` + int128 decode) |
+| `npm run leaderboard` | ranks the whole two-sided market (specialists *and* creators) by ERC-8004 reputation on Arc |
+| `npm run verify-validation -- <tx>` | decode a receipt's validation tx + read the ValidationRegistry verdict (100=paid / 0=refused) |
+| `npm run verify-receipt -- <receipt.json> [buyer]` | recover the signer offline; pin to the payer; any tamper breaks the signature |
+| `npm run verify-settlement -- <wallet>` | sum the USDC Transfer logs a payout wallet received — the money, recomputable |
+| `npm run verify-all -- <receipt.json> [buyer]` | the whole receipt cross-checked against chain — it cannot lie |
+| `npm run prove -- <receipt.json> [buyer]` | `verify-all` + `challenge` — facts from chain plus judgment re-audited |
+| `npm run challenge -- "<source>" "<claim>"` | **appeal a verdict** — re-run the proof-of-citation judge on a (source, claim) pair |
+| `npm run judge-eval` | **judge the judge** — the 16-pair gold set → accuracy / precision / recall / F1 (currently 100/100/100) |
+| `npm run mcp` | **MCP server** — Merit as one callable tool (`merit_research`) over stdio for any MCP client |
+| `npm run preflight` | pre-deploy doctor — env, key→address derivation, funding, LLM reachability → READY / NOT READY |
+| `npm run example -- "question" [--discover]` | drive a run programmatically (no browser); `--discover` pulls live web sources |
+| `npm run external-hire -- scout` | act as an **external** agent: discover a specialist's x402 challenge + pay it directly |
+| `npm run creator-market` | a brand-new creator onboards via the public register endpoint + gets paid for a verified citation |
+| `npm run compare-crews` | the same question through the **pro** vs **economy** crew, side by side |
+| `npm run moat-value` | quantifies what a *pay-then-pray* rail wastes vs Merit paying only for verified value |
+| `npm run reset-demo` | restore a clean demo state (fresh merit, drop test creators, keep cached agentIds) |
 | `npm run generate-wallets` | generate the buyer/operator/seller EOAs |
 
-## Use Merit from any MCP client
-Merit ships an MCP (Model Context Protocol) server, so any MCP-aware agent — Claude, Gemini CLI,
-Cursor — can call Merit as a tool. Start Merit, then point the client at the server:
+</details>
+
+## 🧩 Use Merit from any MCP client
+
+Merit ships an **MCP** (Model Context Protocol) server — any MCP-aware agent (Claude, Gemini CLI,
+Cursor) can call Merit as a tool. Start Merit, then point the client at it:
 
 ```json
 {
@@ -177,38 +231,46 @@ Cursor — can call Merit as a tool. Start Merit, then point the client at the s
 }
 ```
 
-One tool is exposed — **`merit_research`** (`question`, optional `budget` / `discover` / `tier`). It runs
-the full loop (hire crew → cited answer → proof-of-citation → pay verified sources / refuse the rest →
-ERC-8004 reputation + validation) and returns the answer **plus the receipt** — who was paid or refused
-and why, with Arc tx links. The calling agent doesn't just get an answer; it gets one whose every
-citation was paid for *only if it verified*. (Dependency-free stdio JSON-RPC; no SDK to install.)
+One tool — **`merit_research`** (`question`, optional `budget` / `discover` / `tier`) — runs the full
+loop and returns the answer **plus the receipt**: who was paid or refused and why, with Arc tx links.
+The caller doesn't just get an answer; it gets one whose every citation was paid for *only if it
+verified*. (Dependency-free stdio JSON-RPC; no SDK.)
 
-## Architecture
-- `lib/agent.ts` — the **lead** orchestrator: hire search/write/verify specialists → escrow →
-  **grade + pay the crew** (agent→agent) → release/refund **creators** (agent→creator) → write
-  ERC-8004 reputation for both. Whole-run budget cap, settlement resilience, abort-on-disconnect.
-- `lib/specialists.ts` — the specialist-agent registry (the **labor supply side**): stable wallets,
-  on-chain reputation, pro/budget tiers, and the `pickSpecialist` reputation-gated hiring rule.
-- `lib/runctx.ts` — in-process run context shared between the lead and the specialist endpoints
-  (heavy data stays here; only an unguessable `runId` crosses the x402 wire).
-- `app/api/agent/[id]` — a specialist's **unpaid work** endpoint (idempotent per run); `/pay` is the
-  **x402-gated release** that settles to the specialist's own wallet.
-- `lib/registry.ts` — file-backed source/creator registry (stable wallets, atomic writes) + ephemeral discovered-source store.
-- `lib/discover.ts` — live RSS discovery → payable publisher sources (keyless, graceful fallback).
-- `lib/llm.ts` — provider-agnostic answer generation + the Auditor's proof-of-citation: an adversarial LLM judge (`judgeCitation`) decides whether each source actually backs the exact claim citing it (`citingSentence`), with asymmetric-embedding similarity as the evidence score + fallback. Catches on-topic-but-unsupported citations a score alone waves through.
-- `lib/seller.ts` — x402 seller wrapper, per-payee `payTo` (Circle Gateway batching) — used by both creators and specialists.
-- `lib/pay.ts` — buyer-side `GatewayClient` deposit + nanopayment settle (enforces the authorized price).
-- `lib/reputation.ts` — ERC-8004 (all **three** registries): operator mints identities (one per creator, per publisher domain, and **per specialist**, persisted); buyer (validator) writes Reputation feedback **and the proof-of-citation verdict to the ValidationRegistry** (no self-attest).
-- `app/api/{health,sources,agents,run,source/[id],agent/[id],agent/[id]/pay,creators/register,reputation/[id]}` — the API (`/api/agents` is the specialist marketplace directory — the labor supply side; `/api/run` is SSE + rate-limited, and ends with a **`summary`** event — the complete, self-contained run receipt (every source's verdict + reason + the on-chain txs — the USDC settlement, the ERC-8004 reputation write, **and the ValidationRegistry verdict** — the crew hired + paid, and the budget totals, in one object); `/api/reputation/[id]` recomputes reputation directly from on-chain ReputationRegistry events — for a creator **or** a specialist agent, returning both the aggregate score **and the full per-event feedback timeline** (each release/refuse with its own Arc tx link, so an agent's entire track record is independently replayable from chain)).
+<details>
+<summary><b>Architecture</b></summary>
 
-## Deploy
-A long-lived Node host (the SSE run moves real funds — not a serverless function). See
-[`DEPLOY.md`](./DEPLOY.md): one-click Render (`render.yaml`, with a persistent disk) or
-`Dockerfile`. The lead's x402 calls are a **loopback** to its own specialist endpoints on
-`localhost:$PORT`, so the agent-labor market works on any host/port with no `BASE_URL` config — and,
-by design, never follows a (forgeable) request `Host` header, so it can't be steered off-server.
+- `lib/agent.ts` — the **lead** orchestrator: hire crew → escrow → grade + pay (agent→agent) →
+  release/refund creators (agent→creator) → write ERC-8004 reputation for both. Whole-run budget cap,
+  settlement resilience, abort-on-disconnect.
+- `lib/job.ts` — the **hook-gated ERC-8183 settlement** (`settleViaHook`): drives MeritJob +
+  MeritVerificationHook on-chain so a real run's escrow release is gated by the proof-of-citation verdict.
+- `lib/specialists.ts` — the specialist-agent registry (labor supply): stable wallets, reputation,
+  pro/budget tiers, the `pickSpecialist` reputation-gated hiring rule.
+- `lib/llm.ts` — provider-agnostic generation + the Auditor's proof-of-citation: an adversarial LLM
+  judge (`judgeCitation`) decides whether each source backs the exact claim citing it, with
+  asymmetric-embedding similarity as the evidence score. Catches on-topic-but-unsupported citations.
+- `lib/numcheck.ts` — the **deterministic numeric verifier** (`fabricatedFigures`): a $/% figure the
+  source contradicts is refused with **no LLM**.
+- `lib/seller.ts` / `lib/pay.ts` — x402 seller wrapper (per-payee `payTo`, Circle Gateway batching) +
+  buyer-side `GatewayClient` deposit + nanopayment settle.
+- `lib/reputation.ts` — ERC-8004 across all **three** registries (identity mints, Reputation
+  feedback, and the proof-of-citation verdict to the ValidationRegistry — no self-attest).
+- `lib/ledger.ts` — the append-only, **monotonic** settlement counter (never falls on reset).
+- `lib/runctx.ts` — in-process run context; only an unguessable `runId` crosses the x402 wire.
+- `app/api/*` — the API: `/api/run` (SSE, rate-limited, ends with the self-contained `summary`
+  receipt), `/api/agents` (the specialist marketplace), `/api/reputation/[id]` (recomputed from chain).
 
-## On-chain references (Arc testnet, chain `5042002`)
-USDC `0x3600…0000` · Gateway `0x00777…19B9` · ERC-8004 Identity `0x8004A8…BD9e` / Reputation
-`0x8004B6…8713` / Validation `0x8004Cb…4272`. Agent payments, creator settlements, identity mints, feedback, and validation writes are all
-verifiable on `testnet.arcscan.app`. Based on `circlefin/arc-nanopayments` + `arc-escrow`.
+</details>
+
+## 📡 On-chain references (Arc testnet, chain `5042002`)
+
+USDC [`0x3600…0000`](https://testnet.arcscan.app/address/0x3600000000000000000000000000000000000000) ·
+ERC-8004 Identity `0x8004A8…BD9e` / Reputation `0x8004B6…8713` / Validation `0x8004Cb…4272`. Agent
+payments, creator settlements, identity mints, feedback, and validation writes are all verifiable on
+[`testnet.arcscan.app`](https://testnet.arcscan.app). Built on `circlefin/arc-nanopayments` + `arc-escrow`.
+
+## License
+
+[Apache-2.0](LICENSE) © Merit
+
+<div align="center"><sub>Anyone can pay — only Merit decides who <i>earned</i> it.</sub></div>
