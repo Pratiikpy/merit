@@ -11,6 +11,7 @@ citation, and releases sub-cent payment **only for work that verifies** — refu
 with a **signed, self-proving receipt** for every decision.
 
 <p>
+<a href="https://merit-ecru.vercel.app"><img src="https://img.shields.io/badge/%E2%96%B6%20Live%20Demo-merit--ecru.vercel.app-16A34A?style=flat-square" alt="Live Demo" /></a>
 <img src="https://img.shields.io/badge/Arc-testnet%205042002-0A0A0A?style=flat-square" alt="Arc" />
 <img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs" alt="Next.js" />
 <img src="https://img.shields.io/badge/Solidity-0.8.24-363636?style=flat-square&logo=solidity" alt="Solidity" />
@@ -23,11 +24,11 @@ with a **signed, self-proving receipt** for every decision.
 
 <br />
 
-<img src="docs/demo.png" width="840" alt="Merit live demo — the agent releases sub-cent USDC to cited sources (Chainletter +$0.054) and refuses the rest (CryptoBuzz −$0.030), with a signed receipt for each decision" />
+<a href="https://merit-ecru.vercel.app"><img src="docs/demo.png" width="840" alt="Merit live demo — the agent releases sub-cent USDC to cited sources (Chainletter +$0.054) and refuses the rest (CryptoBuzz −$0.030), with a signed receipt for each decision" /></a>
 
 <br /><br />
 
-**[The moat ↓](#-the-moat--proof-of-citation-gates-settlement-on-chain) · [How it works ↓](#-at-a-glance) · [Quickstart ↓](#-run-it) · [Verify everything ↓](#-dont-trust--verify) · [Deployed contracts ↓](#deployed-on-arc-testnet-chain-5042002)**
+**[▶ Live demo ↗](https://merit-ecru.vercel.app) · [The moat ↓](#-the-moat--proof-of-citation-gates-settlement-on-chain) · [How it works ↓](#-at-a-glance) · [Quickstart ↓](#-run-it) · [Verify everything ↓](#-dont-trust--verify) · [Deployed contracts ↓](#deployed-on-arc-testnet-chain-5042002)**
 
 </div>
 
