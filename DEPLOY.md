@@ -25,6 +25,30 @@ A `Dockerfile` is included (Node 22, `next start`).
   same env vars.
 - Fly: `fly launch` (uses the Dockerfile), `fly secrets set KEY=…` for each secret.
 
+## Option C — Vercel (serverless — read this first)
+
+Vercel works, but on the **serverless model**, so two constraints matter:
+
+1. **Requires the Vercel Pro plan.** A run streams over SSE for ~60–90s. Hobby caps functions at
+   60s → a run can time out. Pro allows 300s, which `/api/run` already requests
+   (`export const maxDuration = 300`). On Hobby, only short/STUB runs reliably finish.
+2. **The filesystem is read-only except `/tmp`.** The app auto-detects Vercel and writes durable state
+   to `/tmp/merit-data` (writable, but **only persists within a warm instance** — a cold start starts
+   empty). For state that survives cold starts (the monotonic settlement ledger, API keys, learned
+   calibration, external-hire log), set **`MERIT_STORE=supabase`** + `SUPABASE_URL` +
+   `SUPABASE_SERVICE_ROLE_KEY` and create:
+   ```sql
+   create table merit_documents (name text primary key, data jsonb not null, updated_at timestamptz);
+   ```
+
+Steps: import the repo into Vercel (it auto-detects Next.js — root = this `app/` dir), set the env vars
+below in the dashboard, deploy. The frontend (`public/index.html` via the `beforeFiles` rewrite), the CSP
+headers, and all `/api/*` routes work as-is.
+
+**Keep `MERIT_HOOK_ONCHAIN` UNSET on Vercel** — the on-chain hook settlement adds ~7 sequential txs per
+run (too slow for a serverless function). Run `npm run prove-moat` against a local or long-lived instance
+to demonstrate the on-chain gate; leave the hosted run on the fast Gateway path.
+
 ## Required environment
 | var | value |
 |---|---|

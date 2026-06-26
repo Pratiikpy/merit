@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { loadDoc, saveDoc, docPath, hydrateDoc } from "../lib/store";
+import { loadDoc, saveDoc, docPath, hydrateDoc, dataDir } from "../lib/store";
 
 const TMP = path.join(os.tmpdir(), "merit-store-test-" + process.pid);
 
@@ -43,5 +43,13 @@ describe("lib/store (durable document store)", () => {
 
   it("hydrateDoc is a graceful no-op without the supabase mirror enabled", async () => {
     expect(await hydrateDoc("k")).toBe(false);
+  });
+
+  it("falls back to /tmp/merit-data on serverless (Vercel) when MERIT_DATA_DIR is unset", () => {
+    delete process.env.MERIT_DATA_DIR;
+    process.env.VERCEL = "1";
+    expect(dataDir()).toBe(path.join("/tmp", "merit-data"));
+    delete process.env.VERCEL;
+    process.env.MERIT_DATA_DIR = TMP; // restore
   });
 });

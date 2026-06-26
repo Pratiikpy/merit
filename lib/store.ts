@@ -16,9 +16,16 @@ import fs from "node:fs";
 import path from "node:path";
 import { db } from "./db";
 
-/** The data directory — read lazily (never at module load) so tests can point it at a temp dir. */
+/** The data directory — read lazily (never at module load) so tests can point it at a temp dir. On serverless
+ *  (Vercel / Lambda / Netlify) the working dir is READ-ONLY except /tmp, so cwd/.data writes EROFS-fail; we
+ *  fall back to /tmp/merit-data (writable, persists within a warm instance). Use MERIT_STORE=supabase for
+ *  durability across cold starts. */
 export function dataDir(): string {
-  return process.env.MERIT_DATA_DIR || path.join(process.cwd(), ".data");
+  if (process.env.MERIT_DATA_DIR) return process.env.MERIT_DATA_DIR;
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY) {
+    return path.join("/tmp", "merit-data");
+  }
+  return path.join(process.cwd(), ".data");
 }
 
 export function docPath(name: string): string {
