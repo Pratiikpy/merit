@@ -14,7 +14,10 @@ import { signReceipt } from "./receipt";
 import { round6, isStub, ARC } from "./arc";
 import { decideVerdict, releaseMerit, refundMerit, repScore, reasonFor, counterfactualFor, gradeSpecialist, withinBudget, crewMerit, summarizeRelease, gradedNano, type ReasonKind } from "./scoring";
 import { recordSettlement, learnedTrust } from "./history";
-import { calibratedConfidence } from "./learn";
+import { calibratedConfidence, confidenceMultiplier } from "./learn";
+import { settleViaHook } from "./job";
+import { recordLedgerSettlement } from "./ledger";
+import { keccak256, toHex } from "viem";
 import { effectivePrice } from "./pricing";
 import { sourceAllowed, releaseHold, type RunPolicy } from "./policy";
 import { resolveSourceContent } from "./providers";
@@ -436,6 +439,7 @@ export async function runAgent(
           runId, sourceId: s.id, cited: true, released: settled > 0, amount: paid,
           confidence: v.confidence, reason: settled > 0 ? "released" : "settlement failed", at: Date.now(),
         });
+        if (settled > 0) recordLedgerSettlement({ runId, sourceId: s.id, amount: paid, at: Date.now() }); // Bet 3: monotonic traction counter
         await sleep(620);
       } else {
         const refundAmt = round6(price);
@@ -560,6 +564,7 @@ export async function runAgent(
               : refusedReason,
         support: v.score,
         confidence: v.confidence, // the Auditor's confidence (P-supported) that graded the payout (#1)
+        calibration: confidenceMultiplier(v.src.id), // Bet 4: the self-improving Auditor's learned-reliability multiplier on this source's payout (1.0 = neutral)
         counterfactual: v.release ? undefined : counterfactualFor(v.reasonKind, v.counterfactual), // #2: what would flip a refusal
         provenance: v.span, // #7: the exact source sentence the claim matches (claim → source span → verdict)
         claim: v.cited ? citingSentence(answer, v.src.name) : undefined, // the sentence the source was cited for
@@ -607,6 +612,24 @@ export async function runAgent(
     // true — a judge recovers the signer offline (npm run verify-receipt) and confirms it equals the payer.
     const sig = await signReceipt(receiptBody);
     await emit("summary", sig ? { ...receiptBody, ...sig } : receiptBody);
+
+    // Connect the moat (Bet 1): bind the on-chain escrow RELEASE to the proof-of-citation verdict via
+    // MeritJob + MeritVerificationHook. Default OFF (MERIT_HOOK_ONCHAIN != 1) so the run is byte-identical;
+    // when on, a verified run RELEASES the escrow and a failed citation makes complete() REVERT (then refunds).
+    if (process.env.MERIT_HOOK_ONCHAIN === "1") {
+      const verified = receiptBody.totals.releasedCount > 0;
+      const proofHash = keccak256(toHex(JSON.stringify(sig ? { ...receiptBody, ...sig } : receiptBody).slice(0, 8000)));
+      const deliverableHash = keccak256(toHex(question));
+      await emit("phase", { phase: "hook-settle" });
+      const gate = await settleViaHook({ amountAtomic: BigInt(1000), verified, deliverableHash, proofHash, description: `merit ${runId}` });
+      if (gate)
+        await emit("hook-settlement", {
+          ...gate,
+          note: verified
+            ? "on-chain escrow RELEASED — proof-of-citation verified, gated by MeritVerificationHook"
+            : "complete() REVERTED by the hook (citation failed), then refunded — the moat enforced on-chain",
+        });
+    }
 
     await emit("phase", { phase: "done" });
   } catch (e) {

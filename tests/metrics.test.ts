@@ -5,6 +5,7 @@ import path from "node:path";
 import { recordSettlement, _resetHistoryCache } from "../lib/history";
 import { recordAppeal, _resetLearnCache } from "../lib/learn";
 import { createApiKey, _resetAuthCache } from "../lib/auth";
+import { recordLedgerSettlement, _resetLedgerCache } from "../lib/ledger";
 import { snapshotMetrics } from "../lib/metrics";
 import { getSources } from "../lib/registry";
 
@@ -18,6 +19,7 @@ describe("lib/metrics (live snapshot composition)", () => {
     _resetHistoryCache();
     _resetLearnCache();
     _resetAuthCache();
+    _resetLedgerCache();
   });
   afterAll(() => {
     fs.rmSync(TMP, { recursive: true, force: true });
@@ -28,6 +30,7 @@ describe("lib/metrics (live snapshot composition)", () => {
     const id = getSources()[0]?.id;
     expect(id).toBeTruthy();
     recordSettlement({ runId: "r1", sourceId: id, cited: true, released: true, amount: 0.05, confidence: 0.8, reason: "released", at: 1 });
+    recordLedgerSettlement({ runId: "r1", sourceId: id, amount: 0.05, at: 1 }); // the monotonic headline counter (Bet 3)
     recordAppeal(id, true);
     createApiKey("agent", 1);
     const m = snapshotMetrics();

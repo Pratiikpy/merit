@@ -4,6 +4,7 @@ import { parsePolicy, type RunPolicy } from "@/lib/policy";
 import { looksLikeInjection } from "@/lib/llm";
 import { checkRunLimit, tryAcquireRunSlot, releaseRunSlot } from "@/lib/ratelimit";
 import { authGate, remainingBudget, chargePrincipal } from "@/lib/auth";
+import { recordExternalHire } from "@/lib/hires";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -138,7 +139,10 @@ export async function POST(req: NextRequest) {
           emit("end", {});
           closed = true;
           releaseSlot(); // run finished (or errored) — free the concurrency slot
-          if (principal) chargePrincipal(principal.id, releasedTotal); // bill actual settled spend to the principal (W2.1)
+          if (principal) {
+            chargePrincipal(principal.id, releasedTotal); // bill actual settled spend to the principal (W2.1)
+            recordExternalHire({ principalId: principal.id, principalName: principal.name, released: releasedTotal, at: Date.now() }); // Bet 2: the unfakeable external-demand signal
+          }
           try {
             controller.close();
           } catch {
