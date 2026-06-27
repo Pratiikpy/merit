@@ -219,6 +219,63 @@ export async function runAgent(
       );
     }
 
+    // ---- 4a. REFLECT + RETRY (gated: MERIT_REFLECT, live only) — the lead READS the Auditor's verdict
+    // and has the writer REVISE the citations that failed proof-of-citation, then RE-VERIFIES. Bounded by
+    // a retry cap so it can't loop. This is agency extracted from the verification oracle: the agent
+    // observes a ground-truth failure, reasons about it, and changes course — impossible without a
+    // deterministic judge to react to. Default off → the moat baseline + the demo are byte-identical. ----
+    if (process.env.MERIT_REFLECT === "1" && !isStub()) {
+      const MAX_REFLECT = 1;
+      for (let round = 1; round <= MAX_REFLECT; round++) {
+        const failed = verdicts.filter((v): v is Extract<Verdict, { release: false }> => !v.release && v.cited && v.reasonKind === "unsupported");
+        if (failed.length === 0) break; // nothing CITED-but-unsupported left to fix
+        await emit("reflect", {
+          round,
+          fixing: failed.map((v) => ({ name: v.src.name, reason: reasonFor(v.reasonKind) })),
+          note: "the lead read the Auditor's verdict and is revising the answer to drop the citations that failed proof-of-citation",
+        });
+        const revised = await writeAnswer(question, ranked, writer?.tier, failed.map((v) => v.src.name).join("; "));
+        if (!revised || revised === answer) break; // writer produced no change → stop
+        answer = revised;
+        // re-verify the revised answer + rebuild the verdicts on it
+        const cited2 = citedNames(answer);
+        const checkable2 = ranked.filter((s) => isCited(cited2, s.name) && s.verified);
+        const support2 = await verifyCitations(
+          answer,
+          checkable2.map((s) => ({ id: s.id, name: s.name, content: s.content, trap: s.trap })),
+          verifier?.tier !== "budget",
+        );
+        cite = {};
+        for (const s of ranked) {
+          const isC = isCited(cited2, s.name);
+          const sup = support2[s.id];
+          cite[s.id] = {
+            cited: isC, supported: sup?.supported ?? false, confidence: sup?.confidence ?? 0,
+            counterfactual: sup?.counterfactual ?? null, span: sup?.span ?? null, score: sup?.score ?? 0,
+            reason: sup?.reason ?? "", count: isC ? Math.max(1, citationCount(answer, s.name)) : 0,
+          };
+        }
+        verdicts.length = 0;
+        for (let i = 0; i < ranked.length; i++) {
+          const s = ranked[i];
+          const c = cite[s.id] ?? { cited: false, supported: false, confidence: 0, counterfactual: null, span: null, score: 0, reason: "", count: 0 };
+          const adapters = adaptersPass(s.verifyWith, citingSentence(answer, s.name), s.content, s);
+          const decision = decideVerdict(c.cited, s.verified, c.supported && adapters.ok);
+          const vbase = {
+            src: s, index: i, cited: c.cited, score: c.score, confidence: c.confidence,
+            counterfactual: adapters.ok ? (c.counterfactual ?? null) : `Failed the ${adapters.failed!.id} adapter — ${adapters.failed!.reason}`,
+            span: c.span ?? null, auditReason: c.reason,
+          };
+          verdicts.push(
+            decision.release
+              ? { ...vbase, release: true, nano: gradedNano(c.count, calibratedConfidence(c.confidence, s.id)) }
+              : { ...vbase, release: false, reasonKind: decision.reasonKind, nano: 0 },
+          );
+        }
+        await emit("reflect-result", { round, releasedNow: verdicts.filter((v) => v.release).length });
+      }
+    }
+
     // ---- 4b. GRADE + PAY THE CREW (real agent-to-agent USDC settlement) ----
     // A specialist earns iff its work produced verified value: search found a usable pool, the
     // writer grounded ≥1 releasable citation, the verifier checked every source. `releaseCount` is
