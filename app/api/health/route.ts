@@ -24,6 +24,9 @@ export async function GET() {
     wallets: {
       buyer: process.env.BUYER_ADDRESS ?? null,
       operator: process.env.OPERATOR_ADDRESS ?? null,
+      // KMS-custodied Circle Developer-Controlled Wallet (no plaintext key) when configured
+      provider: process.env.CIRCLE_API_KEY ? "circle-dcw" : "eoa",
+      circleDcw: process.env.MERIT_DCW_WALLET_ADDRESS ?? null,
     },
     contracts: {
       usdc: ARC.usdc,

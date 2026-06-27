@@ -39,9 +39,11 @@
     "audit-demo": "node --env-file=.env.local scripts/audit-demo.mjs",
     "compare-crews": "node scripts/compare-crews.mjs",
     "moat-value": "node scripts/moat-value.mjs",
-    "reset-demo": "node scripts/reset-demo.mjs"
+    "reset-demo": "node scripts/reset-demo.mjs",
+    "dcw": "node --env-file=.env.local scripts/dcw.mjs"
   },
   "dependencies": {
+    "@circle-fin/developer-controlled-wallets": "^10.7.1",
     "@circle-fin/x402-batching": "^2.0.4",
     "@supabase/supabase-js": "^2.99.0",
     "@tailwindcss/postcss": "^4.2.1",

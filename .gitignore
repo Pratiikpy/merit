@@ -56,3 +56,9 @@ contracts/deployments.local.json
 # local test-server artifacts
 sv.log
 .sv.pid
+
+# Circle DCW entity-secret recovery (sensitive)
+circle-entity-recovery.dat
+register-entity.cjs
+
+circle-dcw/
