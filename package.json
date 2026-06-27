@@ -41,7 +41,8 @@
     "moat-value": "node scripts/moat-value.mjs",
     "reset-demo": "node scripts/reset-demo.mjs",
     "dcw": "node --env-file=.env.local scripts/dcw.mjs",
-    "tournament": "node --experimental-transform-types --no-warnings scripts/tournament.mjs"
+    "tournament": "node --experimental-transform-types --no-warnings scripts/tournament.mjs",
+    "onboard-feed": "node scripts/onboard-feed.mjs"
   },
   "dependencies": {
     "@circle-fin/developer-controlled-wallets": "^10.7.1",

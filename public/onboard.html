@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onboard a creator — Merit</title>
+<meta name="description" content="Paste your RSS feed and get paid in USDC every time an AI agent cites your work — verified, on Arc.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:640px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  nav a.back{font-size:14px;color:#6B7280;text-decoration:none;font-weight:600;}
+  nav a.back:hover{color:#0A0A0A;}
+  h1{font-size:38px;line-height:1.08;letter-spacing:-.03em;margin:48px 0 14px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 32px;}
+  .card{border:1px solid #ECECEE;border-radius:16px;padding:24px;box-shadow:0 1px 2px rgba(10,10,10,.04);}
+  label{display:block;font-size:13px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;color:#0A0A0A;}
+  .row{display:flex;gap:10px;}
+  input[type=url]{flex:1;font-family:inherit;font-size:15px;padding:13px 14px;border:1px solid #D1D5DB;border-radius:10px;outline:none;transition:border-color .15s;}
+  input[type=url]:focus{border-color:#0A0A0A;}
+  button{font-family:inherit;font-weight:700;font-size:15px;padding:13px 22px;border:0;border-radius:10px;background:#0A0A0A;color:#fff;cursor:pointer;white-space:nowrap;transition:opacity .15s;}
+  button:hover{opacity:.88;}
+  button:disabled{opacity:.5;cursor:default;}
+  .hint{font-size:13px;color:#6B7280;margin-top:10px;}
+  .hint code{background:#F3F4F6;padding:2px 6px;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  #out{margin-top:18px;display:none;}
+  .ok{border:1px solid #BBF7D0;background:#F0FDF4;border-radius:12px;padding:18px;}
+  .err{border:1px solid #FECACA;background:#FEF2F2;border-radius:12px;padding:14px 16px;color:#991B1B;font-size:14px;}
+  .ok h3{margin:0 0 10px;font-size:17px;letter-spacing:-.01em;}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid #DCFCE7;font-size:14px;}
+  .kv:first-of-type{border-top:0;}
+  .kv .k{color:#15803D;font-weight:600;}
+  .kv .v{font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;word-break:break-all;}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#0A0A0A;color:#fff;margin-left:6px;}
+  .steps{margin:38px 0 60px;font-size:14.5px;color:#374151;}
+  .steps li{margin:8px 0;}
+  footer{border-top:1px solid #ECECEE;padding:24px 0;font-size:13px;color:#9CA3AF;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/">
+      <span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>
+      Merit
+    </a>
+    <a class="back" href="/">← back to demo</a>
+  </nav>
+
+  <h1>Get paid when AI cites you.</h1>
+  <p class="sub">Paste your RSS feed. Merit turns your work into a citable source and pays you in USDC every time an agent grounds an answer in it — only when the citation passes verification.</p>
+
+  <div class="card">
+    <label for="feed">Your RSS or Atom feed URL</label>
+    <div class="row">
+      <input id="feed" type="url" placeholder="https://yourblog.com/feed.xml" autocomplete="off" spellcheck="false">
+      <button id="go">Onboard</button>
+    </div>
+    <div class="hint">No account, no key. The wallet is receive-only. To direct payouts to your own wallet, add <code>merit-verify:0xYourAddress</code> anywhere in your feed.</div>
+    <div id="out"></div>
+  </div>
+
+  <ol class="steps">
+    <li><strong>Paste your feed</strong> — Merit reads your recent posts and registers you as a creator with an on-chain (ERC-8004) identity.</li>
+    <li><strong>Agents cite you</strong> — when a Merit agent uses your work to answer a question, your citation goes through proof-of-citation verification.</li>
+    <li><strong>You earn</strong> — every <em>verified</em> citation settles sub-cent USDC to your wallet on Arc. Hallucinated or unsupported citations pay nothing.</li>
+  </ol>
+
+  <footer>Merit — a proof-of-work economy for AI agents on Arc. Verified citations only.</footer>
+</div>
+
+<script>
+(function(){
+  var feed=document.getElementById('feed'),go=document.getElementById('go'),out=document.getElementById('out');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function row(k,v){return '<div class="kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';}
+  function show(html){out.innerHTML=html;out.style.display='block';}
+  async function onboard(){
+    var url=feed.value.trim();
+    if(!url){feed.focus();return;}
+    go.disabled=true;go.textContent='Onboarding…';out.style.display='none';
+    try{
+      var res=await fetch('/api/creators/from-feed',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({feedUrl:url})});
+      var r=await res.json();
+      if(!res.ok){show('<div class="err">'+esc(r.error||('Onboarding failed ('+res.status+')'))+'</div>');return;}
+      var verified=r.ownerVerified?'<span class="badge">owner-verified ✓</span>':'';
+      show('<div class="ok"><h3>'+esc(r.name)+' is on Merit '+verified+'</h3>'+
+        row('recent entries cited', esc(r.entries)+' posts')+
+        row('payout wallet', esc(r.wallet))+
+        row('ERC-8004 identity', '#'+esc(r.agentId||'—'))+
+        (r.explorerUrl?row('on-chain', '<a href="'+esc(r.explorerUrl)+'" target="_blank" rel="noopener">view ↗</a>'):'')+
+        '<div class="hint" style="margin-top:14px">'+(r.ownerVerified?'Payouts go to your verified wallet.':'Add <code>merit-verify:0xYourAddress</code> to your feed and re-onboard to claim payouts to your own wallet.')+'</div></div>');
+    }catch(e){show('<div class="err">Could not reach Merit. Is the server running?</div>');}
+    finally{go.disabled=false;go.textContent='Onboard';}
+  }
+  go.addEventListener('click',onboard);
+  feed.addEventListener('keydown',function(e){if(e.key==='Enter')onboard();});
+})();
+</script>
+</body>
+</html>

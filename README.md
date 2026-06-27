@@ -138,6 +138,26 @@ the pro-vs-economy verification market side by side.
 
 </details>
 
+## 📣 For creators — get listed in one click
+
+Any publisher joins in **one step** and earns USDC every time an agent *verifiably* cites their work — no
+account, no key handed to Merit (the payout wallet is receive-only).
+
+```bash
+# paste an RSS/Atom feed → a citable, payable creator with an on-chain (ERC-8004) identity
+npm run onboard-feed https://yourblog.com/feed.xml
+```
+
+…or open **`/onboard.html`** in the browser and paste your feed there. To direct payouts to **your own**
+wallet (instead of a Merit-generated one), add a single line anywhere in your feed and re-onboard:
+
+```
+merit-verify:0xYourWalletAddress
+```
+
+Merit reads your recent posts, registers you, and from then on **every verified citation settles sub-cent
+USDC to your wallet on Arc** — hallucinated or unsupported citations pay nothing. That's the whole point.
+
 ## 🤝 The agent-labor market
 
 The lead agent doesn't do the work itself — it **hires a crew** from an open pool of specialist
