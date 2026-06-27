@@ -10,6 +10,7 @@ import {
   remainingBudget,
   chargePrincipal,
   authGate,
+  authRequired,
   listPrincipals,
   _resetAuthCache,
 } from "../lib/auth";
@@ -29,6 +30,28 @@ describe("lib/auth (per-principal API keys + fail-closed firewall)", () => {
     fs.rmSync(TMP, { recursive: true, force: true });
     delete process.env.MERIT_DATA_DIR;
     delete process.env.MERIT_REQUIRE_AUTH;
+  });
+
+  it("authRequired: OFF in the STUB demo, ON by default for a real-money (STUB=0) deploy, env-overridable", () => {
+    const save = { stub: process.env.STUB, buyer: process.env.BUYER_PRIVATE_KEY };
+    // STUB demo (no buyer key) → auth off, keyless demo keeps working
+    delete process.env.MERIT_REQUIRE_AUTH;
+    delete process.env.STUB;
+    delete process.env.BUYER_PRIVATE_KEY;
+    expect(authRequired()).toBe(false);
+    // real-money deploy (a funded buyer key, not STUB) → auth ON by default (fail-closed)
+    process.env.BUYER_PRIVATE_KEY = "0x" + "1".repeat(64);
+    expect(authRequired()).toBe(true);
+    // explicit env override wins both ways
+    process.env.MERIT_REQUIRE_AUTH = "0";
+    expect(authRequired()).toBe(false);
+    process.env.MERIT_REQUIRE_AUTH = "1";
+    delete process.env.BUYER_PRIVATE_KEY;
+    expect(authRequired()).toBe(true);
+    // restore
+    delete process.env.MERIT_REQUIRE_AUTH;
+    if (save.stub === undefined) delete process.env.STUB; else process.env.STUB = save.stub;
+    if (save.buyer === undefined) delete process.env.BUYER_PRIVATE_KEY; else process.env.BUYER_PRIVATE_KEY = save.buyer;
   });
 
   it("hashes keys deterministically and never stores plaintext", () => {

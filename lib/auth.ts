@@ -10,6 +10,7 @@
  */
 import crypto from "node:crypto";
 import { loadDoc, saveDoc } from "./store";
+import { isStub } from "./arc";
 
 export interface Principal {
   id: string;
@@ -36,9 +37,13 @@ export function hashKey(plain: string): string {
   return crypto.createHash("sha256").update(plain).digest("hex");
 }
 
-/** True when auth is enforced (the fail-closed firewall). Default OFF so the keyless demo/smoke still runs. */
+/** True when auth is enforced (the fail-closed firewall). Explicitly togglable with MERIT_REQUIRE_AUTH;
+ *  otherwise it defaults ON for a real-money (STUB=0) deploy and OFF for the keyless STUB demo/smoke — so a
+ *  live deploy can't be drained through an unauthenticated endpoint just because the operator forgot to set it. */
 export function authRequired(): boolean {
-  return process.env.MERIT_REQUIRE_AUTH === "1";
+  if (process.env.MERIT_REQUIRE_AUTH === "1") return true;
+  if (process.env.MERIT_REQUIRE_AUTH === "0") return false;
+  return !isStub();
 }
 
 /** Create a new API key for a principal. Returns the PLAINTEXT key ONCE (only its hash is persisted). */

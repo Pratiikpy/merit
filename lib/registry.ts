@@ -8,6 +8,7 @@ import path from "node:path";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { effectivePrice } from "./pricing";
 import { learnedTrust } from "./history";
+import { dataDir } from "./store";
 
 export interface Source {
   id: string;
@@ -29,9 +30,10 @@ export interface Source {
   trap?: boolean; // a demo source whose on-topic content CONTRADICTS the claim — only the Auditor catches it
 }
 
-// Configurable so a deploy can mount a persistent disk (set MERIT_DATA_DIR);
-// defaults to ./.data for local runs.
-const DATA_DIR = process.env.MERIT_DATA_DIR || path.join(process.cwd(), ".data");
+// Configurable so a deploy can mount a persistent disk (set MERIT_DATA_DIR); on serverless (Vercel) the cwd
+// is read-only, so this falls back to /tmp — shared with lib/store.ts so all state lands in one place
+// (otherwise registry writes EROFS-fail silently and new creators never persist).
+const DATA_DIR = dataDir();
 const FILE = path.join(DATA_DIR, "registry.json");
 
 // Generate a receive-only payout address. The key is derived-then-discarded — Merit never stores
