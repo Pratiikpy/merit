@@ -19,6 +19,7 @@ import { settleViaHook } from "./job";
 import { recordLedgerSettlement } from "./ledger";
 import { keccak256, toHex } from "viem";
 import { effectivePrice } from "./pricing";
+import { allocateBudget, shouldAbstain } from "./planner";
 import { sourceAllowed, releaseHold, type RunPolicy } from "./policy";
 import { resolveSourceContent } from "./providers";
 import { adaptersPass } from "./adapters";
@@ -126,6 +127,29 @@ export async function runAgent(
       await emit("source", { index: i, status: "discovered", source: publicView(ranked[i]) });
       await sleep(220);
     }
+
+    // ---- 1b. PLAN — turn the human budget into a DECISION the lead makes: allocate it across the ranked
+    // sources by expected-value-per-dollar (spend where verified value is most likely), reserve the rest, and
+    // surface whether any source can credibly support an answer. Pure + deterministic (lib/planner.ts), so it
+    // adds a visible plan artifact without altering settlement (the budget the plan respects still governs). ----
+    const planEVs = ranked.map((s) => ({
+      id: s.id,
+      price: effectivePrice(s.price, s.merit, s.priceMode),
+      expectedRelease: Math.max(0, Math.min(1, 0.5 + learnedTrust(s.id))),
+    }));
+    const planAlloc = allocateBudget(budget, planEVs);
+    const planVerdict = shouldAbstain(planEVs, 0.2);
+    const plan = {
+      strategy: planVerdict.reason,
+      fund: planAlloc.picks.map((p) => {
+        const s = ranked.find((r) => r.id === p.id)!;
+        return { name: s.name, alloc: p.alloc, evPerDollar: Number.isFinite(p.evPerDollar) ? round6(p.evPerDollar) : null };
+      }),
+      spent: planAlloc.spent,
+      reserve: planAlloc.reserve,
+      lowConfidence: planVerdict.abstain, // every source below the support bar — the lead flags a low-confidence run
+    };
+    await emit("plan", plan);
 
     // ---- 2. ESCROW ----
     await emit("phase", { phase: "escrow", stepIndex: 1 });
@@ -645,6 +669,7 @@ export async function runAgent(
     });
     const receiptBody = {
       question,
+      plan,
       budget,
       sources: sourceReceipts,
       crew: crew.map((c) => ({
