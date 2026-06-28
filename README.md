@@ -104,6 +104,16 @@ that embodies proof-of-citation — so money moves *only* if the cited work veri
 
 Full record in [`contracts/deployments.json`](contracts/deployments.json).
 
+## 💡 Innovations only the oracle makes possible
+
+Because Merit has a **deterministic verification oracle** (the judge), it can do things no toll-booth or marketplace can — each settles a bet, a benchmark, or an equilibrium *against ground truth*:
+
+- **Citation staking** — the writer bonds on every source it cites; the Auditor's verdict settles each bet (passed → bond + premium, refuted → **slashed**). An agent pricing its own confidence against a real oracle. See the `stake` event in any run — the cited-but-contradicted trap source gets slashed.
+- **Self-bootstrapping benchmark** (`GET /api/benchmark`) — every run logs the boundary-confidence citations as gold-set candidates, so the 100% precision/recall benchmark **co-evolves with real traffic** instead of staying a static snapshot (active learning on an adversarial oracle).
+- **Economic scalable oversight** (`npm run tournament`) — a self-play tournament where agents stake on citations settled by the *real* verifier, and **honesty emerges**: always-liars go bankrupt, an agent that only learns from payoff converges to truth (P(honest) 0.50 → 1.00), and the market's false-citation rate falls **43% → 0%**. We never program an agent to be honest — the economics make it the only way to survive. Full writeup: [`docs/scalable-oversight.md`](docs/scalable-oversight.md).
+
+> **The one-line argument:** every one of these *requires proof-of-citation as a settlement oracle.* A me-too stack has nothing to settle a bet, grow a benchmark, or price an emergent equilibrium against — so none of them are buildable without the moat.
+
 ## 🚀 Run it
 
 ```bash
