@@ -45,7 +45,8 @@
     "onboard-feed": "node scripts/onboard-feed.mjs",
     "volume": "node scripts/volume.mjs",
     "seed-creators": "node scripts/seed-creators.mjs",
-    "fund-payers": "node scripts/fund-payers.mjs"
+    "fund-payers": "node scripts/fund-payers.mjs",
+    "check-payers": "node scripts/check-payers.mjs"
   },
   "dependencies": {
     "@circle-fin/developer-controlled-wallets": "^10.7.1",
