@@ -107,6 +107,8 @@ Full record in [`contracts/deployments.json`](contracts/deployments.json).
 ## 💡 Innovations only the oracle makes possible
 
 > 🔨 **[Try to get a lie paid →](https://merit-ecru.vercel.app/break.html)** — submit a fabricated citation on the live site and watch the verifier **refuse it before a cent moves**, with a live "attacks held" counter and every attempt harvested into the gold set. This is the one demo a self-report citation agent *cannot* run: on a system that trusts the writer, the fabricated citation **pays**; here, the chain reverts.
+>
+> Also live: **[/honesty.html](https://merit-ecru.vercel.app/honesty.html)** (the Citation Honesty Index — verification, not trust) · **[/passport.html](https://merit-ecru.vercel.app/passport.html)** (claim your domain via `.well-known`, get an unforgeable "Cited by AI — Verified by Merit" badge) · the **`verify_citation` MCP tool** + `POST /api/verify` (the Citation Verification Oracle any agent can call).
 
 Because Merit has a **deterministic verification oracle** (the judge), it can do things no toll-booth or marketplace can — each settles a bet, a benchmark, or an equilibrium *against ground truth*:
 
