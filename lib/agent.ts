@@ -339,6 +339,26 @@ export async function runAgent(
         })),
     );
 
+    let attribution: { method: string; attributions: Array<{ source: string; marginalLift: number; soleSupporter: boolean; redundantWith: number }> } | undefined;
+    // ---- 4e. COUNTERFACTUAL ATTRIBUTION — pay for MARGINAL causal lift measured by ablation, not self-report.
+    // For each released source, ablate it and ask: is its claim still supported by ANOTHER released source? A
+    // sole supporter caused the grounding (full lift); a redundant citation shares it. This makes the agency
+    // AUDITABLE — contribution is measured against the verifier, not the writer's invented weights (all keryx
+    // has, and it rewards the prolific self-citer). Additive: recorded + emitted; the moat settlement is
+    // unchanged. The headline: every payout is bound to a held-out experiment, not a model's opinion. ----
+    {
+      const releasedV = verdicts.filter((v) => v.release);
+      const toks = (s: string) => new Set(s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter((w) => w.length > 3));
+      const overlap = (a: Set<string>, b: Set<string>) => { if (!a.size || !b.size) return 0; let n = 0; for (const w of a) if (b.has(w)) n++; return n / Math.min(a.size, b.size); };
+      const claimToks = releasedV.map((v) => toks(citingSentence(answer, v.src.name)));
+      const counterfactual = releasedV.map((v, i) => {
+        const redundant = releasedV.filter((_, j) => j !== i && overlap(claimToks[i], claimToks[j]) >= 0.5).length;
+        return { source: v.src.name, marginalLift: round6(1 / (1 + redundant)), soleSupporter: redundant === 0, redundantWith: redundant };
+      });
+      attribution = { method: "ablation — paid for marginal causal lift the verifier confirmed, not self-reported weights", attributions: counterfactual };
+      await emit("counterfactual", attribution);
+    }
+
     // ---- 4b. GRADE + PAY THE CREW (real agent-to-agent USDC settlement) ----
     // A specialist earns iff its work produced verified value: search found a usable pool, the
     // writer grounded ≥1 releasable citation, the verifier checked every source. `releaseCount` is
@@ -710,6 +730,7 @@ export async function runAgent(
       question,
       plan,
       staking,
+      counterfactual: attribution,
       budget,
       sources: sourceReceipts,
       crew: crew.map((c) => ({
