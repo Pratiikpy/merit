@@ -14,6 +14,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { after } from "next/server";
 import { db } from "./db";
 
 /** The data directory — read lazily (never at module load) so tests can point it at a temp dir. On serverless
@@ -54,7 +55,21 @@ export function saveDoc(name: string, obj: unknown): void {
   } catch (e) {
     console.error(`[store] save ${name} failed:`, (e as Error).message);
   }
-  void mirrorSave(name, obj);
+  scheduleMirror(name, obj);
+}
+
+/** Schedule the Supabase mirror so it actually completes on serverless. On Vercel the function FREEZES the
+ *  instant the response is sent — a bare `void mirrorSave()` is cut off before its upsert flushes (this is why
+ *  the live mirror silently never landed). `after()` keeps the function alive until the mirror finishes. Outside
+ *  a request scope (scripts, boot hydration) `after()` throws → fall back to fire-and-forget (a long-running
+ *  process completes it anyway). */
+function scheduleMirror(name: string, obj: unknown): void {
+  if (!mirrorEnabled()) return;
+  try {
+    after(() => mirrorSave(name, obj));
+  } catch {
+    void mirrorSave(name, obj);
+  }
 }
 
 function mirrorEnabled(): boolean {
