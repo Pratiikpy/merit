@@ -158,6 +158,11 @@ merit-verify:0xYourWalletAddress
 Merit reads your recent posts, registers you, and from then on **every verified citation settles sub-cent
 USDC to your wallet on Arc** — hallucinated or unsupported citations pay nothing. That's the whole point.
 
+**16 real public feeds are already indexed** as citable creators — HuggingFace, Vitalik, Ethereum Foundation,
+OpenAI, CoinDesk, Cloudflare, GitHub, Krebs, Paul Graham, WIRED, Ars Technica… each with a receive-only wallet
++ an on-chain ERC-8004 identity. See **[PUBLISHERS.md](PUBLISHERS.md)** (honestly labeled: permissionless
+listings, the model keryx used — an owner-verified creator via `merit-verify:` is the stronger signal).
+
 ## 🤝 The agent-labor market
 
 The lead agent doesn't do the work itself — it **hires a crew** from an open pool of specialist
