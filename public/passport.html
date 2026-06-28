@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proof-of-Citation Passport — Merit</title>
+<meta name="description" content="Prove your domain, get paid when AI verifiably cites you, and embed a 'Cited by AI — Verified by Merit' badge no self-report agent can fake.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}html,body{margin:0;padding:0;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:680px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  nav a.back{font-size:14px;color:#6B7280;text-decoration:none;font-weight:600;}nav a.back:hover{color:#0A0A0A;}
+  h1{font-size:40px;line-height:1.05;letter-spacing:-.03em;margin:46px 0 14px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 30px;}
+  .step{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin:26px 0 8px;}
+  pre{background:#0A0A0A;color:#F3F4F6;border-radius:12px;padding:16px 18px;overflow:auto;font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.5;margin:0;}
+  .card{border:1px solid #ECECEE;border-radius:16px;padding:22px;box-shadow:0 1px 2px rgba(10,10,10,.04);margin-top:26px;}
+  .row{display:flex;gap:10px;}
+  input{flex:1;font-family:inherit;font-size:15px;padding:12px 14px;border:1px solid #D1D5DB;border-radius:10px;outline:none;}
+  input:focus{border-color:#0A0A0A;}
+  button.go{font-family:inherit;font-weight:700;font-size:15px;padding:12px 22px;border:0;border-radius:10px;background:#0A0A0A;color:#fff;cursor:pointer;white-space:nowrap;}
+  button.go:hover{opacity:.88;}button.go:disabled{opacity:.5;}
+  #out{margin-top:16px;display:none;}
+  .ok{border:1px solid #BBF7D0;background:#F0FDF4;border-radius:12px;padding:18px;}
+  .ok h3{margin:0 0 10px;font-size:17px;color:#15803D;}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:14px;border-top:1px solid #DCFCE7;}
+  .kv:first-of-type{border-top:0;}.kv .v{font-family:'IBM Plex Mono',monospace;font-size:12.5px;word-break:break-all;text-align:right;}
+  .err{border:1px solid #FECACA;background:#FEF2F2;border-radius:12px;padding:14px;color:#991B1B;font-size:14px;}
+  .embed{margin-top:12px;}.embed pre{font-size:11.5px;}
+  .hint{font-size:13px;color:#6B7280;margin-top:8px;}
+  .why{margin:30px 0;padding:18px 20px;border-left:3px solid #0A0A0A;background:#FAFAFA;border-radius:0 10px 10px 0;font-size:15px;}
+  footer{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#9CA3AF;margin-top:36px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <a class="back" href="/">← back to demo</a>
+  </nav>
+
+  <h1>Claim your domain.<br>Get the badge AI can't fake.</h1>
+  <p class="sub">Prove you own your site, become an <strong>owner-verified</strong> creator, and earn USDC whenever an agent <em>verifiably</em> cites you — then embed a badge that resolves against Merit's verifier, so a self-report agent's "cited me" badge is unforgeable noise next to yours.</p>
+
+  <div class="step">Step 1 — publish this at your domain root</div>
+  <pre>// https://yourdomain.com/.well-known/merit.json
+{
+  "wallet": "0xYourPayoutAddress",
+  "name": "Your Publication",
+  "content": "A sentence or two you want agents to be able to cite + pay you for."
+}</pre>
+  <p class="hint">Works for any site/CMS (no feed, no MetaMask gauntlet, no editing XML). The wallet is receive-only — Merit never holds a key.</p>
+
+  <div class="card">
+    <div class="step" style="margin-top:0">Step 2 — claim it</div>
+    <div class="row">
+      <input id="domain" type="text" placeholder="yourdomain.com" autocomplete="off" spellcheck="false">
+      <button class="go" id="go">Verify domain</button>
+    </div>
+    <div id="out"></div>
+  </div>
+
+  <div class="why"><b>Why no one can fake it:</b> Merit's badge resolves against the <b>deterministic verifier + on-chain settlement</b> — a reader or crawling agent re-checks it. A self-report agent's citation is one LLM saying it cited you, so any site could claim that badge and no one could verify it. Yours is unforgeable <em>precisely because of the verifier they lack.</em></div>
+
+  <footer>Merit — your domain, your wallet, your proof. Verification you can embed.</footer>
+</div>
+
+<script>
+(function(){
+  var dom=document.getElementById('domain'),go=document.getElementById('go'),out=document.getElementById('out');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function show(h){out.innerHTML=h;out.style.display='block';}
+  async function claim(){
+    var d=dom.value.trim();if(!d){dom.focus();return;}
+    go.disabled=true;go.textContent='Verifying…';out.style.display='none';
+    try{
+      var res=await fetch('/api/passport',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({domain:d})});
+      var r=await res.json();
+      if(!res.ok){show('<div class="err">'+esc(r.error||('failed ('+res.status+')'))+'</div>');return;}
+      show('<div class="ok"><h3>✓ '+esc(r.name)+' is owner-verified</h3>'+
+        '<div class="kv"><span>domain</span><span class="v">'+esc(r.domain)+'</span></div>'+
+        '<div class="kv"><span>payout wallet (yours)</span><span class="v">'+esc(r.wallet)+'</span></div>'+
+        '<div class="kv"><span>ERC-8004 identity</span><span class="v">#'+esc(r.agentId||'—')+'</span></div>'+
+        '<div class="embed"><div class="hint">Your badge — embed it anywhere:</div><img src="'+esc(r.badge)+'" alt="Cited by AI — Verified by Merit" height="20" style="margin:6px 0 8px">'+
+        '<pre>'+esc(r.embed)+'</pre></div></div>');
+    }catch(e){show('<div class="err">Could not reach Merit.</div>');}
+    finally{go.disabled=false;go.textContent='Verify domain';}
+  }
+  go.addEventListener('click',claim);
+  dom.addEventListener('keydown',function(e){if(e.key==='Enter')claim();});
+})();
+</script>
+</body>
+</html>

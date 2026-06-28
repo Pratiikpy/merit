@@ -1,0 +1,5 @@
+{
+  "wallet": "0x1111111111111111111111111111111111111111",
+  "name": "Merit (example domain claim)",
+  "content": "This file is the Proof-of-Citation Passport format: publish /.well-known/merit.json with your payout wallet to become an owner-verified creator and earn USDC when an agent verifiably cites you."
+}
