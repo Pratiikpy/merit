@@ -48,6 +48,28 @@ const TOOL = {
   },
 };
 
+// The Citation Verification Oracle as an MCP tool — the truth-check ANY agent can call before paying a
+// citation. This is how Merit spreads: a question-asker tool spreads questions; THIS spreads the verifier
+// every reading agent (self-report ones included) needs underneath so it never pays for a hallucination.
+const VERIFY_TOOL = {
+  name: "verify_citation",
+  description:
+    "Verify whether a citation is GROUNDED before paying for it. Give Merit's Citation Verification Oracle a " +
+    "(claim, source) pair; it runs a deterministic numeric verifier + an adversarial proof-of-citation judge " +
+    "and returns a SIGNED, tamper-evident verdict (SUPPORTED/REFUSED) a settlement hook can consume so a " +
+    "hallucinated citation never settles. Read-only, idempotent, spends no USDC. Use it to gate ANY agent's " +
+    "citation payments — including self-report agents whose 'citation' is one LLM grading its own homework.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      claim: { type: "string", description: "The cited claim — the sentence the source is cited for." },
+      source: { type: "string", description: "The source content the claim should be grounded in (raw text)." },
+    },
+    required: ["claim", "source"],
+  },
+  annotations: { title: "Verify a citation (signed grounding oracle)", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+};
+
 function send(msg) {
   process.stdout.write(JSON.stringify(msg) + "\n");
 }
@@ -122,6 +144,28 @@ async function runMerit(args) {
   return lines.join("\n");
 }
 
+async function runVerify(args) {
+  const claim = String(args.claim || "").trim();
+  const source = String(args.source || "").trim();
+  if (!claim || !source) throw meritErr("`claim` and `source` are both required (raw text).", false);
+  const res = await fetch(`${BASE}/api/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ claim, source }),
+  }).catch((e) => {
+    throw meritErr(`cannot reach Merit at ${BASE} (${e.message}) — is the server running?`, true);
+  });
+  const v = await res.json().catch(() => ({}));
+  if (!res.ok) throw meritErr(v.error || `Merit /api/verify returned HTTP ${res.status}`, res.status >= 500 || res.status === 429);
+  return [
+    `VERDICT  ${v.verdict}  (${v.grounded ? "grounded" : "NOT grounded"})`,
+    `checked by: ${v.by}`,
+    `reasoning: ${v.reasoning}`,
+    `settlement: ${v.settlement}`,
+    v.signature ? `signed verdict — signer ${v.signer}, sig ${String(v.signature).slice(0, 18)}… (re-canonicalize the body to verify offline)` : "",
+  ].filter(Boolean).join("\n");
+}
+
 async function handle(line) {
   let msg;
   try {
@@ -135,14 +179,16 @@ async function handle(line) {
   } else if (typeof method === "string" && method.startsWith("notifications/")) {
     // notifications have no response
   } else if (method === "tools/list") {
-    ok(id, { tools: [TOOL] });
+    ok(id, { tools: [TOOL, VERIFY_TOOL] });
   } else if (method === "tools/call") {
-    if (params?.name !== TOOL.name) {
+    const handlers = { [TOOL.name]: runMerit, [VERIFY_TOOL.name]: runVerify };
+    const fn = handlers[params?.name];
+    if (!fn) {
       fail(id, -32602, `Unknown tool: ${params?.name}`);
       return;
     }
     try {
-      const text = await runMerit(params.arguments || {});
+      const text = await fn(params.arguments || {});
       ok(id, { content: [{ type: "text", text }] });
     } catch (e) {
       // Structured, machine-readable tool error so the calling agent can reason (retry vs give up) rather
