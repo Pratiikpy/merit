@@ -17,7 +17,7 @@ export async function register() {
   const { authRequired } = await import("./lib/auth");
 
   // 1. Restore durable docs from the mirror (best-effort; no-op without the Supabase mirror).
-  for (const name of ["ledger", "history", "apikeys", "learn", "hires"]) {
+  for (const name of ["ledger", "history", "apikeys", "learn", "hires", "registry", "benchmark"]) {
     try {
       await hydrateDoc(name);
     } catch {

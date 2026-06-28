@@ -8,7 +8,7 @@ import path from "node:path";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { effectivePrice } from "./pricing";
 import { learnedTrust } from "./history";
-import { dataDir } from "./store";
+import { dataDir, saveDoc } from "./store";
 
 export interface Source {
   id: string;
@@ -160,18 +160,10 @@ function ensureLoaded(): Source[] {
 
 function persist() {
   if (!cache) return;
-  try {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-    // Atomic write: serialize to a temp file then rename, so a concurrent
-    // reader (or a crash mid-write) never sees a truncated registry.
-    const tmp = `${FILE}.${process.pid}.tmp`;
-    // No secrets to strip — a Source carries only a receive-only payout address (see newWallet),
-    // never a private key, so the public `.data` registry is key-free by construction.
-    fs.writeFileSync(tmp, JSON.stringify(cache, null, 2));
-    fs.renameSync(tmp, FILE);
-  } catch (e) {
-    console.error("[registry] persist failed:", (e as Error).message);
-  }
+  // saveDoc writes dataDir()/registry.json atomically AND mirrors to Supabase (after()-flushed on serverless),
+  // so onboarded creators survive cold starts. A Source carries only a receive-only payout address (newWallet),
+  // never a private key, so the mirrored registry is key-free by construction.
+  saveDoc("registry", cache);
 }
 
 // ---- Per-publisher ERC-8004 identities (discovered sources) ----
