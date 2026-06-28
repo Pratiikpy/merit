@@ -300,6 +300,28 @@ export async function runAgent(
       }
     }
 
+    // ---- 4c. CITATION STAKING — the writer staked a bond on every source it cited; the Auditor's verdict
+    // settles each bet. A cited source that PASSES returns the bond + a premium; one the Auditor REFUTES is
+    // SLASHED. The agent pricing its own confidence against a ground-truth oracle — a continuous price on
+    // being-right that is impossible without a deterministic judge to settle the bet (no toll/marketplace can
+    // copy it). Additive: it records + emits the bets, never alters the core settlement. ----
+    const STAKE_BOND = 0.01, STAKE_PREMIUM = 0.25;
+    const stakeBets = verdicts
+      .filter((v) => v.cited)
+      .map((v) => ({
+        source: v.src.name,
+        bond: STAKE_BOND,
+        outcome: (v.release ? "won" : "slashed") as "won" | "slashed",
+        delta: round6(v.release ? STAKE_BOND * STAKE_PREMIUM : -STAKE_BOND),
+      }));
+    const staking = {
+      bonded: round6(stakeBets.length * STAKE_BOND),
+      pnl: round6(stakeBets.reduce((s, b) => s + b.delta, 0)),
+      calibration: stakeBets.length ? round6(stakeBets.filter((b) => b.outcome === "won").length / stakeBets.length) : 1,
+      bets: stakeBets,
+    };
+    await emit("stake", staking);
+
     // ---- 4b. GRADE + PAY THE CREW (real agent-to-agent USDC settlement) ----
     // A specialist earns iff its work produced verified value: search found a usable pool, the
     // writer grounded ≥1 releasable citation, the verifier checked every source. `releaseCount` is
@@ -670,6 +692,7 @@ export async function runAgent(
     const receiptBody = {
       question,
       plan,
+      staking,
       budget,
       sources: sourceReceipts,
       crew: crew.map((c) => ({
