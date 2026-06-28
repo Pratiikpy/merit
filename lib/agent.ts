@@ -20,6 +20,7 @@ import { recordLedgerSettlement } from "./ledger";
 import { keccak256, toHex } from "viem";
 import { effectivePrice } from "./pricing";
 import { allocateBudget, shouldAbstain } from "./planner";
+import { recordBenchCandidates } from "./bench";
 import { sourceAllowed, releaseHold, type RunPolicy } from "./policy";
 import { resolveSourceContent } from "./providers";
 import { adaptersPass } from "./adapters";
@@ -321,6 +322,22 @@ export async function runAgent(
       bets: stakeBets,
     };
     await emit("stake", staking);
+
+    // ---- 4d. SELF-BOOTSTRAPPING BENCHMARK — log the citations the verifier was LEAST sure about (boundary
+    // confidence) as gold-set candidates, so the 100% P/R benchmark co-evolves with real traffic (active
+    // learning on the oracle) instead of staying a static snapshot. Pure data — never gates a payment. ----
+    recordBenchCandidates(
+      verdicts
+        .filter((v) => v.cited)
+        .map((v) => ({
+          source: v.src.name,
+          claim: citingSentence(answer, v.src.name),
+          verdict: (v.release ? "released" : "refused") as "released" | "refused",
+          confidence: v.confidence,
+          runId,
+          at: Date.now(),
+        })),
+    );
 
     // ---- 4b. GRADE + PAY THE CREW (real agent-to-agent USDC settlement) ----
     // A specialist earns iff its work produced verified value: search found a usable pool, the
