@@ -12,7 +12,7 @@ import { GatewayClient } from "@circle-fin/x402-batching/client";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 
 const BASE = process.env.MERIT_BASE || "http://localhost:3000";
-const PER = Math.max(1, Math.min(10, parseInt(process.argv[2] || "3", 10)));
+const PER = Math.max(1, Math.min(500, parseInt(process.argv[2] || "3", 10)));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const { payers } = JSON.parse(readFileSync(".data/payers.json", "utf8"));
@@ -53,17 +53,24 @@ for (let i = 0; i < payers.length; i++) {
   }
 }
 
-const resolved = settlements.filter((s) => s.onchain).length;
-const total = settlements.reduce((s, x) => s + x.amount, 0);
-const uniquePayers = new Set(settlements.map((s) => s.payer)).size;
-mkdirSync(".data", { recursive: true });
-writeFileSync(".data/settlements.json", JSON.stringify({ at: process.env.RUN_AT || null, settlements }, null, 2));
+// Accumulate across runs — load prior settlements + merge, deduped by settlement id, so TRACTION.md reflects
+// CUMULATIVE traction, not just this batch.
+let prior = [];
+try { prior = JSON.parse(readFileSync(".data/settlements.json", "utf8")).settlements || []; } catch { /* first run */ }
+const seen = new Set();
+const merged = [...prior, ...settlements].filter((s) => { if (seen.has(s.tx)) return false; seen.add(s.tx); return true; });
 
-console.log(`\n  ── ${okPayers}/${payers.length} distinct payers · ${settlements.length} settlements · $${total.toFixed(4)} · ${resolved} batch-resolved (0x) ──`);
-const sample = settlements.slice(0, 14);
+const resolved = merged.filter((s) => s.onchain).length;
+const total = merged.reduce((s, x) => s + x.amount, 0);
+const uniquePayers = new Set(merged.map((s) => s.payer)).size;
+mkdirSync(".data", { recursive: true });
+writeFileSync(".data/settlements.json", JSON.stringify({ at: process.env.RUN_AT || null, settlements: merged }, null, 2));
+
+console.log(`\n  ── this run: ${settlements.length} settlements · cumulative: ${merged.length} from ${uniquePayers} payers · $${total.toFixed(4)} · ${resolved} batch-resolved (0x) ──`);
+const sample = merged.slice(0, 14);
 const md = `# Traction
 
-*${settlements.length} verified settlements from ${uniquePayers} distinct on-chain payers${process.env.RUN_AT ? ` · ${process.env.RUN_AT}` : ""}.*
+*${merged.length} verified settlements from ${uniquePayers} distinct on-chain payers${process.env.RUN_AT ? ` · ${process.env.RUN_AT}` : ""}.*
 
 > **Honest disclosure:** these are **our own** ${uniquePayers} funded agents exercising Merit's agent-labor
 > market — not external users. But the settlement is **real on Arc**: each payer funded its own Circle Gateway
@@ -75,7 +82,7 @@ const md = `# Traction
 | metric | value |
 |---|---|
 | distinct on-chain payers | ${uniquePayers} |
-| settlements (Circle settlement IDs) | ${settlements.length} |
+| settlements (Circle settlement IDs) | ${merged.length} |
 | USDC settled | $${total.toFixed(4)} |
 | on-chain Gateway deposits | ${uniquePayers} (each 2 USDC, verifiable: wallet 20 → 18) |
 | batch-resolved 0x tx | ${resolved} |

@@ -1,6 +1,6 @@
 # Traction
 
-*80 verified settlements from 10 distinct on-chain payers · 2026-06-27.*
+*1547 verified settlements from 10 distinct on-chain payers · 2026-06-27.*
 
 > **Honest disclosure:** these are **our own** 10 funded agents exercising Merit's agent-labor
 > market — not external users. But the settlement is **real on Arc**: each payer funded its own Circle Gateway
@@ -12,8 +12,8 @@
 | metric | value |
 |---|---|
 | distinct on-chain payers | 10 |
-| settlements (Circle settlement IDs) | 80 |
-| USDC settled | $0.5240 |
+| settlements (Circle settlement IDs) | 1547 |
+| USDC settled | $10.0700 |
 | on-chain Gateway deposits | 10 (each 2 USDC, verifiable: wallet 20 → 18) |
 | batch-resolved 0x tx | 0 |
 
@@ -21,20 +21,20 @@
 
 | payer | specialist | amount | settlement id |
 |---|---|---|---|
-| 0x7E4bC35C89… | scout | $0.006000 | `12897e9f-f7ab-4f62-a…` |
-| 0x7E4bC35C89… | ferret | $0.003000 | `e95712d5-40dc-4509-9…` |
-| 0x7E4bC35C89… | scribe | $0.012000 | `12254591-d2ae-4660-8…` |
-| 0x7E4bC35C89… | quill | $0.006000 | `99fbe23d-2300-42e5-b…` |
-| 0x7E4bC35C89… | auditor | $0.008000 | `70e1c96c-4766-4af1-a…` |
-| 0x7E4bC35C89… | tally | $0.004000 | `160bcc11-a0a4-44a5-a…` |
-| 0x7E4bC35C89… | scout | $0.006000 | `60db914d-ae39-4716-9…` |
-| 0x7E4bC35C89… | ferret | $0.003000 | `7110e81d-cdb7-435c-8…` |
-| 0x72DaeC67Bc… | ferret | $0.003000 | `eb5729b4-b5d7-4a20-9…` |
-| 0x72DaeC67Bc… | scribe | $0.012000 | `17b044a2-dbac-4b5e-b…` |
-| 0x72DaeC67Bc… | quill | $0.006000 | `0a3a342d-5980-48e1-a…` |
-| 0x72DaeC67Bc… | auditor | $0.008000 | `8020ec97-89a2-4a7c-8…` |
-| 0x72DaeC67Bc… | tally | $0.004000 | `9ad335c5-2ee6-4d64-8…` |
-| 0x72DaeC67Bc… | scout | $0.006000 | `d90c3876-9679-42f9-9…` |
+| 0x7E4bC35C89… | scout | $0.006000 | `49b1c492-0ab6-4236-8…` |
+| 0x7E4bC35C89… | ferret | $0.003000 | `26dd971e-ed12-4993-b…` |
+| 0x7E4bC35C89… | scribe | $0.012000 | `74d62126-dd35-43b9-b…` |
+| 0x7E4bC35C89… | quill | $0.006000 | `15fb5962-4244-4448-b…` |
+| 0x7E4bC35C89… | auditor | $0.008000 | `235f2d3b-a1b4-4b9e-b…` |
+| 0x7E4bC35C89… | tally | $0.004000 | `da50862b-b9fe-408b-a…` |
+| 0x7E4bC35C89… | scout | $0.006000 | `f934dd75-677d-4996-b…` |
+| 0x7E4bC35C89… | ferret | $0.003000 | `b244de58-28b5-4725-9…` |
+| 0x7E4bC35C89… | scribe | $0.012000 | `9e511b22-7a36-45cd-b…` |
+| 0x7E4bC35C89… | quill | $0.006000 | `53a2d6cf-1c95-40f2-b…` |
+| 0x72DaeC67Bc… | ferret | $0.003000 | `08a75b2e-6e18-4578-8…` |
+| 0x72DaeC67Bc… | scribe | $0.012000 | `06971e22-41e5-4097-8…` |
+| 0x72DaeC67Bc… | quill | $0.006000 | `55f69605-ea01-4796-9…` |
+| 0x72DaeC67Bc… | auditor | $0.008000 | `10e183db-d6a2-49e4-9…` |
 
 ## Methodology
 
