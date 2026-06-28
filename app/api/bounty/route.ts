@@ -4,6 +4,7 @@ import { judgeCitation, looksLikeInjection } from "@/lib/llm";
 import { fabricatedFigures } from "@/lib/numcheck";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { recordBounty } from "@/lib/bounty";
+import { recordBenchCandidates } from "@/lib/bench";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,6 +54,9 @@ export async function POST(req: Request) {
   }
   const fooled = verdict === "SUPPORTED";
   recordBounty({ source: src.name, claim, verdict, fooled, by, at: Date.now() });
+  // Antifragile: every adversarial attempt is harvested into the gold set — the verifier gets HARDER to fool
+  // as people attack it. (Break-the-Verifier console.) Deduped by source+claim in the bench store.
+  recordBenchCandidates([{ source: src.name, claim, verdict: fooled ? "released" : "refused", confidence: 0.5, runId: "attack", at: Date.now() }]);
 
   return NextResponse.json({
     source: src.name,

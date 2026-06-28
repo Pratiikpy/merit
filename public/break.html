@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Break the verifier — Merit</title>
+<meta name="description" content="Try to get a lie paid. Mis-cite a source and watch Merit's verifier refuse it before a cent moves. The only AI market that dares you to break it.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:680px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  nav a.back{font-size:14px;color:#6B7280;text-decoration:none;font-weight:600;}
+  nav a.back:hover{color:#0A0A0A;}
+  h1{font-size:40px;line-height:1.05;letter-spacing:-.03em;margin:46px 0 14px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 26px;}
+  .counters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px;}
+  .stat{flex:1;min-width:140px;border:1px solid #ECECEE;border-radius:12px;padding:14px 16px;}
+  .stat .n{font-size:26px;font-weight:800;letter-spacing:-.02em;font-family:'IBM Plex Mono',monospace;}
+  .stat .l{font-size:12px;color:#6B7280;margin-top:2px;}
+  .antif{font-size:13px;color:#15803D;font-weight:600;margin:-18px 0 28px;}
+  .card{border:1px solid #ECECEE;border-radius:16px;padding:22px;box-shadow:0 1px 2px rgba(10,10,10,.04);}
+  .lbl{font-size:13px;font-weight:700;margin-bottom:8px;}
+  .ex{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+  .exbtn{text-align:left;border:1px solid #FECACA;background:#FEF2F2;border-radius:10px;padding:11px 14px;cursor:pointer;font-family:inherit;font-size:14px;color:#991B1B;transition:background .12s;}
+  .exbtn:hover{background:#FEE2E2;}
+  .exbtn b{color:#7F1D1D;}
+  select,textarea{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid #D1D5DB;border-radius:10px;outline:none;}
+  textarea{resize:vertical;min-height:64px;margin-top:8px;}
+  select:focus,textarea:focus{border-color:#0A0A0A;}
+  .row{display:flex;gap:10px;margin-top:12px;}
+  button.go{font-family:inherit;font-weight:700;font-size:15px;padding:11px 22px;border:0;border-radius:10px;background:#0A0A0A;color:#fff;cursor:pointer;white-space:nowrap;}
+  button.go:hover{opacity:.88;} button.go:disabled{opacity:.5;}
+  #out{margin-top:16px;display:none;}
+  .held{border:1px solid #BBF7D0;background:#F0FDF4;border-radius:12px;padding:16px;}
+  .held h3{margin:0 0 6px;font-size:17px;color:#15803D;}
+  .fooled{border:1px solid #FDE68A;background:#FFFBEB;border-radius:12px;padding:16px;}
+  .fooled h3{margin:0 0 6px;font-size:17px;color:#92400E;}
+  .err{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:14px;color:#374151;font-size:14px;}
+  .meta{font-size:13px;color:#4B5563;margin-top:8px;}
+  .meta code{background:#F3F4F6;padding:1px 5px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .vs{margin:30px 0;padding:18px 20px;border-left:3px solid #0A0A0A;background:#FAFAFA;border-radius:0 10px 10px 0;font-size:15px;}
+  .vs b{font-weight:700;}
+  footer{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#9CA3AF;margin-top:36px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <a class="back" href="/">← back to demo</a>
+  </nav>
+
+  <h1>Try to get a lie paid.</h1>
+  <p class="sub">Mis-cite a source. Watch Merit's verifier <strong>refuse it before a cent moves</strong> — and the chain revert. This is the only AI market that hands you the attack surface and dares you to break it.</p>
+
+  <div class="counters" id="counters">
+    <div class="stat"><div class="n" id="held">—</div><div class="l">attacks the moat held</div></div>
+    <div class="stat"><div class="n" id="foolrate">—</div><div class="l">fool rate</div></div>
+    <div class="stat"><div class="n" id="bench">—</div><div class="l">boundary cases learned</div></div>
+  </div>
+  <div class="antif">↑ The verifier gets <b>harder to fool</b> as you attack it — every attempt is harvested into the gold set.</div>
+
+  <div class="card">
+    <div class="lbl">One-click attacks (fabricated figures — the verifier catches these with zero LLM)</div>
+    <div class="ex" id="examples">
+      <button class="exbtn" data-src="StableData API" data-claim="Cross-border B2B stablecoin settlement reached $40 trillion in annualized volume in 2026.">❌ Claim <b>StableData</b> reported <b>$40 trillion</b> &nbsp;<span style="color:#9CA3AF">(it said $4.1T)</span></button>
+      <button class="exbtn" data-src="CryptoBuzz Daily" data-claim="CryptoBuzz reported a celebrity memecoin surged 4,000% this week.">❌ Claim <b>CryptoBuzz</b> reported a <b>4,000%</b> surge &nbsp;<span style="color:#9CA3AF">(it said 400%)</span></button>
+    </div>
+
+    <div class="lbl">…or craft your own</div>
+    <select id="src"><option value="">loading sources…</option></select>
+    <textarea id="claim" placeholder="Type a claim that mis-cites that source — e.g. invent a number it never said."></textarea>
+    <div class="row"><button class="go" id="go">Attack the verifier</button></div>
+    <div id="out"></div>
+  </div>
+
+  <div class="vs">
+    <b>Why this demo only exists here:</b> run the same fabricated citation on a system that trusts the writer's self-report — every leading citation-toll agent does — and it <b>pays real USDC for the lie.</b> Merit's deterministic verifier + adversarial judge catch it, and <code class="mono">MeritVerificationHook</code> reverts the settlement <b>on-chain</b>. A lie is the one thing that cannot get paid here.
+  </div>
+
+  <footer>Merit — verification isn't a feature, it's the product. Every attack makes it stronger.</footer>
+</div>
+
+<script>
+(function(){
+  var srcSel=document.getElementById('src'),claim=document.getElementById('claim'),go=document.getElementById('go'),out=document.getElementById('out');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  async function loadCounters(){
+    try{ var b=await fetch('/api/bounty/board').then(r=>r.json()); var s=b.stats||{};
+      document.getElementById('held').textContent=(s.held!=null?s.held:0);
+      document.getElementById('foolrate').textContent=((s.foolRate||0)*100).toFixed(0)+'%';
+    }catch(e){}
+    try{ var bm=await fetch('/api/benchmark').then(r=>r.json()); document.getElementById('bench').textContent=(bm.total!=null?bm.total:0); }catch(e){}
+  }
+  async function loadSources(){
+    try{ var d=await fetch('/api/sources').then(r=>r.json());
+      srcSel.innerHTML='<option value="">— pick a source to mis-cite —</option>'+(d.sources||[]).map(function(s){return '<option>'+esc(s.name)+'</option>';}).join('');
+    }catch(e){ srcSel.innerHTML='<option value="">(could not load sources)</option>'; }
+  }
+  function show(html){out.innerHTML=html;out.style.display='block';}
+  async function attack(source,c){
+    if(!source||!c){return;}
+    go.disabled=true;go.textContent='Verifying…';out.style.display='none';
+    try{
+      var res=await fetch('/api/bounty',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({source:source,claim:c})});
+      var r=await res.json();
+      if(res.status===503){ show('<div class="err">The adversarial <b>LLM judge</b> is resting (this live demo runs keyless). But the <b>deterministic numeric verifier</b> never sleeps — try a claim with a fabricated <b>number</b> (like the one-click attacks above) and watch it get caught instantly.</div>'); return; }
+      if(!res.ok){ show('<div class="err">'+esc(r.error||('error '+res.status))+'</div>'); return; }
+      if(r.fooled){
+        show('<div class="fooled"><h3>⚠ Marked SUPPORTED</h3>The verifier paid this citation. <b>If the claim is genuinely false, you just found a defect</b> — that\'s the bounty, and the case is now in the gold set so it can never slip twice.<div class="meta">checked by: '+esc(r.by)+'</div></div>');
+      } else {
+        show('<div class="held"><h3>🛡 HELD — the lie was refused</h3>The verifier rejected this citation <b>before any USDC moved</b>, caught by the <b>'+esc(r.by)+'</b>. On a verified run, <code>MeritVerificationHook</code> reverts the on-chain settlement — a lie cannot get paid.<div class="meta">source: <code>'+esc(r.source)+'</code> · verdict: <code>REFUSED</code></div></div>');
+      }
+      loadCounters();
+    }catch(e){ show('<div class="err">Could not reach the verifier.</div>'); }
+    finally{ go.disabled=false;go.textContent='Attack the verifier'; }
+  }
+  document.getElementById('examples').addEventListener('click',function(e){ var b=e.target.closest('.exbtn'); if(!b)return; srcSel.value=b.dataset.src; claim.value=b.dataset.claim; attack(b.dataset.src,b.dataset.claim); });
+  go.addEventListener('click',function(){ attack(srcSel.value,claim.value.trim()); });
+  loadCounters(); loadSources();
+})();
+</script>
+</body>
+</html>
