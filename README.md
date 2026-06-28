@@ -269,10 +269,17 @@ Cursor) can call Merit as a tool. Start Merit, then point the client at it:
 }
 ```
 
-One tool — **`merit_research`** (`question`, optional `budget` / `discover` / `tier`) — runs the full
-loop and returns the answer **plus the receipt**: who was paid or refused and why, with Arc tx links.
-The caller doesn't just get an answer; it gets one whose every citation was paid for *only if it
-verified*. (Dependency-free stdio JSON-RPC; no SDK.)
+**Two tools, dependency-free stdio JSON-RPC, no SDK:**
+
+- **`merit_research`** (`question`, optional `budget`/`discover`/`tier`) — runs the full loop and returns the
+  answer **plus the receipt**: who was paid or refused and why, with Arc tx links. Every citation was paid for
+  *only if it verified*.
+- **`verify_citation`** (`claim`, `source`) — the **Citation Verification Oracle (CVO)**: give it *any*
+  (claim, source) pair and it returns a **signed, tamper-evident verdict** (SUPPORTED/REFUSED) a settlement
+  hook can consume *before* paying. This is the truth-check every reading agent needs underneath — including
+  the self-report agents whose "citation" is one LLM grading its own homework. A question-asker tool spreads
+  questions; **this spreads the verifier every one of those questions has to prove itself to.** ([`POST
+  /api/verify`](app/api/verify/route.ts) for non-MCP callers.)
 
 <details>
 <summary><b>Architecture</b></summary>
