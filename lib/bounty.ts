@@ -5,8 +5,7 @@
  * aggregates a live `foolRate` — judge-eval that never stops, crowdsourced. Append-only in `.data/bounty.json`,
  * atomic-write, best-effort (never throws into a request).
  */
-import fs from "node:fs";
-import path from "node:path";
+import { loadDoc, saveDoc } from "./store";
 
 export interface BountyEntry {
   source: string;
@@ -25,38 +24,18 @@ export interface BountyStats {
 }
 
 const MAX_ENTRIES = 500;
-let cache: BountyEntry[] | null = null;
 
-function dataDir(): string {
-  return process.env.MERIT_DATA_DIR || path.join(process.cwd(), ".data");
-}
-function dataFile(): string {
-  return path.join(dataDir(), "bounty.json");
-}
-
+// Persisted through the durable store (`.data/bounty.json` + the optional Supabase mirror), so live attack
+// attempts survive a serverless cold start instead of resetting to 0 on every redeploy.
 function load(): BountyEntry[] {
-  if (cache) return cache;
-  try {
-    cache = JSON.parse(fs.readFileSync(dataFile(), "utf-8")) as BountyEntry[];
-  } catch {
-    cache = [];
-  }
-  return cache;
+  return loadDoc<BountyEntry[]>("bounty", []);
 }
 
 export function recordBounty(entry: BountyEntry): void {
-  try {
-    const list = load();
-    list.push(entry);
-    if (list.length > MAX_ENTRIES) list.splice(0, list.length - MAX_ENTRIES);
-    fs.mkdirSync(dataDir(), { recursive: true });
-    const file = dataFile();
-    const tmp = `${file}.${process.pid}.tmp`;
-    fs.writeFileSync(tmp, JSON.stringify(list, null, 2));
-    fs.renameSync(tmp, file);
-  } catch (e) {
-    console.error("[bounty] record failed:", (e as Error).message);
-  }
+  const list = load();
+  list.push(entry);
+  if (list.length > MAX_ENTRIES) list.splice(0, list.length - MAX_ENTRIES);
+  saveDoc("bounty", list);
 }
 
 export function readBounties(n = MAX_ENTRIES): BountyEntry[] {
@@ -70,7 +49,7 @@ export function bountyStats(list: BountyEntry[] = load()): BountyStats {
   return { total, fooled, held: total - fooled, foolRate: total ? fooled / total : 0 };
 }
 
-/** Test seam: drop the in-memory cache so the next read reloads from disk. */
+/** Test seam (kept for API compatibility): the store reads from disk each call, so there is no cache to drop. */
 export function _resetBountyCache(): void {
-  cache = null;
+  /* no-op */
 }

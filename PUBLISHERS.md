@@ -3,7 +3,7 @@
 *16 real public feeds indexed as citable creators. **Honest disclosure:** these are permissionless
 listings — real publisher content with Merit-generated receive-only wallets; the publishers have not opted in
 via a `merit-verify:` marker (the same model keryx used for its public feeds). An owner-verified creator is a
-stronger signal; this is the open-listing tier.*
+stronger signal; this is the open-listing tier. The hosted demo serves a 7-source curated pool; all 16 live in the full registry.*
 
 | publisher | feed | payout wallet | ERC-8004 |
 |---|---|---|---|

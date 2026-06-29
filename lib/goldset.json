@@ -1,0 +1,18 @@
+[
+  { "source": "StableData API", "claim": "Cross-border B2B settlement is the dominant on-chain payment flow, with enterprises using USDC to cut FX and wire costs", "expect": "SUPPORTED" },
+  { "source": "StableData API", "claim": "Settlement finality under one second removed treasury teams' last operational objection", "expect": "SUPPORTED" },
+  { "source": "StableData API", "claim": "Cross-border B2B stablecoin settlement reached $40 trillion in annualized volume in 2026", "expect": "REFUSED" },
+  { "source": "StableData API", "claim": "Stablecoin adoption is driven mainly by retail meme-coin speculation", "expect": "REFUSED" },
+  { "source": "Chainletter Weekly", "claim": "Embedded wallets drove the first real consumer stablecoin usage by provisioning USDC silently at signup", "expect": "SUPPORTED" },
+  { "source": "Chainletter Weekly", "claim": "Trading, not consumer apps, is what drove stablecoin adoption", "expect": "REFUSED" },
+  { "source": "Dr. Lena Ortiz", "claim": "Regulatory clarity from MiCA and the GENIUS Act accelerated stablecoin payment adoption", "expect": "SUPPORTED" },
+  { "source": "Dr. Lena Ortiz", "claim": "Regulation played no role in stablecoin payment adoption", "expect": "REFUSED" },
+  { "source": "Ledger Lens", "claim": "Sub-cent nanopayments are the fastest-growing payment primitive of 2026, enabling pay-per-call models", "expect": "SUPPORTED" },
+  { "source": "Ledger Lens", "claim": "Nanopayments remain uneconomical for amounts below thirty cents", "expect": "REFUSED" },
+  { "source": "CryptoBuzz Daily", "claim": "Enterprise treasury demand for cross-border settlement is driving stablecoin adoption", "expect": "REFUSED" },
+  { "source": "CryptoBuzz Daily", "claim": "Stablecoin payment adoption is accelerating due to regulatory clarity", "expect": "REFUSED" },
+  { "source": "Anon Substack #4412", "claim": "Stablecoin volume is growing because businesses want faster cross-border settlement and lower fees than banks", "expect": "SUPPORTED" },
+  { "source": "Anon Substack #4412", "claim": "Stablecoin volume is growing because of high yields paid on stablecoin deposits", "expect": "REFUSED" },
+  { "source": "Northbridge Research", "claim": "Stablecoin payment adoption scaled strongly and is driving growth in 2026", "expect": "REFUSED" },
+  { "source": "Northbridge Research", "claim": "Stablecoin payment adoption stalled in 2026, staying under $90M in annualized volume", "expect": "SUPPORTED" }
+]

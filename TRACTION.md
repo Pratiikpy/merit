@@ -9,6 +9,12 @@
 > tx resolves when Gateway submits the batch. This is the same proof format the field's leaders report — the
 > difference is *what* it backs: Merit's settlement is gated by proof-of-citation.
 
+> **Live vs local — read this.** The 1,547 / $10.07 / 10-payer figures below are reproducible **local**
+> runs (`scripts/multi-pay.mjs` into the local ledger). The **deployed** instance reports its *own*
+> settlements live and independently verifiable at
+> [`/api/metrics`](https://merit-ecru.vercel.app/api/metrics) — a separate, smaller number by design.
+> `/api/metrics` is the single source of truth for any "settled" claim on the hosted site.
+
 | metric | value |
 |---|---|
 | distinct on-chain payers | 10 |

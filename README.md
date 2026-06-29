@@ -17,7 +17,7 @@ with a **signed, self-proving receipt** for every decision.
 <img src="https://img.shields.io/badge/Solidity-0.8.24-363636?style=flat-square&logo=solidity" alt="Solidity" />
 <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
 <img src="https://img.shields.io/badge/viem-2-2C2C2C?style=flat-square" alt="viem" />
-<img src="https://img.shields.io/badge/tests-277%20passing-3FB950?style=flat-square" alt="tests" />
+<img src="https://img.shields.io/badge/tests-287%20passing-3FB950?style=flat-square" alt="tests" />
 <img src="https://img.shields.io/badge/proof--of--citation-100%25%20P%2FR-3FB950?style=flat-square" alt="proof-of-citation" />
 <img src="https://img.shields.io/badge/license-Apache--2.0-3178C6?style=flat-square" alt="license" />
 </p>
@@ -42,13 +42,13 @@ with a **signed, self-proving receipt** for every decision.
 Give Merit a question + a USDC budget and a **lead agent** runs an autonomous research firm. It
 **hires specialist agents** — *search → write → verify* — and pays each in sub-cent USDC **only for
 work that verifies**, then pays the **creators** whose sources it actually cited
-(**proof-of-citation**), refunding everything that doesn't check out. Every payment is real, settles
-on **Arc**, and writes **portable on-chain reputation** (ERC-8004) for *both* the agents and the
-creators.
+(**proof-of-citation**), refunding everything that doesn't check out. Run live (`STUB=0`) every payment is **real USDC on
+Arc**; the hosted demo runs in a clearly-labeled stub mode. Either way it writes **portable on-chain
+reputation** (ERC-8004) for *both* the agents and the creators.
 
 It's **two-sided** — *agent → agent* (the lead hiring its crew) and *agent → creator* (paying the
 cited sources) — a settlement + trust layer for an agent economy, not just an app. Built on **Arc
-testnet** with **Circle Nanopayments** (x402 + Gateway batching), real LLM reasoning + an
+testnet** with **Circle Nanopayments** (x402 — the HTTP-native agent-payment standard — + Gateway batching), real LLM reasoning + an
 **adversarial proof-of-citation judge**, and **all three ERC-8004 registries** (identity, reputation,
 validation).
 
@@ -74,8 +74,8 @@ validation).
 
 ## 🛡️ The moat — proof-of-citation gates settlement, on-chain
 
-Merit's settlement is a native **ERC-8183 job** whose escrow release is gated by an **`IACPHook`**
-that embodies proof-of-citation — so money moves *only* if the cited work verifies. Not asserted —
+Merit's settlement is a native **ERC-8183 job** (the on-chain agent-job + escrow standard) whose escrow
+release is gated by an **`IACPHook`** (a settlement-gate contract interface) that embodies proof-of-citation — so money moves *only* if the cited work verifies. Not asserted —
 **deployed and proven**:
 
 - ✅ **A verified run RELEASES the escrow; a failed citation REVERTS `complete()` and refunds.** Proven
@@ -172,9 +172,9 @@ merit-verify:0xYourWalletAddress
 Merit reads your recent posts, registers you, and from then on **every verified citation settles sub-cent
 USDC to your wallet on Arc** — hallucinated or unsupported citations pay nothing. That's the whole point.
 
-**16 real public feeds are already indexed** as citable creators — HuggingFace, Vitalik, Ethereum Foundation,
-OpenAI, CoinDesk, Cloudflare, GitHub, Krebs, Paul Graham, WIRED, Ars Technica… each with a receive-only wallet
-+ an on-chain ERC-8004 identity. See **[PUBLISHERS.md](PUBLISHERS.md)** (honestly labeled: permissionless
+**16 real publisher feeds are indexed** in the registry as citable creators — HuggingFace, Vitalik, Ethereum
+Foundation, OpenAI, CoinDesk, Cloudflare, GitHub, Krebs, Paul Graham, WIRED, Ars Technica… each with a
+receive-only wallet + an on-chain ERC-8004 identity (the hosted demo serves a 7-source curated pool). See **[PUBLISHERS.md](PUBLISHERS.md)** (honestly labeled: permissionless
 listings, the model keryx used — an owner-verified creator via `merit-verify:` is the stronger signal).
 
 ## 🤝 The agent-labor market
@@ -223,11 +223,11 @@ Every claim Merit makes is independently recomputable from Arc, with **no Merit 
 | `npm run prove -- <receipt.json>` | the **whole run** — facts from chain **plus** judgment re-audited live |
 
 <details>
-<summary><b>All scripts</b> (25 — the full toolbox)</summary>
+<summary><b>All scripts</b> (24 — the full toolbox)</summary>
 
 | command | what it does |
 |---|---|
-| `npm test` | 277 unit tests (vitest) over the pure logic — the agency decision table, crew grade + whole-run budget-guard (`gradeSpecialist`/`withinBudget`), the run-receipt settlement-integrity rule (`summarizeRelease`), proof-of-citation matching (`citingSentence`, `parseJudgeVerdict`, `verifyCitations`, the pure `decideCitation` payment logic + the deterministic numeric verifier `fabricatedFigures`), RSS/Atom parsing, registry persistence, specialist hiring/grading/merit, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
+| `npm test` | 287 unit tests (vitest) over the pure logic — the agency decision table, crew grade + whole-run budget-guard (`gradeSpecialist`/`withinBudget`), the run-receipt settlement-integrity rule (`summarizeRelease`), proof-of-citation matching (`citingSentence`, `parseJudgeVerdict`, `verifyCitations`, the pure `decideCitation` payment logic + the deterministic numeric verifier `fabricatedFigures`), RSS/Atom parsing, registry persistence, specialist hiring/grading/merit, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
 | `npm run smoke` | end-to-end (54 checks): sources, full run, ledger consistency, the summary receipt, no private-key leak, the agent-labor market, a zero-budget pays-nothing invariant, off-topic pays no creators, onboarding, on-chain reputation, the MCP handshake, `verify-all`, `leaderboard`, the `challenge` re-audit |
 | `npm run prove-moat` | one command: a verified run **releases** the ERC-8183 escrow; an off-topic run **reverts** `complete()` via the hook, then refunds — the moat enforced on-chain |
 | `npm run audit-demo` | feeds the Auditor a genuine citation, two contradictions, and a **prompt-injection** — pays the real one, refuses the rest |

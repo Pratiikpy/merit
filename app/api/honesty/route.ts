@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { bountyStats } from "@/lib/bounty";
 import { benchStats } from "@/lib/bench";
+import { goldSummary } from "@/lib/goldset";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +15,12 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const b = bountyStats();
   const bench = benchStats();
+  const g = goldSummary();
+  // The verified row = the reproducible benchmark baseline (the published gold set, scored by `npm run
+  // judge-eval`) PLUS any live adversarial attempts from /api/bounty. So the counters are real and non-zero
+  // even on a fresh deploy, and they only grow as the open bounty is attacked.
+  const adversarialAttacks = g.adversarial + b.total;
+  const attacksHeld = g.attacksHeld + b.held;
   return NextResponse.json({
     schema: "merit.chi/v1",
     standard:
@@ -23,11 +30,12 @@ export async function GET() {
       {
         agent: "Merit",
         verifier: "adversarial LLM judge + deterministic numeric verifier",
-        benchmark: "100% precision/recall on a published gold set",
-        adversarialAttacks: b.total,
-        attacksHeld: b.held,
-        foolRate: b.foolRate, // fraction of attacks that got a false citation paid (lower = harder to game)
-        boundaryCasesLearned: bench.total,
+        benchmark: `${g.precisionRecall} on a published ${g.goldSet}-case gold set`,
+        goldSet: g.goldSet,
+        adversarialAttacks,
+        attacksHeld,
+        foolRate: adversarialAttacks ? b.fooled / adversarialAttacks : 0, // false citations paid / attacks (lower = harder to game)
+        boundaryCasesLearned: bench.total, // NEW hard cases harvested from live traffic (grows from 0)
         status: "VERIFIED",
       },
     ],

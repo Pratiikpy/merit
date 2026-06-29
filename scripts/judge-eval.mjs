@@ -12,27 +12,13 @@
  *
  *   Run (server up + LLM key):  node scripts/judge-eval.mjs
  */
+import GOLD from "../lib/goldset.json" with { type: "json" };
+
 const BASE = process.env.MERIT_BASE || "http://localhost:3000";
 
-// Each row: the verdict a CORRECT Auditor must return for (source, claim). Balanced; hard cases included.
-const GOLD = [
-  { source: "StableData API", claim: "Cross-border B2B settlement is the dominant on-chain payment flow, with enterprises using USDC to cut FX and wire costs", expect: "SUPPORTED" },
-  { source: "StableData API", claim: "Settlement finality under one second removed treasury teams' last operational objection", expect: "SUPPORTED" },
-  { source: "StableData API", claim: "Cross-border B2B stablecoin settlement reached $40 trillion in annualized volume in 2026", expect: "REFUSED" }, // fabricated number — content says $4.1T
-  { source: "StableData API", claim: "Stablecoin adoption is driven mainly by retail meme-coin speculation", expect: "REFUSED" }, // off-topic to the source
-  { source: "Chainletter Weekly", claim: "Embedded wallets drove the first real consumer stablecoin usage by provisioning USDC silently at signup", expect: "SUPPORTED" },
-  { source: "Chainletter Weekly", claim: "Trading, not consumer apps, is what drove stablecoin adoption", expect: "REFUSED" }, // contradicts ("not trading")
-  { source: "Dr. Lena Ortiz", claim: "Regulatory clarity from MiCA and the GENIUS Act accelerated stablecoin payment adoption", expect: "SUPPORTED" },
-  { source: "Dr. Lena Ortiz", claim: "Regulation played no role in stablecoin payment adoption", expect: "REFUSED" }, // contradicts
-  { source: "Ledger Lens", claim: "Sub-cent nanopayments are the fastest-growing payment primitive of 2026, enabling pay-per-call models", expect: "SUPPORTED" },
-  { source: "Ledger Lens", claim: "Nanopayments remain uneconomical for amounts below thirty cents", expect: "REFUSED" }, // contradicts (card rails can't; nanopayments can)
-  { source: "CryptoBuzz Daily", claim: "Enterprise treasury demand for cross-border settlement is driving stablecoin adoption", expect: "REFUSED" }, // off-topic (memecoins/astrology)
-  { source: "CryptoBuzz Daily", claim: "Stablecoin payment adoption is accelerating due to regulatory clarity", expect: "REFUSED" }, // off-topic
-  { source: "Anon Substack #4412", claim: "Stablecoin volume is growing because businesses want faster cross-border settlement and lower fees than banks", expect: "SUPPORTED" }, // judge checks SUPPORT only (identity is a separate gate)
-  { source: "Anon Substack #4412", claim: "Stablecoin volume is growing because of high yields paid on stablecoin deposits", expect: "REFUSED" }, // not in the content
-  { source: "Northbridge Research", claim: "Stablecoin payment adoption scaled strongly and is driving growth in 2026", expect: "REFUSED" }, // THE TRAP — content says it stalled
-  { source: "Northbridge Research", claim: "Stablecoin payment adoption stalled in 2026, staying under $90M in annualized volume", expect: "SUPPORTED" }, // matches the trap's actual (contrarian) content
-];
+// The hand-labeled gold set (the verdict a CORRECT Auditor must return for each (source, claim)) is the shared
+// source of truth in lib/goldset.json — the same set the public /api/honesty + /api/benchmark surfaces report,
+// so the benchmark a judge reads on the site is the exact one this script scores.
 
 async function judge(source, claim) {
   // One retry on a transient 503/429 (LLM judge busy, or the rate gate) — judge-eval is the demo's
