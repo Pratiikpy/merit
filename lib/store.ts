@@ -51,10 +51,28 @@ export function ephemeralStore(): boolean {
 
 /** Load a doc AND report whether the value is safe to CACHE. On an ephemeral store, if the local file is
  *  absent (so `fallback` was returned) the value is NOT cacheable — boot-hydration may still populate it, and
- *  caching the empty fallback would shadow the real data until the instance recycles. */
+ *  caching the empty fallback would shadow the real data until the instance recycles. Also kicks off a lazy
+ *  hydration so the durable copy loads even when the boot hook never ran. */
 export function loadDocFresh<T>(name: string, fallback: T): { value: T; cacheable: boolean } {
   const exists = fs.existsSync(docPath(name));
+  if (!exists) ensureHydrating(name);
   return { value: loadDoc(name, fallback), cacheable: exists || !ephemeralStore() };
+}
+
+const _hydrating = new Set<string>();
+/** Boot-independent lazy hydration: when a read finds no local file on an ephemeral (serverless+Supabase)
+ *  host, pull the durable copy in the background so the NEXT read serves real data — even if Next's
+ *  instrumentation boot hook never ran (it's unreliable on Vercel). Guarded to fire at most once concurrently
+ *  per doc; runs under after() so it completes before the function freezes (a bare void would be cut off). */
+export function ensureHydrating(name: string): void {
+  if (!ephemeralStore() || _hydrating.has(name) || fs.existsSync(docPath(name))) return;
+  _hydrating.add(name);
+  const run = () => hydrateDoc(name).finally(() => _hydrating.delete(name));
+  try {
+    after(run);
+  } catch {
+    void run();
+  }
 }
 
 /** Persist a JSON document atomically (sync), and — when the Supabase mirror is enabled — fire a best-effort

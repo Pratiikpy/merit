@@ -8,7 +8,7 @@ import path from "node:path";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { effectivePrice } from "./pricing";
 import { learnedTrust } from "./history";
-import { dataDir, saveDoc } from "./store";
+import { dataDir, saveDoc, ensureHydrating } from "./store";
 
 export interface Source {
   id: string;
@@ -160,7 +160,10 @@ function ensureLoaded(): Source[] {
   // (never mirrored, so the seed can never clobber the durable copy).
   const fresh = seed();
   const ephemeral = !!process.env.VERCEL && (process.env.MERIT_STORE || "").toLowerCase() === "supabase";
-  if (ephemeral) return fresh;
+  if (ephemeral) {
+    ensureHydrating("registry"); // boot-independent: pull the durable registry so the next read serves it
+    return fresh;
+  }
   cache = fresh;
   persist(true);
   return cache;

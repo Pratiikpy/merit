@@ -16,16 +16,14 @@ export async function register() {
   const { isStub } = await import("./lib/arc");
   const { authRequired } = await import("./lib/auth");
 
-  // 1. Restore durable docs from the mirror (best-effort; no-op without the Supabase mirror).
-  const { docPath } = await import("./lib/store");
-  const fsmod = await import("node:fs");
-  console.log(`[boot] register run · store=${process.env.MERIT_STORE} · vercel=${process.env.VERCEL}`);
+  // 1. Restore durable docs from the mirror (best-effort; no-op without the Supabase mirror). On Vercel this
+  //    boot hook is unreliable, so reads ALSO hydrate lazily on demand (lib/store ensureHydrating) — this loop
+  //    is the warm-start fast path, not the only one.
   for (const name of ["ledger", "history", "apikeys", "learn", "hires", "registry", "benchmark", "bounty"]) {
     try {
-      const did = await hydrateDoc(name);
-      if (name === "registry") console.log(`[boot] hydrate registry=${did} · fileExists=${fsmod.existsSync(docPath("registry"))}`);
-    } catch (e) {
-      console.error(`[boot] hydrate ${name} threw:`, (e as Error).message);
+      await hydrateDoc(name);
+    } catch {
+      /* best-effort — never block boot */
     }
   }
 
