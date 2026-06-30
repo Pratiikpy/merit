@@ -17,11 +17,15 @@ export async function register() {
   const { authRequired } = await import("./lib/auth");
 
   // 1. Restore durable docs from the mirror (best-effort; no-op without the Supabase mirror).
+  const { docPath } = await import("./lib/store");
+  const fsmod = await import("node:fs");
+  console.log(`[boot] register run · store=${process.env.MERIT_STORE} · vercel=${process.env.VERCEL}`);
   for (const name of ["ledger", "history", "apikeys", "learn", "hires", "registry", "benchmark", "bounty"]) {
     try {
-      await hydrateDoc(name);
-    } catch {
-      /* best-effort — never block boot */
+      const did = await hydrateDoc(name);
+      if (name === "registry") console.log(`[boot] hydrate registry=${did} · fileExists=${fsmod.existsSync(docPath("registry"))}`);
+    } catch (e) {
+      console.error(`[boot] hydrate ${name} threw:`, (e as Error).message);
     }
   }
 
