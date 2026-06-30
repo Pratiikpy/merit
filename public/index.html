@@ -1168,24 +1168,32 @@
 
     // Pull the REAL settlement metrics for the hero headline + the creator-earnings leaderboard, so every
     // number on the page traces to /api/metrics (the one verifiable source of truth) — never seed data.
-    fetch('/api/metrics',{cache:'no-store'}).then(function(r){return r.json();}).then(function(m){
-      if(!m) return;
-      state.metrics = m;
-      // The live agent-labor market stat (x402 agent-to-agent volume) — distinct from the verified creator
-      // total, so it never conflates the two. Shows the big distinct-wallet number a judge can curl + verify.
-      var _al = m.agentLabor, _pl = document.getElementById('pf-labor');
-      if(_al && _pl && _al.settlements){
-        _pl.textContent = comma(_al.settlements);
-        var _sub = document.getElementById('pf-labor-sub');
-        if(_sub) _sub.textContent = 'x402 settlements · '+comma(_al.distinctAgents||0)+' distinct agents';
-      }
-      if(m.leaderboard && m.leaderboard.length && !running()){
-        var earned = {};
-        m.leaderboard.forEach(function(s){ earned[s.id] = s.earned||0; });
-        state.creators = state.creators.map(function(c){ return Object.assign({}, c, {balance: Object.prototype.hasOwnProperty.call(earned, c.id) ? earned[c.id] : 0}); });
-      }
-      renderHeroCard(); if(!running()) renderCreators();
-    }).catch(function(){});
+    function loadMetrics(attempt){
+      fetch('/api/metrics',{cache:'no-store'}).then(function(r){return r.json();}).then(function(m){
+        if(!m) return;
+        state.metrics = m;
+        // The live agent-labor market stat (x402 agent-to-agent volume) — distinct from the verified creator
+        // total, so it never conflates the two. Shows the big distinct-wallet number a judge can curl + verify.
+        var _al = m.agentLabor, _pl = document.getElementById('pf-labor');
+        if(_al && _pl && _al.settlements){
+          _pl.textContent = comma(_al.settlements);
+          var _sub = document.getElementById('pf-labor-sub');
+          if(_sub) _sub.textContent = 'x402 settlements · '+comma(_al.distinctAgents||0)+' distinct agents';
+        }
+        if(m.leaderboard && m.leaderboard.length && !running()){
+          var earned = {};
+          m.leaderboard.forEach(function(s){ earned[s.id] = s.earned||0; });
+          state.creators = state.creators.map(function(c){ return Object.assign({}, c, {balance: Object.prototype.hasOwnProperty.call(earned, c.id) ? earned[c.id] : 0}); });
+        }
+        renderHeroCard(); if(!running()) renderCreators();
+        // A freshly cold-started serverless instance hydrates its durable totals lazily — the FIRST read can
+        // come back zeroed. Retry a few times so the live hero + agent-labor numbers always resolve.
+        if(!m.settlementCount && !(m.agentLabor && m.agentLabor.settlements) && (attempt||0) < 4){
+          setTimeout(function(){ loadMetrics((attempt||0)+1); }, 1500);
+        }
+      }).catch(function(){});
+    }
+    loadMetrics(0);
 
     function renderDiscoverToggle(){
       var tog = document.getElementById('discover-toggle'); if(!tog) return;
