@@ -187,6 +187,17 @@ describe("decideCitation (the PRODUCTION payment decision — embedding threshol
     expect(up.reason).toContain("judge unavailable");
     expect(decideCitation(0.44, true, { useJudge: true, judge: null, isInjection: false }).supported).toBe(false);
   });
+  it("STRICT mode (MERIT_STRICT_JUDGE): PRO with the judge DOWN REFUSES instead of paying on similarity", () => {
+    // The same high-similarity citation that pays on the degraded path above is refused under strict mode —
+    // so a citation only pays on the pro path when a live adversarial judge actually returned a verdict.
+    const r = decideCitation(0.95, true, { useJudge: true, judge: null, isInjection: false, strictJudge: true });
+    expect(r.supported).toBe(false);
+    expect(r.reason).toContain("strict");
+    // strict never affects a real verified citation, nor the intentional budget (similarity-only) tier
+    const supported = { refuted: false, reason: "ok" };
+    expect(decideCitation(0.5, true, { useJudge: true, judge: supported, isInjection: false, strictJudge: true }).supported).toBe(true);
+    expect(decideCitation(0.9, true, { useJudge: false, judge: null, isInjection: false, strictJudge: true }).supported).toBe(true);
+  });
   it("PRO with the judge DOWN still hard-refuses a clear injection (the guard backstops the outage)", () => {
     expect(decideCitation(0.9, true, { useJudge: true, judge: null, isInjection: true })).toMatchObject({
       supported: false,

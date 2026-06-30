@@ -154,16 +154,18 @@ function ensureLoaded(): Source[] {
     return cache;
   }
   cache = seed();
-  persist();
+  persist(true); // LOCAL ONLY — the deterministic seed must never mirror (it would clobber the durable
+  //               Supabase registry — onboarded creators — if a fresh instance seeds before boot-hydration).
   return cache;
 }
 
-function persist() {
+function persist(localOnly = false) {
   if (!cache) return;
-  // saveDoc writes dataDir()/registry.json atomically AND mirrors to Supabase (after()-flushed on serverless),
-  // so onboarded creators survive cold starts. A Source carries only a receive-only payout address (newWallet),
-  // never a private key, so the mirrored registry is key-free by construction.
-  saveDoc("registry", cache);
+  // saveDoc writes dataDir()/registry.json atomically AND (unless localOnly) mirrors to Supabase
+  // (after()-flushed on serverless), so onboarded creators survive cold starts. A Source carries only a
+  // receive-only payout address (newWallet), never a private key, so the mirrored registry is key-free.
+  // The fresh seed passes localOnly=true so a pre-hydration cold start can't overwrite real persisted state.
+  saveDoc("registry", cache, localOnly ? { mirror: false } : undefined);
 }
 
 // ---- Per-publisher ERC-8004 identities (discovered sources) ----

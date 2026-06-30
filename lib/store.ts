@@ -45,7 +45,7 @@ export function loadDoc<T>(name: string, fallback: T): T {
 
 /** Persist a JSON document atomically (sync), and — when the Supabase mirror is enabled — fire a best-effort
  *  async upsert so the document survives a redeploy that loses the disk. Never throws into a run. */
-export function saveDoc(name: string, obj: unknown): void {
+export function saveDoc(name: string, obj: unknown, opts?: { mirror?: boolean }): void {
   try {
     fs.mkdirSync(dataDir(), { recursive: true });
     const file = docPath(name);
@@ -55,7 +55,10 @@ export function saveDoc(name: string, obj: unknown): void {
   } catch (e) {
     console.error(`[store] save ${name} failed:`, (e as Error).message);
   }
-  scheduleMirror(name, obj);
+  // `mirror:false` writes LOCAL ONLY — for deterministic seed/fallback state that must never overwrite the
+  // durable Supabase copy (a serverless instance seeding before boot-hydration finishes would otherwise
+  // clobber the real persisted doc back to the bare seed). Only genuine changes mirror.
+  if (opts?.mirror !== false) scheduleMirror(name, obj);
 }
 
 /** Schedule the Supabase mirror so it actually completes on serverless. On Vercel the function FREEZES the

@@ -14,6 +14,10 @@ import { writeFileSync } from "node:fs";
 
 const N = Math.max(1, Math.min(2000, parseInt(process.argv[2] || "10", 10)));
 const base = process.argv[3] || process.env.MERIT_BASE || "http://localhost:3000";
+// Pace between jobs (VOLUME_DELAY_MS) so the adversarial LLM judge never throttles into its degraded
+// similarity-only fallback — every citation gets a real verdict. Default 0 (unpaced) preserves prior behavior.
+const DELAY = Math.max(0, Number(process.env.VOLUME_DELAY_MS) || 0);
+const pace = (ms) => new Promise((r) => setTimeout(r, ms));
 const nowIso = process.env.RUN_AT || new Date().toISOString(); // pass RUN_AT for reproducible stamps
 
 const QUESTIONS = [
@@ -66,6 +70,7 @@ for (let i = 0; i < N; i++) {
     process.stdout.write(`\n  job ${i + 1} failed: ${e instanceof Error ? e.message : e}\n`);
   }
   process.stdout.write(`\r  ${i + 1}/${N} jobs · ${totalCitations} verified citations · $${totalReleased.toFixed(4)} settled · ${walletsPaid.size} wallets paid   `);
+  if (DELAY && i < N - 1) await pace(DELAY);
 }
 console.log("\n");
 
