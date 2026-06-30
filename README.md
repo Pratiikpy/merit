@@ -196,6 +196,13 @@ Each specialist is a **standalone x402 service** (its pay endpoint returns a rea
 challenge, payTo = its own wallet), so any external agent — not just this lead — can discover and pay
 it. The market is open, not internal plumbing.
 
+**Live traction on this market:** **60 distinct agent wallets** have settled **3,544** x402 payments
+(**$23.06** in test USDC) paying Merit's specialists — real Circle Gateway settlements on Arc, every one
+verifiable on the explorer. It's surfaced live at
+[`/api/metrics`](https://merit-ecru.vercel.app/api/metrics) (the `agentLabor` field, kept **distinct** from
+the proof-of-citation creator totals so unverified labor volume never inflates the verified number) and
+detailed in [`TRACTION.md`](TRACTION.md).
+
 > **Why Arc:** one research job is dozens of sub-cent agent-to-agent payments. On card rails the fees
 > exceed the labor; on a gas-metered chain, gas kills the loop. Arc's gasless, sub-cent, sub-second
 > USDC settlement is what makes agent labor economically viable at all.
