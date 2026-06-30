@@ -1188,7 +1188,7 @@
         renderHeroCard(); if(!running()) renderCreators();
         // A freshly cold-started serverless instance hydrates its durable totals lazily — the FIRST read can
         // come back zeroed. Retry a few times so the live hero + agent-labor numbers always resolve.
-        if(!m.settlementCount && !(m.agentLabor && m.agentLabor.settlements) && (attempt||0) < 4){
+        if((!m.settlementCount || !(m.agentLabor && m.agentLabor.settlements)) && (attempt||0) < 4){
           setTimeout(function(){ loadMetrics((attempt||0)+1); }, 1500);
         }
       }).catch(function(){});
