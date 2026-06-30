@@ -60,7 +60,7 @@ const jina: Provider = {
     try {
       const res = await fetch(`https://r.jina.ai/${url}`, {
         headers: { Accept: "text/plain", "X-Return-Format": "text" },
-        signal: AbortSignal.timeout(20000),
+        signal: AbortSignal.timeout(12000),
       });
       if (!res.ok) return null;
       const text = (await res.text()).trim();

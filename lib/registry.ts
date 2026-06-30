@@ -24,6 +24,7 @@ export interface Source {
   content: string; // the source material the agent reads + we verify against (static, or a provider fallback)
   provider?: string; // #9: a provider id (e.g. "fixture", "firecrawl", "jina") that fetches content LIVE per call
   url?: string; // for web-read providers (jina): the real page this source's content is read from, live
+  liveFetched?: boolean; // transient (per-run): true when this run read the content LIVE from `url` (not static)
   verifyWith?: string[]; // #10: extra verification adapters this source must pass (numeric/schema/freshness/...)
   verified: boolean; // has a verifiable on-chain identity (identity gate)
   agentId?: string; // ERC-8004 IdentityRegistry token id, once minted
@@ -106,6 +107,17 @@ function seed(): Source[] {
       trap: true,
       content:
         "Stablecoin payment adoption stalled in 2026. Cross-border B2B settlement never scaled past a niche, staying under $90M in annualized volume as enterprises kept routing payments over traditional wires. The digital-dollar narrative outran the actual flows, which stayed marginal.",
+    }),
+    mk({
+      id: "wiki-usdc", name: "USDC Reference", handle: "en.wikipedia.org/wiki/USD_Coin", kind: "Reference",
+      initials: "WK", avatarBg: "#0D9488", merit: 70, price: 0.01, balance: 0,
+      verified: true,
+      // LIVE-WEB source (#9 / Agent-Reach web channel): content re-read from the REAL page each run via Jina, so a
+      // citation is verified against the page's ACTUAL current text. Static fallback if live read is unavailable.
+      provider: "jina",
+      url: "https://en.wikipedia.org/wiki/USD_Coin",
+      content:
+        "USDC is a digital dollar stablecoin issued by Circle, redeemable 1:1 for US dollars and backed by cash and short-dated US Treasuries held in reserve. It is an ERC-20 token issued across multiple blockchains and is widely used for payments and on-chain settlement.",
     }),
   ];
 }
@@ -306,6 +318,8 @@ export function publicView(s: Source) {
     priceMode: s.priceMode ?? "fixed",
     effectivePrice: effectivePrice(s.price, s.merit, s.priceMode), // #4: what this source is actually quoted/paid
     provider: s.provider, // #9: set if this source fetches its content live per call
+    url: s.url, // the real page a live-web source is read from
+    liveFetched: s.liveFetched ?? false, // true when THIS run read it live from `url` (vs the static fallback)
     learnedTrust: learnedTrust(s.id), // #11: Beta posterior of its cross-run release rate (0.5 = unseen/neutral)
     wallet: s.wallet,
     verified: s.verified,

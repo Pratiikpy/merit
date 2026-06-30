@@ -120,7 +120,7 @@ export async function runAgent(
       eligible.map(async (s) => {
         if (!s.provider) return s;
         const live = await resolveSourceContent(s, question).catch(() => null);
-        return live ? { ...s, content: live } : s;
+        return live ? { ...s, content: live, liveFetched: true } : s;
       }),
     );
     patchCtx(runId, { sources: ranked });

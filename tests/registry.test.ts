@@ -18,8 +18,8 @@ beforeAll(async () => {
 const file = () => path.join(dir, "registry.json");
 
 describe("registry persistence", () => {
-  it("seeds seven sources on first load and writes them atomically", () => {
-    expect(reg.getSources().length).toBe(7); // 6 demo sources + the cited-but-unsupported trap (Northbridge)
+  it("seeds eight sources on first load and writes them atomically", () => {
+    expect(reg.getSources().length).toBe(8); // 6 demo + the cited-but-unsupported trap (Northbridge) + the live-web source (USDC Reference)
     expect(fs.existsSync(file())).toBe(true);
     // a valid, fully-formed JSON file (atomic write never leaves it truncated)
     expect(() => JSON.parse(fs.readFileSync(file(), "utf-8"))).not.toThrow();
