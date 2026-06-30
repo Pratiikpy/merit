@@ -49,7 +49,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "rejected — the feed's title or content contains prompt-injection patterns" }, { status: 400 });
   }
 
-  const src = addCreator({ name, handle: feed.link, price, priceMode, wallet: feed.verifyWallet, content: content || undefined });
+  // Live-web (#9 + Agent-Reach web channel): re-read the publisher's real page fresh each run via Jina, so a
+  // citation is verified against their ACTUAL current content — not a stale onboarding snapshot. The static
+  // feed content stays as the graceful fallback when the live fetch is unavailable (MERIT_LIVE_WEB=0 / offline).
+  const src = addCreator({
+    name, handle: feed.link, price, priceMode, wallet: feed.verifyWallet,
+    content: content || undefined,
+    provider: feed.link ? "jina" : undefined,
+    url: feed.link || undefined,
+  });
   const ident = await registerIdentity(`merit:creator:${src.id}`);
   if (ident?.agentId) setAgentId(src.id, ident.agentId);
 

@@ -46,7 +46,32 @@ const firecrawl: Provider = {
   },
 };
 
-const PROVIDERS: Record<string, Provider> = { fixture, firecrawl };
+// Real web read — Jina Reader (https://r.jina.ai). Free, no key: returns the LIVE, clean text of any page, so
+// a source backed by a real URL is verified against its ACTUAL current content. This is the web channel
+// Agent-Reach routes to (the social channels — Reddit/Twitter via the local Agent-Reach CLI — are a separate
+// local-only drop-in). Pure HTTP, so it works in production; graceful on any failure (the static content stands).
+const jina: Provider = {
+  id: "jina",
+  available: () => process.env.MERIT_LIVE_WEB !== "0", // on by default; set MERIT_LIVE_WEB=0 to force static content
+  async fetch(_query, source) {
+    const target = (source.url || source.handle || "").trim();
+    if (!target) return null;
+    const url = /^https?:\/\//i.test(target) ? target : `https://${target}`;
+    try {
+      const res = await fetch(`https://r.jina.ai/${url}`, {
+        headers: { Accept: "text/plain", "X-Return-Format": "text" },
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!res.ok) return null;
+      const text = (await res.text()).trim();
+      return text ? text.slice(0, 4000) : null;
+    } catch {
+      return null;
+    }
+  },
+};
+
+const PROVIDERS: Record<string, Provider> = { fixture, firecrawl, jina };
 
 export function getProvider(id: string): Provider | undefined {
   return PROVIDERS[id];

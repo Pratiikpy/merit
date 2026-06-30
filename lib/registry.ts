@@ -22,7 +22,8 @@ export interface Source {
   priceMode?: "fixed" | "merit-gated"; // #4: merit-gated scales the effective price 0.5×..1.5× by reputation
   wallet: `0x${string}`; // payTo for x402 settlement — RECEIVE-ONLY; Merit never holds its key
   content: string; // the source material the agent reads + we verify against (static, or a provider fallback)
-  provider?: string; // #9: a provider id (e.g. "fixture", "firecrawl") that fetches content LIVE per call
+  provider?: string; // #9: a provider id (e.g. "fixture", "firecrawl", "jina") that fetches content LIVE per call
+  url?: string; // for web-read providers (jina): the real page this source's content is read from, live
   verifyWith?: string[]; // #10: extra verification adapters this source must pass (numeric/schema/freshness/...)
   verified: boolean; // has a verifiable on-chain identity (identity gate)
   agentId?: string; // ERC-8004 IdentityRegistry token id, once minted
@@ -227,6 +228,7 @@ export function addCreator(input: {
   price: number;
   priceMode?: "fixed" | "merit-gated";
   provider?: string;
+  url?: string;
   verifyWith?: string[];
   wallet?: string;
   content?: string;
@@ -258,6 +260,7 @@ export function addCreator(input: {
     price: input.price,
     priceMode: input.priceMode ?? "fixed",
     provider: input.provider,
+    url: input.url,
     verifyWith: input.verifyWith,
     ...w,
     // The agent can only cite a source it can read — content is what makes a
