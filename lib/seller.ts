@@ -7,6 +7,7 @@ import { BatchFacilitatorClient } from "@circle-fin/x402-batching/server";
 import { NextRequest, NextResponse } from "next/server";
 import { ARC } from "./arc";
 import { recordPayment } from "./db";
+import { recordLaborSettlement } from "./labor";
 
 const facilitator = new BatchFacilitatorClient();
 
@@ -117,6 +118,15 @@ export function withGatewaySeller(
       });
     } catch (e) {
       console.error("[seller] receipt mirror failed (payment still settled):", (e as Error).message);
+    }
+
+    // Feed the durable agent-labor counter (the agent-to-agent x402 market) — a distinct, judge-free traction
+    // line, never mixed into the proof-of-citation creator total. Best-effort; a slip never unsettles a payment.
+    try {
+      const specialist = (endpoint.match(/\/api\/agent\/([^/]+)\/pay/) || [])[1] || payTo;
+      recordLaborSettlement({ payer, specialist, amount: Number(amountUsdc) });
+    } catch {
+      /* never break a settled payment on bookkeeping */
     }
 
     let response: NextResponse;

@@ -8,6 +8,7 @@ import { globalCalibration } from "./learn";
 import { listPrincipals } from "./auth";
 import { getSources } from "./registry";
 import { ledgerTotals } from "./ledger";
+import { laborTotals } from "./labor";
 
 export interface MetricsSnapshot {
   sources: number;
@@ -19,6 +20,9 @@ export interface MetricsSnapshot {
   distinctPayees: number;
   runCount: number;
   leaderboard: Array<{ id: string; name: string; merit: number; releaseRate: number; earned: number }>;
+  // The agent-to-agent x402 labor market — real on-chain settlements, NOT judge-gated (kept distinct from the
+  // verified creator totals above so it never inflates them).
+  agentLabor: { settlements: number; volumeUsdc: number; distinctAgents: number; distinctSpecialists: number };
 }
 
 export function snapshotMetrics(): MetricsSnapshot {
@@ -41,5 +45,6 @@ export function snapshotMetrics(): MetricsSnapshot {
     distinctPayees: led.payees.length,
     runCount: led.runCount,
     leaderboard: board,
+    agentLabor: laborTotals(),
   };
 }

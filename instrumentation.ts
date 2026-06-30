@@ -19,7 +19,7 @@ export async function register() {
   // 1. Restore durable docs from the mirror (best-effort; no-op without the Supabase mirror). On Vercel this
   //    boot hook is unreliable, so reads ALSO hydrate lazily on demand (lib/store ensureHydrating) — this loop
   //    is the warm-start fast path, not the only one.
-  for (const name of ["ledger", "history", "apikeys", "learn", "hires", "registry", "benchmark", "bounty"]) {
+  for (const name of ["ledger", "history", "apikeys", "learn", "hires", "registry", "benchmark", "bounty", "agentlabor"]) {
     try {
       await hydrateDoc(name);
     } catch {
