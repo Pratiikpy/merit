@@ -5,6 +5,7 @@ import { looksLikeInjection } from "@/lib/llm";
 import { checkRunLimit, tryAcquireRunSlot, releaseRunSlot } from "@/lib/ratelimit";
 import { authGate, remainingBudget, chargePrincipal } from "@/lib/auth";
 import { recordExternalHire } from "@/lib/hires";
+import { hydrateDoc, ephemeralStore } from "@/lib/store";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -39,6 +40,13 @@ export async function POST(req: NextRequest) {
     });
   }
   const principal = ag.principal;
+
+  // Cold serverless instances hydrate the durable registry lazily, so a run starting on a fresh instance would
+  // otherwise see only the seed — missing onboarded creators (incl. live-web publishers). Pull the registry +
+  // ledger from the mirror first (a no-op once the local files exist), so onboarded sources reliably enter the run.
+  if (ephemeralStore()) {
+    await Promise.all(["registry", "ledger", "history", "agentlabor"].map((n) => hydrateDoc(n).catch(() => false)));
+  }
 
   // Concurrency guard: cap runs settling against the shared wallet at once. Released once
   // (the flag below) on completion, error, OR client disconnect — so a slot never leaks.
