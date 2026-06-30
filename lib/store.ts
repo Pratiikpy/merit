@@ -43,6 +43,20 @@ export function loadDoc<T>(name: string, fallback: T): T {
   }
 }
 
+/** True on a stateless serverless host that uses the Supabase mirror — where the local file is ephemeral and
+ *  boot-hydration is the source of truth. A fallback read taken before the file is hydrated must NOT be cached. */
+export function ephemeralStore(): boolean {
+  return !!process.env.VERCEL && (process.env.MERIT_STORE || "").toLowerCase() === "supabase";
+}
+
+/** Load a doc AND report whether the value is safe to CACHE. On an ephemeral store, if the local file is
+ *  absent (so `fallback` was returned) the value is NOT cacheable — boot-hydration may still populate it, and
+ *  caching the empty fallback would shadow the real data until the instance recycles. */
+export function loadDocFresh<T>(name: string, fallback: T): { value: T; cacheable: boolean } {
+  const exists = fs.existsSync(docPath(name));
+  return { value: loadDoc(name, fallback), cacheable: exists || !ephemeralStore() };
+}
+
 /** Persist a JSON document atomically (sync), and — when the Supabase mirror is enabled — fire a best-effort
  *  async upsert so the document survives a redeploy that loses the disk. Never throws into a run. */
 export function saveDoc(name: string, obj: unknown, opts?: { mirror?: boolean }): void {

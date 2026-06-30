@@ -7,7 +7,7 @@
  * independent of the recent-entries tail: capping the time-series never touches the running total. Persisted
  * via the durable store (file + optional Supabase mirror). Best-effort; never throws into a run.
  */
-import { loadDoc, saveDoc } from "./store";
+import { loadDocFresh, saveDoc } from "./store";
 import { round6 } from "./arc";
 
 export interface LedgerEntry {
@@ -43,8 +43,11 @@ const empty = (): Ledger => ({
 let cache: Ledger | null = null;
 function load(): Ledger {
   if (cache) return cache;
-  cache = loadDoc<Ledger>("ledger", empty());
-  return cache;
+  // Don't cache an un-hydrated empty on a serverless+Supabase cold start — boot-hydration may not have
+  // written the file yet, and a cached empty would freeze the monotonic counter at 0 until the instance recycles.
+  const { value, cacheable } = loadDocFresh<Ledger>("ledger", empty());
+  if (cacheable) cache = value;
+  return value;
 }
 
 /** Record a real (money-moved) settlement. The cumulative total/count only ever grow; the entries tail is

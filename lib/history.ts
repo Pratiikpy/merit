@@ -4,7 +4,7 @@
  * registry, capped to a recent tail. Key-free by construction (source ids + outcomes only). Best-effort:
  * a persistence failure logs and is swallowed, never breaking a run.
  */
-import { loadDoc, saveDoc } from "./store";
+import { loadDocFresh, saveDoc } from "./store";
 
 export interface SettlementRecord {
   runId: string;
@@ -31,8 +31,9 @@ let cache: Store | null = null;
 // State lives in the durable document store (lib/store.ts): a sync local file + an optional Supabase mirror.
 function load(): Store {
   if (cache) return cache;
-  cache = loadDoc<Store>("history", {});
-  return cache;
+  const { value, cacheable } = loadDocFresh<Store>("history", {});
+  if (cacheable) cache = value;
+  return value;
 }
 
 function persist(store: Store): void {

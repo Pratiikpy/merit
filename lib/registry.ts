@@ -153,9 +153,16 @@ function ensureLoaded(): Source[] {
     }
     return cache;
   }
-  cache = seed();
-  persist(true); // LOCAL ONLY — the deterministic seed must never mirror (it would clobber the durable
-  //               Supabase registry — onboarded creators — if a fresh instance seeds before boot-hydration).
+  // No local file. On a serverless + Supabase deploy the durable Supabase copy is the source of truth and
+  // boot-hydration populates the file — so return the deterministic seed as a TRANSIENT fallback only: don't
+  // cache or write it, or a cold instance that seeds before hydration finishes would shadow the real
+  // (hydrated) registry — onboarded creators — until it recycles. Locally, cache + persist it LOCAL-ONLY
+  // (never mirrored, so the seed can never clobber the durable copy).
+  const fresh = seed();
+  const ephemeral = !!process.env.VERCEL && (process.env.MERIT_STORE || "").toLowerCase() === "supabase";
+  if (ephemeral) return fresh;
+  cache = fresh;
+  persist(true);
   return cache;
 }
 
