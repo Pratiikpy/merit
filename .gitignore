@@ -68,3 +68,9 @@ HUMAN.md
 nli-server/.venv/
 nli-server/_*.log
 nli-server/models/
+
+# merit-cvo package build artifacts
+merit-cvo/.venv/
+merit-cvo/*.egg-info/
+merit-cvo/**/__pycache__/
+nli-server/**/__pycache__/

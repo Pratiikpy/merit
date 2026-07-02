@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "merit-cvo"
+version = "0.1.0"
+description = "A free, self-hostable Citation Verification Oracle: deterministic numeric + NLI + LLM-judge dual-gate that says SUPPORTED/REFUSED for a (claim, source) — so hallucinated citations don't pass."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Merit" }]
+keywords = ["rag", "faithfulness", "hallucination", "citation", "attribution", "verification", "nli", "llm-eval", "grounding"]
+classifiers = [
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []  # the free path (numeric + a MERIT_NLI_URL server) is stdlib-only — runs anywhere, in your VPC
+
+[project.optional-dependencies]
+hhem = ["torch", "transformers", "sentencepiece"]  # in-process NLI (else point MERIT_NLI_URL at the nli-server)
+dev = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://merit-ecru.vercel.app"
+Source = "https://github.com/Pratiikpy/merit"
+
+[project.scripts]
+merit-cvo = "merit_cvo.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["merit_cvo"]
