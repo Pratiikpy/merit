@@ -41,7 +41,7 @@
   @keyframes mblink{0%,100%{opacity:1}50%{opacity:.3}}
   @keyframes maurora{0%{transform:translate(0,0) scale(1)}33%{transform:translate(36px,-26px) scale(1.12)}66%{transform:translate(-26px,18px) scale(.95)}100%{transform:translate(0,0) scale(1)}}
   @keyframes mshine{to{transform:translateX(160%)}}
-  .gtext{background:linear-gradient(95deg,#0A0A0A,#0A0A0A 48%,#0A0A0A);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .gtext{background:linear-gradient(100deg,#0A0A0A 0%,#3F3F46 50%,#0A0A0A 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
   .btn-primary{position:relative;overflow:hidden;}
   .btn-primary::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 32%,rgba(255,255,255,.5),transparent 68%);transform:translateX(-160%);pointer-events:none;}
   .btn-primary:hover::after{animation:mshine .85s ease;}
@@ -58,7 +58,8 @@
   [data-card]{transition:transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .2s cubic-bezier(.2,.7,.2,1);}
   [data-card]:hover{transform:translateY(-3px);box-shadow:0 18px 40px -14px rgba(16,24,40,.22)!important;}
   @media(max-width:980px){#hero-grid{grid-template-columns:1fr;gap:36px;}#demo-grid{grid-template-columns:1fr;}#how-grid,#feat-grid{grid-template-columns:1fr 1fr;}#prob-grid,#persona-grid{grid-template-columns:1fr;}#proof-grid{grid-template-columns:1fr 1fr;}}
-  @media(max-width:900px){#nav-links{display:none!important;}}
+  #nav-menu-btn{display:none;}
+  @media(max-width:900px){#nav-links{display:none!important;}#nav-menu-btn{display:inline-flex!important;}#nav-links.open{display:flex!important;position:absolute;top:58px;right:12px;left:12px;flex-direction:column;align-items:stretch;background:#fff;border:1px solid #ECECEE;border-radius:12px;padding:8px;gap:2px;box-shadow:0 14px 34px -12px rgba(16,24,40,.28);z-index:50;}#nav-links.open a{padding:11px 12px;}}
   @media(max-width:600px){#how-grid,#feat-grid{grid-template-columns:1fr;}#merit-h1{font-size:42px!important;}}
 </style>
 </head>
@@ -79,6 +80,7 @@
       <a href="/honesty.html" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">Honesty index ↗</a>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
+      <button id="nav-menu-btn" aria-label="Open menu" aria-expanded="false" style="cursor:pointer;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid #E4E4E7;background:#fff;border-radius:9px;font-size:17px;color:#0A0A0A;">☰</button>
       <a href="#creators" style="font-size:14px;font-weight:600;color:#0A0A0A;padding:9px 12px;">Become earnable</a>
       <a href="#demo" data-card class="btn-primary" style="font-size:14px;font-weight:600;color:#fff;background:#0A0A0A;padding:9px 16px;border-radius:9px;box-shadow:0 1px 2px rgba(16,24,40,.1),0 2px 8px rgba(10,10,10,.28);">Run the demo</a>
     </div>
@@ -144,7 +146,7 @@
       <div data-card style="background:#fff;border:1px solid #ECECEE;border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);padding:18px;margin-bottom:18px;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;">
           <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;">Agent task</span>
-          <span class="mono" id="phase-label" style="font-size:12px;font-weight:500;background:#F5F5F5;border:1px solid #E4E4E7;border-radius:999px;padding:4px 10px;color:#52525B;">Idle — ready</span>
+          <span class="mono" id="phase-label" aria-live="polite" style="font-size:12px;font-weight:500;background:#F5F5F5;border:1px solid #E4E4E7;border-radius:999px;padding:4px 10px;color:#52525B;">Idle — ready</span>
         </div>
         <input id="question-input" aria-label="Agent research question" placeholder="e.g. What is driving stablecoin payment adoption in 2026?" style="width:100%;border:1px solid #E4E4E7;border-radius:10px;padding:13px 14px;font-size:15.5px;font-weight:500;background:#fff;outline:none;color:#0A0A0A;" />
         <div style="display:flex;gap:12px;margin-top:13px;align-items:flex-end;flex-wrap:wrap;">
@@ -165,7 +167,7 @@
           </div>
           <button id="run-btn" data-card style="cursor:pointer;flex:1 1 190px;min-width:170px;border:0;background:#0A0A0A;color:#fff;border-radius:10px;padding:14px 18px;font-size:15.5px;font-weight:600;box-shadow:0 1px 2px rgba(16,24,40,.12),0 4px 12px rgba(10,10,10,.26);">Run agent</button>
         </div>
-        <div style="margin-top:11px;text-align:center;"><button id="compare-btn" type="button" title="Run the same question with the pro crew (LLM-judge verify) and the economy crew (similarity-only) and compare" style="background:none;border:0;cursor:pointer;font-size:12px;font-weight:600;color:#6B7280;">Compare crews ⇄ <span style="color:#6B7280;font-weight:500;">pro vs economy</span></button></div>
+        <div style="margin-top:11px;text-align:center;"><button id="compare-btn" type="button" title="Run the same question with the pro crew (LLM-judge verify) and the economy crew (similarity-only) and compare" style="background:none;border:0;cursor:pointer;font-size:12px;font-weight:600;color:#6B7280;">Compare verification tiers <span style="color:#6B7280;font-weight:500;">— see what rigor buys you</span></button></div>
         <div style="margin-top:18px;border-top:1px solid #ECECEE;padding-top:15px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
             <span id="step-heading" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;">The 6-step loop</span>
@@ -674,7 +676,7 @@
     document.getElementById('phase-label').textContent = phaseLabels[state.phase];
     document.getElementById('step-heading').textContent = idle ? 'The 6-step loop' : ('Step '+(state.stepIndex+1)+' of 6');
     var btn = document.getElementById('run-btn');
-    btn.textContent = run ? 'Running…' : (done ? 'Run again' : 'Run agent');
+    btn.textContent = run ? (phaseLabels[state.phase]||'Running')+'…' : (done ? 'Run again' : 'Run agent');
     btn.style.background = run ? '#E4E4E7' : '#0A0A0A';
     btn.style.color = run ? '#6B7280' : '#fff';
     btn.style.boxShadow = run ? 'none' : '0 1px 2px rgba(16,24,40,.12),0 4px 12px rgba(10,10,10,.26)';
@@ -1006,7 +1008,8 @@
   function closeDrawer(){ state.drawerOpen=false; renderDrawer(); var t=document.getElementById('persona-drawer-btn'); if(t) t.focus(); }
   function connectWallet(){ state.walletAddr = ''; state.onbError = ''; state.drawerStep=1; renderDrawer(); } // no fabricated address — the real receive-only wallet is created by /api/creators/register
   function finishOnb(){
-    var name = (state.onbName||'').trim(); if(!name) return;
+    var name = (state.onbName||'').trim();
+    if(!name){ var nEl=document.getElementById('dw-name'); if(nEl){ nEl.focus(); nEl.style.borderColor='#FB7185'; setTimeout(function(){ nEl.style.borderColor='#E4E4E7'; },1600); } return; }
     var price = Number(state.onbPrice)||0.015;
     var tmpId = 'you_'+Date.now();
     var initials = (name.replace(/[^a-zA-Z0-9]/g,'').slice(0,2).toUpperCase()) || 'ME';
@@ -1169,9 +1172,10 @@
     // initial inputs
     var qi = document.getElementById('question-input'); qi.value = state.question;
     var bi = document.getElementById('budget-input'); bi.value = state.budget;
+    bi.addEventListener('blur', function(){ var n=parseFloat(state.budget); state.budget = (isFinite(n)&&n>0) ? Math.min(5,Math.max(0.05,n)).toFixed(2) : '0.50'; bi.value=state.budget; renderHeader(); }); // clamp to [0.05, 5] on blur
     qi.addEventListener('input', function(e){ state.question = e.target.value; });
     qi.addEventListener('keydown', function(e){ if(e.key==='Enter' && !running() && !state.comparing){ e.preventDefault(); run(); } }); // Enter runs the demo (parity with the onboard/passport forms)
-    bi.addEventListener('input', function(e){ state.budget = e.target.value.replace(/[^0-9.]/g,''); bi.value = state.budget; renderHeader(); });
+    bi.addEventListener('input', function(e){ var v=e.target.value.replace(/[^0-9.]/g,''); var p=v.split('.'); if(p.length>2) v=p[0]+'.'+p.slice(1).join(''); state.budget=v; bi.value=v; renderHeader(); });
     // focus ring on question input (replicates style-focus)
     qi.addEventListener('focus', function(){ qi.style.borderColor='#0A0A0A'; qi.style.boxShadow='0 0 0 3px rgba(10,10,10,.14)'; });
     qi.addEventListener('blur', function(){ qi.style.borderColor='#E4E4E7'; qi.style.boxShadow='none'; });
@@ -1258,6 +1262,12 @@
 
     document.getElementById('persona-drawer-btn').addEventListener('click', openDrawer);
     document.getElementById('cta-drawer-btn').addEventListener('click', openDrawer);
+    // Mobile nav: toggle the hidden link list, and close it after a link is tapped.
+    var navMenuBtn = document.getElementById('nav-menu-btn'), navLinks = document.getElementById('nav-links');
+    if(navMenuBtn && navLinks){
+      navMenuBtn.addEventListener('click', function(){ var open = navLinks.classList.toggle('open'); navMenuBtn.setAttribute('aria-expanded', open?'true':'false'); });
+      navLinks.addEventListener('click', function(e){ if(e.target.tagName==='A'){ navLinks.classList.remove('open'); navMenuBtn.setAttribute('aria-expanded','false'); } });
+    }
     // Escape closes the onboarding dialog (standard modal behavior; bound once).
     document.addEventListener('keydown', function(e){ if(state.drawerOpen && (e.key==='Escape'||e.key==='Esc')) closeDrawer(); });
 
