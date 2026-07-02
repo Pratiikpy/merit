@@ -7,25 +7,7 @@ export const dynamic = "force-dynamic";
 
 // GET /api/health — deployment status + verifiable on-chain references (public
 // addresses only, never keys). Doubles as the host health check.
-export async function GET(req: Request) {
-  // TEMP diagnostic: ?llmprobe=1 makes ONE raw LLM call from this serverless function and reports the exact
-  // status/error, to distinguish "prod can't reach the LLM provider" from an env problem. Exposes no secret
-  // (only key length + the "nvapi-" prefix). Remove after diagnosing.
-  if (new URL(req.url).searchParams.get("llmprobe") === "1") {
-    const c = llmConfig();
-    const t0 = Date.now();
-    try {
-      const r = await fetch(`${c.baseUrl}/chat/completions`, {
-        method: "POST",
-        headers: { "content-type": "application/json", authorization: `Bearer ${c.key}` },
-        body: JSON.stringify({ model: c.model, messages: [{ role: "user", content: "ok" }], max_tokens: 1, stream: false }),
-        signal: AbortSignal.timeout(30000),
-      });
-      return NextResponse.json({ probe: true, usable: c.usable, keyLen: c.key.length, keyPrefix: c.key.slice(0, 6), baseUrl: c.baseUrl, model: c.model, status: r.status, latencyMs: Date.now() - t0, body: (await r.text()).slice(0, 300) });
-    } catch (e) {
-      return NextResponse.json({ probe: true, usable: c.usable, keyLen: c.key.length, keyPrefix: c.key.slice(0, 6), baseUrl: c.baseUrl, model: c.model, error: (e as Error).message, latencyMs: Date.now() - t0 });
-    }
-  }
+export async function GET() {
   const c = llmConfig();
   return NextResponse.json({
     ok: true,
