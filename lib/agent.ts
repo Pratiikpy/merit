@@ -9,6 +9,7 @@ import { getSources, applyOutcome, setAgentId, publicView, type Source } from ".
 import { discoverSources } from "./discover";
 import { writeAnswer, parseSegments, citedNames, isCited, citationCount, verifyCitations, citingSentence } from "./llm";
 import { ensureDeposit, payOnce } from "./pay";
+import { accrueCustody } from "./custody";
 import { giveFeedback, validateCitation, registerIdentity, ensurePublisherIdentity, operatorOwnsIdentity } from "./reputation";
 import { signReceipt } from "./receipt";
 import { round6, isStub, ARC } from "./arc";
@@ -521,6 +522,17 @@ export async function runAgent(
         // credit whatever it actually charges. This tolerates a merit change between escrow and settle (and any
         // cross-instance merit read) instead of failing an otherwise-valid payment on a penny of drift.
         const ceiling = round6(s.price * 1.5);
+        if (s.custodial) {
+          // Custodial creator (onboarded without their own wallet): don't Gateway-settle to a wallet they
+          // can't spend from — HOLD the earnings in Merit custody, claimable on-chain once they prove domain
+          // ownership (lib/custody + POST /api/claim). It still counts as released — they earned it.
+          const held = round6(price * v.nano);
+          accrueCustody(s.id, s.name, held, { domain: s.domain });
+          paid = held;
+          settled = v.nano;
+          onchain = false;
+          lastTx = "custody";
+        } else
         for (let k = 0; k < v.nano; k++) {
           try {
             const r = await payOnce(url, ceiling);

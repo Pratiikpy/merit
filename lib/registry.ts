@@ -21,6 +21,8 @@ export interface Source {
   price: number; // USDC per use (dollar number) — the BASE price
   priceMode?: "fixed" | "merit-gated"; // #4: merit-gated scales the effective price 0.5×..1.5× by reputation
   wallet: `0x${string}`; // payTo for x402 settlement — RECEIVE-ONLY; Merit never holds its key
+  custodial?: boolean; // true when the creator gave no wallet: earnings accrue to Merit custody, claimable later
+  domain?: string; // the domain a custodial creator proves (via /.well-known/merit.json) to claim their earnings
   content: string; // the source material the agent reads + we verify against (static, or a provider fallback)
   provider?: string; // #9: a provider id (e.g. "fixture", "firecrawl", "jina") that fetches content LIVE per call
   url?: string; // for web-read providers (jina): the real page this source's content is read from, live
@@ -263,13 +265,27 @@ export function addCreator(input: {
   content?: string;
 }): Source {
   const list = ensureLoaded();
-  // If the creator supplies their OWN wallet address, pay to it (receive-only,
-  // so no key is held — non-custodial). Otherwise generate one for the demo.
+  // If the creator supplies their OWN wallet, pay it directly (receive-only, non-custodial). Otherwise their
+  // earnings go into Merit CUSTODY: payTo is the Merit-controlled custodial wallet and the balance is tracked
+  // per-creator (lib/custody), claimable on-chain once they prove domain ownership — so nothing is stranded in
+  // a discarded-key wallet. Falls back to a fresh receive-only address only when no custodial wallet exists.
   const provided =
     input.wallet && /^0x[0-9a-fA-F]{40}$/.test(input.wallet) && !/^0x0+$/i.test(input.wallet);
-  const w = provided
-    ? { wallet: input.wallet as `0x${string}` } // creator's own wallet — Merit never holds a key
-    : newWallet();
+  const custody = process.env.CUSTODY_ADDRESS || process.env.BUYER_ADDRESS;
+  let custodial = false;
+  let domain: string | undefined;
+  let w: { wallet: `0x${string}` };
+  if (provided) {
+    w = { wallet: input.wallet as `0x${string}` };
+  } else if (custody && /^0x[0-9a-fA-F]{40}$/.test(custody)) {
+    w = { wallet: custody as `0x${string}` };
+    custodial = true;
+    // The domain the creator will prove to claim: the host of their feed/site handle.
+    const h = (input.handle || input.url || "").replace(/^https?:\/\//i, "").split("/")[0].trim();
+    if (h) domain = h.toLowerCase();
+  } else {
+    w = newWallet();
+  }
   const initials =
     input.name
       .split(/\s+/)
@@ -292,6 +308,8 @@ export function addCreator(input: {
     url: input.url,
     verifyWith: input.verifyWith,
     ...w,
+    custodial: custodial || undefined,
+    domain,
     // The agent can only cite a source it can read — content is what makes a
     // registered creator actually payable (empty = registered but not yet earnable).
     content: (input.content || "").slice(0, 2000),

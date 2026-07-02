@@ -72,6 +72,16 @@
 
   <div class="why"><b>Why no one can fake it:</b> Merit's badge resolves against the <b>deterministic verifier + on-chain settlement</b> — a reader or crawling agent re-checks it. A self-report agent's citation is one LLM saying it cited you, so any site could claim that badge and no one could verify it. Yours is unforgeable <em>precisely because of the verifier they lack.</em></div>
 
+  <div class="card" style="margin-top:26px">
+    <div class="step" style="margin-top:0">Withdraw — claim earnings held in custody</div>
+    <p class="hint" style="margin-top:0;margin-bottom:12px">If agents cited you before you set a wallet, Merit held your USDC in custody. Prove your domain (publish the merit.json above), then withdraw it on-chain to the wallet that file declares.</p>
+    <div class="row">
+      <input id="claim-domain" type="text" aria-label="Domain to claim earnings for" placeholder="yourdomain.com" autocomplete="off" spellcheck="false">
+      <button class="go" id="claim-go">Check &amp; claim</button>
+    </div>
+    <div id="claim-out" role="status" aria-live="polite"></div>
+  </div>
+
   </main>
 
   <footer>Merit — your domain, your wallet, your proof. Verification you can embed.</footer>
@@ -100,6 +110,27 @@
   }
   go.addEventListener('click',claim);
   dom.addEventListener('keydown',function(e){if(e.key==='Enter')claim();});
+
+  // ---- Withdraw: check + claim custodial earnings on-chain ----
+  var cd=document.getElementById('claim-domain'),cg=document.getElementById('claim-go'),co=document.getElementById('claim-out');
+  function cshow(h){co.innerHTML=h;co.style.display='block';}
+  async function doClaim(){
+    var d=cd.value.trim().replace(/^https?:\/\//i,'').replace(/\/+$/,'');if(!d){cd.focus();return;}
+    cg.disabled=true;cg.textContent='Checking…';co.style.display='none';
+    try{
+      var b=await fetch('/api/claim?domain='+encodeURIComponent(d)).then(function(r){return r.json();});
+      if(!b||!(b.unclaimed>0)){cshow('<div class="err">No earnings are held in custody for '+esc(d)+' yet. Get cited in a run first, then withdraw here.</div>');return;}
+      cg.textContent='Claiming $'+Number(b.unclaimed).toFixed(4)+'…';
+      var res=await fetch('/api/claim',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({domain:d})});
+      var r=await res.json();
+      if(!res.ok){cshow('<div class="err">'+esc(r.error||('claim failed ('+res.status+')'))+'</div>');return;}
+      var rows=(r.claims||[]).filter(function(c){return c.ok;}).map(function(c){return '<div class="kv"><span>'+esc(c.name)+'</span><span class="v">$'+Number(c.amount).toFixed(4)+' · <a href="'+esc(c.explorerUrl||'#')+'" target="_blank" rel="noopener">tx ↗</a></span></div>';}).join('');
+      cshow('<div class="ok"><h3>✓ Claimed $'+Number(r.totalClaimed).toFixed(4)+' to your wallet</h3><div class="kv"><span>wallet</span><span class="v">'+esc(r.wallet)+'</span></div>'+rows+'</div>');
+    }catch(e){cshow('<div class="err">Could not reach Merit.</div>');}
+    finally{cg.disabled=false;cg.textContent='Check & claim';}
+  }
+  cg.addEventListener('click',doClaim);
+  cd.addEventListener('keydown',function(e){if(e.key==='Enter')doClaim();});
 })();
 </script>
 </body>
