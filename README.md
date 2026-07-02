@@ -120,8 +120,8 @@ Because Merit has a **deterministic verification oracle** (the judge), it can do
 
 ```bash
 npm install
-npm run start          # production server (recommended); or: npm run dev
-#  →  http://localhost:3000
+npm run dev            # dev server → http://localhost:3000 (STUB=1 by default, zero external deps)
+# production build:  npm run build && npm run start
 ```
 
 With `STUB=1` the whole loop runs **offline** (templated answer, simulated hashes, file-backed

@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Merit — Agents pay creators on merit.</title>
-<meta name="description" content="Merit is a research agent that escrows USDC, verifies every citation, and releases sub-cent payment only for the sources it actually used — refusing the rest. Live on Arc, settled in USDC.">
+<meta name="description" content="Merit is a proof-of-citation payment layer for AI agents: it escrows USDC, verifies every citation, and pays sources only for citations that pass verification — refusing cited-but-unsupported claims. Live on Arc, settled in USDC.">
 <!-- Social preview — absolute URLs (live on Vercel) for full Facebook/LinkedIn crawler support. -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://merit-ecru.vercel.app/">
 <meta property="og:title" content="Merit — Agents pay creators on merit.">
-<meta property="og:description" content="A research agent that escrows USDC, verifies every citation, and pays sub-cent USDC only for the sources it actually used — refusing the rest. Live on Arc, with portable on-chain reputation.">
+<meta property="og:description" content="A proof-of-citation payment layer for AI agents: escrow USDC, verify every citation, and pay sources only for citations that pass verification — refusing cited-but-unsupported claims. Live on Arc, with portable on-chain reputation.">
 <meta property="og:image" content="https://merit-ecru.vercel.app/og-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Merit — Agents pay creators on merit. Proof-of-citation settlement, live on Arc.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Merit — Agents pay creators on merit.">
-<meta name="twitter:description" content="An AI agent that pays creators on merit: proof-of-citation, sub-cent USDC settlement, and on-chain reputation. Live on Arc.">
+<meta name="twitter:description" content="The proof-of-citation payment layer for AI agents: verify every citation, pay only what passes, refuse the rest. Sub-cent USDC settlement + on-chain reputation, live on Arc.">
 <meta name="twitter:image" content="https://merit-ecru.vercel.app/og-card.png">
 <meta name="theme-color" content="#0A0A0A">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -75,7 +75,8 @@
       <a href="#demo" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">Live demo</a>
       <a href="#features" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">Features</a>
       <a href="#creators" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">For creators</a>
-      <a href="brandkit.html" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">Brand kit ↗</a>
+      <a href="/break.html" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">Break it ↗</a>
+      <a href="/honesty.html" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">Honesty index ↗</a>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       <a href="#creators" style="font-size:14px;font-weight:600;color:#0A0A0A;padding:9px 12px;">Become earnable</a>
@@ -95,7 +96,7 @@
     <div>
       <div id="live-badge" style="display:inline-flex;align-items:center;gap:8px;border:1px solid #E4E4E7;background:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;color:#52525B;box-shadow:0 1px 2px rgba(16,24,40,.04);margin-bottom:24px;"><span style="width:7px;height:7px;border-radius:50%;background:#D4D4D8;"></span>Live demo · Arc testnet</div>
       <h1 id="merit-h1" style="font-size:clamp(42px,6vw,66px);line-height:1.05;letter-spacing:-.034em;font-weight:800;margin:0 0 22px;">Agents pay creators <span class="gtext">on merit.</span></h1>
-      <p style="font-size:19px;line-height:1.55;color:#52525B;max-width:54ch;margin:0 auto 30px;">Merit escrows USDC, verifies every citation, and releases payment only for the work an agent actually used — with a signed receipt for each settlement.</p>
+      <p style="font-size:19px;line-height:1.55;color:#52525B;max-width:56ch;margin:0 auto 30px;">AI reads creators' work and pays them nothing. Merit changes that — it escrows USDC, verifies every citation, and pays only for sources that pass verification, refusing cited-but-unsupported claims. A signed receipt for every settlement.</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:26px;">
         <a href="#demo" data-card class="btn-primary" style="font-size:15px;font-weight:600;color:#fff;background:#0A0A0A;padding:13px 22px;border-radius:10px;box-shadow:0 1px 2px rgba(16,24,40,.12),0 6px 16px rgba(10,10,10,.3);">Run the demo →</a>
         <a href="#creators" data-card style="font-size:15px;font-weight:600;color:#0A0A0A;background:#fff;border:1px solid #E4E4E7;padding:13px 22px;border-radius:10px;box-shadow:0 1px 2px rgba(16,24,40,.05);">For creators</a>
@@ -249,7 +250,7 @@
       <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div class="mono" style="width:34px;height:34px;border-radius:9px;background:#F4F4F5;color:#1D1D1F;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;margin-bottom:14px;">01</div><div style="font-size:17px;font-weight:700;margin-bottom:7px;">Discover</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">The agent surfaces candidate sources, each with a merit score and a price-per-use.</p></div>
       <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div class="mono" style="width:34px;height:34px;border-radius:9px;background:#F4F4F5;color:#0A0A0A;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;margin-bottom:14px;">02</div><div style="font-size:17px;font-weight:700;margin-bottom:7px;">Escrow</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">USDC is locked against each source — held, not yet paid. The split stays visible.</p></div>
       <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div class="mono" style="width:34px;height:34px;border-radius:9px;background:#F4F4F5;color:#0A0A0A;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;margin-bottom:14px;">03</div><div style="font-size:17px;font-weight:700;margin-bottom:7px;">Answer</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">It writes an answer that cites specific sources — and excludes the ones it didn't use.</p></div>
-      <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div class="mono" style="width:34px;height:34px;border-radius:9px;background:#F4F4F5;color:#0A0A0A;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;margin-bottom:14px;">04</div><div style="font-size:17px;font-weight:700;margin-bottom:7px;">Verify &amp; cite</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">Each source is checked: was it authentic, and was it actually cited in the final answer?</p></div>
+      <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div class="mono" style="width:34px;height:34px;border-radius:9px;background:#F4F4F5;color:#0A0A0A;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;margin-bottom:14px;">04</div><div style="font-size:17px;font-weight:700;margin-bottom:7px;">Verify the citation</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">Each cited claim faces two gates: an adversarial judge that checks the source actually <em>supports</em> it, and a deterministic numeric verifier that re-checks every figure. Fail either and nothing pays.</p></div>
       <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div class="mono" style="width:34px;height:34px;border-radius:9px;background:#ECFDF5;color:#047857;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;margin-bottom:14px;">05</div><div style="font-size:17px;font-weight:700;margin-bottom:7px;">Release / refund</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">Cited + verified releases payment. Uncited or unverified is refunded, with the reason shown.</p></div>
       <div data-card style="border:1px solid #ECECEE;border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04);"><div class="mono" style="width:34px;height:34px;border-radius:9px;background:#F4F4F5;color:#1D1D1F;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;margin-bottom:14px;">06</div><div style="font-size:17px;font-weight:700;margin-bottom:7px;">Reputation</div><p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0;">Merit scores update from the outcome — a portable, on-chain track record for both sides.</p></div>
     </div>
@@ -332,14 +333,14 @@
       <div data-card style="border:1px solid #ECECEE;border-radius:16px;padding:28px;box-shadow:0 1px 2px rgba(16,24,40,.04);">
         <div style="display:inline-block;border:1px solid #A7F3D0;background:#ECFDF5;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;color:#047857;margin-bottom:16px;">For creators</div>
         <h3 style="font-size:24px;line-height:1.15;letter-spacing:-.02em;font-weight:700;margin:0 0 10px;">Get paid when agents cite you.</h3>
-        <p style="font-size:15px;line-height:1.55;color:#6B7280;margin:0 0 20px;">Connect a wallet, register a source, set a price-per-use. You're earnable in under a minute — and you see exactly why every payment landed.</p>
+        <p style="font-size:15px;line-height:1.55;color:#6B7280;margin:0 0 20px;">Paste your RSS feed. Merit registers you with a receive-only wallet and an on-chain identity — no account, no key. You're earnable in under a minute, and you see exactly why every payment landed.</p>
         <button id="persona-drawer-btn" data-card style="cursor:pointer;border:0;background:#0A0A0A;color:#fff;border-radius:10px;padding:12px 20px;font-size:15px;font-weight:600;box-shadow:0 1px 2px rgba(16,24,40,.12),0 4px 12px rgba(10,10,10,.28);">Become earnable →</button>
       </div>
       <div data-card style="border:1px solid #ECECEE;border-radius:16px;padding:28px;box-shadow:0 1px 2px rgba(16,24,40,.04);background:#FFFFFF;">
         <div style="display:inline-block;border:1px solid #E4E4E7;background:#F4F4F5;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;color:#1D1D1F;margin-bottom:16px;">For developers</div>
         <h3 style="font-size:24px;line-height:1.15;letter-spacing:-.02em;font-weight:700;margin:0 0 10px;">Route your agent's payments through Merit.</h3>
         <p style="font-size:15px;line-height:1.55;color:#6B7280;margin:0 0 18px;">Your agent only pays for verified, used work — and gets a receipt for every settlement.</p>
-        <div class="mono" style="border:1px solid #E4E4E7;border-radius:11px;background:#fff;padding:14px;font-size:12.5px;line-height:1.8;color:#52525B;overflow:auto;">merit.escrow(sources, budget)<br><span style="color:#6B7280;">// answer + cite…</span><br>merit.settle(citations) <span style="color:#BE123C;">→ release / refund</span></div>
+        <div class="mono" style="border:1px solid #E4E4E7;border-radius:11px;background:#fff;padding:14px;font-size:12.5px;line-height:1.8;color:#52525B;overflow:auto;">POST /api/verify <span style="color:#6B7280;">{ claim, source }</span><br><span style="color:#6B7280;">// → signed verdict: SUPPORTED / REFUSED</span><br>POST /api/run <span style="color:#6B7280;">{ question, budget }</span> <span style="color:#047857;">→ settled receipt</span></div>
       </div>
     </div>
   </div>
@@ -376,6 +377,7 @@
     <div style="display:flex;gap:56px;flex-wrap:wrap;">
       <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">Product</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="#how">How it works</a><a href="#demo">Live demo</a><a href="#features">Features</a></div></div>
       <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">People</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="#creators">For creators</a><a href="#creators">For developers</a></div></div>
+      <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">Proof &amp; tools</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="/break.html">Break the verifier ↗</a><a href="/honesty.html">Citation honesty index ↗</a><a href="/benchmark.html">Benchmark ↗</a><a href="/onboard.html">Onboard your feed ↗</a><a href="/passport.html">Domain passport ↗</a></div></div>
     </div>
   </div>
   <div class="mono" style="max-width:1200px;margin:28px auto 0;border-top:1px solid #ECECEE;padding-top:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;color:#6B7280;">
@@ -417,6 +419,9 @@
 
   // Derived from the REAL seed sources (no fabricated creators) — idle activity toasts use the actual earners.
   var ambientPool = baseSources.filter(function(s){ return s.verdict==='release'; }).map(function(s){ return {n:s.name,i:s.initials,c:s.avatarBg}; });
+  // Display meta (initials/color) for real creators, keyed by id AND name, so live-leaderboard toasts render.
+  var srcMeta = {}; baseSources.forEach(function(s){ var m={i:s.initials,c:s.avatarBg}; srcMeta[s.id]=m; srcMeta[s.name]=m; });
+  var liveBoard = []; // the REAL /api/metrics leaderboard (creators with actual earnings) — set on each metrics poll
   // The payouts ticker, derived from the REAL seed sources + their verdicts (no fabricated creators or amounts;
   // doubled so the seamless scroll fills the bar). Earners show +price in green, refused show −price in red.
   var tickerItemsRaw = baseSources.concat(baseSources).map(function(s){ var paid = s.verdict==='release'; return {i:s.initials,c:s.avatarBg,n:s.name,a:(paid?'+$':'−$')+s.price.toFixed(4),k:paid?1:0}; });
@@ -471,13 +476,13 @@
   }
 
   function ambientEvent(){
-    if(running()) return;
-    // Ambient activity flavor only — a single transient toast. It never mutates the real headline total
-    // or the creator-earnings leaderboard (both come from /api/metrics), so nothing on the page auto-climbs.
-    var p = ambientPool[Math.floor(Math.random()*ambientPool.length)];
-    var refund = Math.random()<0.15;
-    var amt = round(0.006+Math.random()*0.05);
-    makeToast({name:p.n,initials:p.i,bg:p.c,label:refund?'payment refused · not cited':'verified citation · settled',amountLabel:(refund?'−':'+')+usd(amt),color:refund?'#BE123C':'#047857',border:refund?'#FECDD3':'#A7F3D0'});
+    if(running() || !liveBoard.length) return;
+    // REAL DATA ONLY: cycle the live /api/metrics leaderboard — an actually-verified creator and their REAL
+    // cumulative earnings. No fabricated amounts, no invented "just settled" events. If no creator has earned
+    // yet, nothing shows (honest silence over fake activity).
+    var e = liveBoard[Math.floor(Math.random()*liveBoard.length)];
+    var meta = srcMeta[e.id] || srcMeta[e.name] || {i:(e.name||'?').slice(0,2).toUpperCase(), c:'#0A0A0A'};
+    makeToast({name:e.name,initials:meta.i,bg:meta.c,label:'verified creator · earned to date',amountLabel:usd(e.earned),color:'#047857',border:'#A7F3D0'});
   }
 
   // ===================================================================
@@ -639,14 +644,15 @@
     state.creators=state.creators.map(function(c){ return c.id===d.id?Object.assign({},c,{merit:d.merit,flash:false}):c; });
     if(d.ledger) state.ledger=d.ledger;
     state.receipts.unshift({id:'r'+Date.now()+'_'+d.id,isRelease:false,name:d.name,amount:d.amount,reason:short,audit:d.audit,claim:d.claim,hash:'—',time:'just now'});
-    state.refundToast=d.name+' — '+short;
+    state.refundToast=d.name+' — '+short; state.toastKind='refund';
     renderSources(); renderCreators(); renderLedger(); renderReceipts(); renderRefundToast();
     var seq=(applyRefund._seq=(applyRefund._seq||0)+1);
     at(3200, function(){ if(applyRefund._seq===seq){ state.refundToast=null; renderRefundToast(); } });
   }
 
   function runError(msg){
-    state.phase='done'; state.refundToast='Run error — '+msg;
+    // An infra/run error is NOT a verifier refusal — give it its own neutral toast, never "Payment refused".
+    state.phase='done'; state.refundToast=msg; state.toastKind='error';
     renderHeader(); renderSteps(); renderRefundToast();
     console.error('[merit] run error:', msg);
     at(5000, function(){ state.refundToast=null; renderRefundToast(); });
@@ -962,9 +968,13 @@
   function renderRefundToast(){
     var host = document.getElementById('refund-toast-mount');
     if(!state.refundToast){ host.innerHTML=''; return; }
-    host.innerHTML = '<div style="border:1px solid #FECDD3;background:#FFF1F2;border-radius:12px;box-shadow:0 8px 24px -12px rgba(190,18,60,.3);padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;">'
-      +'<div style="width:30px;height:30px;flex:none;border-radius:8px;background:#FFE4E6;border:1px solid #FECDD3;display:flex;align-items:center;justify-content:center;font-weight:700;color:#BE123C;">✕</div>'
-      +'<div><div style="font-size:13.5px;font-weight:700;color:#9F1239;">Payment refused</div><div style="font-size:13px;color:#9F1239;opacity:.85;margin-top:1px;">'+esc(state.refundToast)+'</div></div></div>';
+    // "Payment refused" (rose) is reserved for a REAL verifier refund; an infra/run error gets a neutral
+    // "Run interrupted" toast so a network hiccup is never misread as the verifier rejecting a citation.
+    var err = state.toastKind==='error';
+    var bd=err?'#E4E4E7':'#FECDD3', bg=err?'#F9FAFB':'#FFF1F2', ic=err?'#6B7280':'#BE123C', icbg=err?'#F3F4F6':'#FFE4E6', tc=err?'#374151':'#9F1239', title=err?'Run interrupted':'Payment refused', glyph=err?'!':'✕';
+    host.innerHTML = '<div style="border:1px solid '+bd+';background:'+bg+';border-radius:12px;box-shadow:0 8px 24px -12px rgba(16,24,40,.18);padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;">'
+      +'<div style="width:30px;height:30px;flex:none;border-radius:8px;background:'+icbg+';border:1px solid '+bd+';display:flex;align-items:center;justify-content:center;font-weight:700;color:'+ic+';">'+glyph+'</div>'
+      +'<div><div style="font-size:13.5px;font-weight:700;color:'+tc+';">'+title+'</div><div style="font-size:13px;color:'+tc+';opacity:.85;margin-top:1px;">'+esc(state.refundToast)+'</div></div></div>';
   }
 
   function renderHeroCard(){
@@ -994,7 +1004,7 @@
   // ===================================================================
   function openDrawer(){ state.drawerOpen=true; renderDrawer(); var c=document.getElementById('dw-close'); if(c) c.focus(); }
   function closeDrawer(){ state.drawerOpen=false; renderDrawer(); var t=document.getElementById('persona-drawer-btn'); if(t) t.focus(); }
-  function connectWallet(){ state.walletAddr = hash().slice(0,8)+'…'+hash().slice(-4); state.drawerStep=1; renderDrawer(); }
+  function connectWallet(){ state.walletAddr = ''; state.onbError = ''; state.drawerStep=1; renderDrawer(); } // no fabricated address — the real receive-only wallet is created by /api/creators/register
   function finishOnb(){
     var name = (state.onbName||'').trim(); if(!name) return;
     var price = Number(state.onbPrice)||0.015;
@@ -1011,14 +1021,24 @@
       .then(function(r){ return r.json(); })
       .then(function(row){
         if(row && row.id){
-          state.walletAddr = row.wallet || state.walletAddr;
-          state.onbWallet = row.wallet; state.onbExplorer = row.explorerUrl; state.onbAgentId = row.agentId;
+          state.walletAddr = row.wallet || '';
+          state.onbWallet = row.wallet; state.onbExplorer = row.explorerUrl; state.onbAgentId = row.agentId; state.onbError = '';
           state.creators = state.creators.map(function(c){ return c.id===tmpId ? Object.assign({},c,{id:row.id,merit:row.merit||50}) : c; });
+          renderCreators(); renderDrawer();
+        } else {
+          // Registration didn't complete — do NOT claim "you're live". Drop the optimistic row + show the error.
+          state.creators = state.creators.filter(function(c){ return c.id!==tmpId; });
+          state.onbError = (row && row.error) ? String(row.error) : 'Registration didn\'t complete — your source isn\'t live yet.';
           renderCreators(); renderDrawer();
         }
       })
-      .catch(function(){ /* keep the optimistic row */ });
+      .catch(function(){
+        state.creators = state.creators.filter(function(c){ return c.id!==tmpId; });
+        state.onbError = 'Couldn\'t reach Merit — your source isn\'t live yet. Please try again.';
+        renderCreators(); renderDrawer();
+      });
   }
+  function retryOnb(){ state.onbError=''; state.drawerStep=1; renderDrawer(); }
 
   function renderDrawer(){
     var mount = document.getElementById('drawer-mount');
@@ -1032,13 +1052,13 @@
       stepHtml = '<div>'
         +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">Step 1 · Wallet</div>'
         +'<div style="border:1px solid #ECECEE;border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04);">'
-        +'<div style="font-size:19px;font-weight:700;margin-bottom:9px;">Connect a USDC wallet</div>'
-        +'<p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0 0 18px;">Where agents send your earnings on Arc. No gas, no setup — a smart wallet is created instantly.</p>'
-        +'<button id="dw-connect" data-card style="cursor:pointer;width:100%;border:0;background:#0A0A0A;color:#fff;border-radius:10px;padding:13px;font-size:15px;font-weight:600;box-shadow:0 4px 12px rgba(10,10,10,.28);">Create / connect wallet</button>'
+        +'<div style="font-size:19px;font-weight:700;margin-bottom:9px;">Your payout wallet</div>'
+        +'<p style="font-size:14px;line-height:1.55;color:#6B7280;margin:0 0 18px;">Merit creates a receive-only smart wallet on Arc when you go live — no keys, no gas, no setup. Prefer your own address? Add it in the next step.</p>'
+        +'<button id="dw-connect" data-card style="cursor:pointer;width:100%;border:0;background:#0A0A0A;color:#fff;border-radius:10px;padding:13px;font-size:15px;font-weight:600;box-shadow:0 4px 12px rgba(10,10,10,.28);">Continue →</button>'
         +'</div></div>';
     } else if(state.drawerStep===1){
       stepHtml = '<div>'
-        +'<div class="mono" style="border:1px solid #A7F3D0;background:#ECFDF5;border-radius:10px;padding:11px 12px;margin-bottom:18px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:#047857;"><span>●</span>Wallet connected · '+esc(state.walletAddr)+'</div>'
+        +'<div style="border:1px solid #E4E4E7;background:#FAFAFA;border-radius:10px;padding:11px 12px;margin-bottom:18px;font-size:12.5px;line-height:1.5;color:#52525B;">A receive-only smart wallet is created on Arc when you go live — no keys, no gas. Bring your own address below, or leave it blank to auto-create.</div>'
         +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">Step 2 · Register your source</div>'
         +'<label style="display:block;font-size:13px;font-weight:600;color:#52525B;margin-bottom:6px;">Creator / publication name</label>'
         +'<input id="dw-name" aria-label="Creator or source name" value="'+esc(state.onbName)+'" placeholder="e.g. Acme Research" style="width:100%;border:1px solid #E4E4E7;border-radius:9px;padding:12px;font-size:15px;background:#fff;outline:none;margin-bottom:14px;" />'
@@ -1052,20 +1072,31 @@
         +'<input id="dw-wallet" aria-label="Payout wallet address" value="'+esc(state.onbWalletAddr||'')+'" placeholder="0x… (blank = auto-create)" class="mono" style="width:100%;border:1px solid #E4E4E7;border-radius:9px;padding:12px;font-size:13px;background:#fff;outline:none;margin-bottom:22px;" />'
         +'<button id="dw-finish" data-card style="cursor:pointer;width:100%;border:0;background:#0A0A0A;color:#fff;border-radius:10px;padding:13px;font-size:15px;font-weight:600;box-shadow:0 4px 12px rgba(10,10,10,.28);">Go live →</button>'
         +'</div>';
-    } else {
+    } else if(state.onbError){
       stepHtml = '<div>'
-        +'<div style="border:1px solid #A7F3D0;background:#ECFDF5;border-radius:14px;padding:22px;margin-bottom:18px;">'
-        +'<div style="width:42px;height:42px;border-radius:11px;background:#10B981;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700;margin-bottom:14px;">✓</div>'
-        +'<div style="font-size:24px;font-weight:700;letter-spacing:-.02em;color:#065F46;">You\'re live</div>'
-        +'<div style="font-size:14px;line-height:1.5;color:#047857;margin-top:7px;max-width:26ch;">'+(state.onbEarnable ? 'Agents can now discover, cite, and pay you automatically.' : 'You\'re registered. Add a content sample so the agent can cite and pay you.')+'</div></div>'
+        +'<div style="border:1px solid #FECACA;background:#FEF2F2;border-radius:14px;padding:22px;margin-bottom:18px;">'
+        +'<div style="width:42px;height:42px;border-radius:11px;background:#BE123C;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700;margin-bottom:14px;">!</div>'
+        +'<div style="font-size:22px;font-weight:700;letter-spacing:-.02em;color:#991B1B;">Not registered yet</div>'
+        +'<div style="font-size:14px;line-height:1.5;color:#B91C1C;margin-top:7px;max-width:30ch;">'+esc(state.onbError)+'</div></div>'
+        +'<button id="dw-retry" data-card style="cursor:pointer;width:100%;border:0;background:#0A0A0A;color:#fff;border-radius:10px;padding:13px;font-size:15px;font-weight:600;">Try again</button>'
+        +'</div>';
+    } else {
+      var live = !!state.onbWallet; // a REAL receive-only wallet returned by /api/creators/register
+      stepHtml = '<div>'
+        +'<div style="border:1px solid '+(live?'#A7F3D0':'#E4E4E7')+';background:'+(live?'#ECFDF5':'#FAFAFA')+';border-radius:14px;padding:22px;margin-bottom:18px;">'
+        +'<div style="width:42px;height:42px;border-radius:11px;background:'+(live?'#10B981':'#9CA3AF')+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700;margin-bottom:14px;">'+(live?'✓':'…')+'</div>'
+        +'<div style="font-size:24px;font-weight:700;letter-spacing:-.02em;color:'+(live?'#065F46':'#374151')+';">'+(live?'You\'re live':'Registering…')+'</div>'
+        +'<div style="font-size:14px;line-height:1.5;color:'+(live?'#047857':'#6B7280')+';margin-top:7px;max-width:28ch;">'+(live?(state.onbEarnable ? 'Agents can now discover, cite, and pay you automatically.' : 'You\'re registered. Add a content sample so the agent can cite and pay you.') : 'Creating your on-chain identity and receive-only wallet on Arc…')+'</div></div>'
         +'<div style="border:1px solid #ECECEE;border-radius:14px;padding:20px;box-shadow:0 1px 2px rgba(16,24,40,.04);">'
         +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:14px;">Your merit profile</div>'
         +'<div style="display:flex;align-items:center;gap:13px;">'
         +'<div class="mono" style="width:46px;height:46px;flex:none;background:#0A0A0A;color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;">'+esc(state.onbInitials)+'</div>'
-        +'<div style="flex:1 1 auto;min-width:0;"><div style="font-size:17px;font-weight:700;line-height:1.1;">'+esc(state.onbNameShow)+'</div><div class="mono" style="font-size:12px;color:#6B7280;margin-top:4px;">$'+esc(state.onbPrice||'0')+'/use · '+esc(state.walletAddr)+'</div></div>'
+        +'<div style="flex:1 1 auto;min-width:0;"><div style="font-size:17px;font-weight:700;line-height:1.1;">'+esc(state.onbNameShow)+'</div><div class="mono" style="font-size:12px;color:#6B7280;margin-top:4px;">$'+esc(state.onbPrice||'0')+'/use · '+(live?esc(state.onbWallet):'creating wallet…')+'</div>'
+        +(state.onbAgentId?'<div class="mono" style="font-size:11.5px;color:#6B7280;margin-top:4px;">ERC-8004 identity #'+esc(state.onbAgentId)+(state.onbExplorer&&/^https/.test(state.onbExplorer)?' · <a href="'+esc(state.onbExplorer)+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">view on Arc ↗</a>':'')+'</div>':'')
+        +'</div>'
         +'<div style="text-align:right;flex:none;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;">Merit</div><div class="mono" style="font-size:26px;font-weight:600;margin-top:3px;">50</div></div>'
         +'</div>'
-        +'<div style="margin-top:15px;display:inline-flex;align-items:center;gap:6px;border:1px solid #A7F3D0;background:#ECFDF5;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;color:#047857;">● Earnable now</div>'
+        +(live&&state.onbEarnable?'<div style="margin-top:15px;display:inline-flex;align-items:center;gap:6px;border:1px solid #A7F3D0;background:#ECFDF5;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;color:#047857;">● Earnable now</div>':'')
         +'</div>'
         +'<button id="dw-back" data-card style="cursor:pointer;width:100%;margin-top:18px;border:1px solid #E4E4E7;background:#fff;border-radius:10px;padding:13px;font-size:14px;font-weight:600;">← Back to the page</button>'
         +'</div>';
@@ -1087,6 +1118,7 @@
     var cBtn = document.getElementById('dw-connect'); if(cBtn) cBtn.addEventListener('click', connectWallet);
     var fBtn = document.getElementById('dw-finish'); if(fBtn) fBtn.addEventListener('click', finishOnb);
     var bBtn = document.getElementById('dw-back'); if(bBtn) bBtn.addEventListener('click', closeDrawer);
+    var rBtn = document.getElementById('dw-retry'); if(rBtn) rBtn.addEventListener('click', retryOnb);
     var nIn = document.getElementById('dw-name'); if(nIn) nIn.addEventListener('input', function(e){ state.onbName=e.target.value; });
     var uIn = document.getElementById('dw-url'); if(uIn) uIn.addEventListener('input', function(e){ state.onbUrl=e.target.value; });
     var pIn = document.getElementById('dw-price'); if(pIn) pIn.addEventListener('input', function(e){ state.onbPrice=e.target.value.replace(/[^0-9.]/g,''); });
@@ -1184,6 +1216,7 @@
           var earned = {};
           m.leaderboard.forEach(function(s){ earned[s.id] = s.earned||0; });
           state.creators = state.creators.map(function(c){ return Object.assign({}, c, {balance: Object.prototype.hasOwnProperty.call(earned, c.id) ? earned[c.id] : 0}); });
+          liveBoard = m.leaderboard.filter(function(s){ return (s.earned||0) > 0; }); // real earners → ambient toasts
         }
         renderHeroCard(); if(!running()) renderCreators();
         // A freshly cold-started serverless instance hydrates its durable totals lazily — the FIRST read can

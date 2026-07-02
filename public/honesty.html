@@ -70,7 +70,7 @@
     document.getElementById('verified').innerHTML=(d.verified||[]).map(function(a){
       return '<div class="row"><span class="name">'+esc(a.agent)+'</span><span class="badge">'+esc(a.status)+'</span>'+
         '<div class="metrics">'+
-        '<span class="m">benchmark <b>100% P/R</b></span>'+
+        '<span class="m">precision/recall <b>'+esc((a.benchmark && /%/.test(a.benchmark)) ? a.benchmark.split(' on ')[0] : 'not yet measured')+'</b></span>'+
         '<span class="m">gold set <b>'+esc(a.goldSet!=null?a.goldSet:'—')+'</b></span>'+
         '<span class="m">attacks held <b>'+esc(a.attacksHeld)+'/'+esc(a.adversarialAttacks)+'</b></span>'+
         '<span class="m">fool rate <b>'+((a.foolRate||0)*100).toFixed(0)+'%</b></span>'+

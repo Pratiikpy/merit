@@ -590,7 +590,9 @@ export async function runAgent(
           runId, sourceId: s.id, cited: true, released: settled > 0, amount: paid,
           confidence: v.confidence, reason: settled > 0 ? "released" : "settlement failed", at: Date.now(),
         });
-        if (settled > 0) recordLedgerSettlement({ runId, sourceId: s.id, amount: paid, at: Date.now() }); // Bet 3: monotonic traction counter
+        // Only REAL settlements feed the monotonic traction counter (/api/metrics "on-chain settled"). A STUB
+        // run is a simulation — recording it would inflate the real-money total forever, so it's excluded.
+        if (settled > 0 && !isStub()) recordLedgerSettlement({ runId, sourceId: s.id, amount: paid, at: Date.now() });
         await sleep(620);
       } else {
         const refundAmt = round6(price);

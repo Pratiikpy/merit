@@ -5,6 +5,7 @@
  * no key, no money). Real providers (Firecrawl, on-chain data) are optional env-keyed drop-ins that
  * gracefully skip when their key is absent — so the in-repo path always works and verifies for free.
  */
+import { isStub } from "./arc";
 import type { Source } from "./registry";
 
 export interface Provider {
@@ -13,10 +14,12 @@ export interface Provider {
   fetch(query: string, source: Source): Promise<string | null>;
 }
 
-// Deterministic fixture — derives plausible content from the run question. No key, no network, always on.
+// Deterministic fixture — derives plausible content from the run question. STUB-ONLY: it fabricates content,
+// so it must never be live in a real-money deployment (it would settle real USDC for synthetic text). In live
+// mode it reports unavailable and the source keeps its own registered content.
 const fixture: Provider = {
   id: "fixture",
-  available: () => true,
+  available: () => isStub(),
   async fetch(query) {
     const topic = (query || "the market").replace(/[?.!]+/g, "").trim().slice(0, 80) || "the market";
     return `[Fixture Data API — fetched live per call] On "${topic}": cross-border B2B stablecoin settlement crossed $4.1T in annualized volume in 2026, now the dominant on-chain payment flow as enterprises route USDC to cut FX and wire costs.`;
