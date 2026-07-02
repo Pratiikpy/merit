@@ -1,7 +1,7 @@
-# Merit Trust API — reputation-as-a-service (#5)
+# Merit Trust API — reputation-as-a-service
 
 A portable, public read layer so **any** external agent can check a counterparty's reputation before it
-transacts — the PRD's "reputation API" revenue line. No auth (reputation is public). Two endpoints:
+transacts — the "reputation API" revenue line. No auth (reputation is public). Two endpoints:
 
 ## `GET /api/trust`
 
@@ -41,7 +41,7 @@ Rank the sources + specialists an agent could transact with, by reputation.
 ```
 
 Ranking is by cached `merit` (fast discovery), tie-broken by `effectivePrice` (cheaper first). `effectivePrice`
-reflects reputation-gated pricing (#4).
+reflects reputation-gated pricing.
 
 ## `GET /api/reputation/{agentId}`
 

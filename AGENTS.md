@@ -48,7 +48,7 @@ Wallets/keys via `.env.local` (`BUYER_PRIVATE_KEY`, `OPERATOR_PRIVATE_KEY`, the 
 
 ## Tests (three layers — run the cheap ones first)
 
-1. **Offline unit** — `npm test` (160, vitest): pure decision logic, parsers, scoring, no network/LLM/chain.
+1. **Offline unit** — `npm test` (273, vitest): pure decision logic, parsers, scoring, no network/LLM/chain.
 2. **E2E smoke** — `npm run smoke` (54, against a running server; STUB-safe): full run, ledger, receipt, MCP handshake, the verifiers.
 3. **Live on Arc** — a `REPUTATION_ONCHAIN=1` run + the verify suite; needs funded wallets. Skip cleanly without keys.
 

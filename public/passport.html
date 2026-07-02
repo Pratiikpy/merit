@@ -51,6 +51,7 @@
   <main>
   <h1>Claim your domain.<br>Get the badge AI can't fake.</h1>
   <p class="sub">Prove you own your site, become an <strong>owner-verified</strong> creator, and earn USDC whenever an agent <em>verifiably</em> cites you — then embed a badge that resolves against Merit's verifier, so a self-report agent's "cited me" badge is unforgeable noise next to yours.</p>
+  <p class="hint">Prefer a feed? <a href="/onboard.html">Onboard from RSS →</a> — same payouts, no file to publish.</p>
 
   <div class="step">Step 1 — publish this JSON at <span class="mono" style="text-transform:none;letter-spacing:0;color:#0A0A0A;">/.well-known/merit.json</span></div>
   <pre>{
@@ -82,7 +83,7 @@
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function show(h){out.innerHTML=h;out.style.display='block';}
   async function claim(){
-    var d=dom.value.trim();if(!d){dom.focus();return;}
+    var d=dom.value.trim().replace(/^https?:\/\//i,'').replace(/\/+$/,'');if(!d){dom.focus();return;}
     go.disabled=true;go.textContent='Verifying…';out.style.display='none';
     try{
       var res=await fetch('/api/passport',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({domain:d})});

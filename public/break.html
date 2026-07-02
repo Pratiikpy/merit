@@ -62,17 +62,17 @@
 
   <main>
   <h1>Try to get a lie paid.</h1>
-  <p class="sub">Mis-cite a source. Watch Merit's verifier <strong>refuse it before a cent moves</strong> — and the chain revert. This is the only AI market that hands you the attack surface and dares you to break it.</p>
+  <p class="sub">Mis-cite a source and watch Merit's verifier <strong>refuse it before a cent moves</strong> — and the on-chain settlement revert. This is the only AI market that hands you the attack surface and dares you to break it.</p>
 
   <div class="counters" id="counters">
-    <div class="stat"><div class="n" id="held">—</div><div class="l">attacks the moat held</div></div>
+    <div class="stat"><div class="n" id="held">—</div><div class="l">attacks the verifier held</div></div>
     <div class="stat"><div class="n" id="foolrate">—</div><div class="l">fool rate</div></div>
     <div class="stat"><div class="n" id="bench">—</div><div class="l">gold-set cases</div></div>
   </div>
   <div class="antif">↑ The verifier gets <b>harder to fool</b> as you attack it — every attempt is harvested into the gold set.</div>
 
   <div class="card">
-    <div class="lbl">One-click attacks (fabricated figures — the verifier catches these with zero LLM)</div>
+    <div class="lbl">One-click attacks (fabricated figures — caught by the numeric verifier with no LLM call)</div>
     <div class="ex" id="examples">
       <button class="exbtn" data-src="StableData API" data-claim="Cross-border B2B stablecoin settlement reached $40 trillion in annualized volume in 2026.">❌ Claim <b>StableData</b> reported <b>$40 trillion</b> &nbsp;<span style="color:#4B5563">(it said $4.1T)</span></button>
       <button class="exbtn" data-src="CryptoBuzz Daily" data-claim="CryptoBuzz reported a celebrity memecoin surged 4,000% this week.">❌ Claim <b>CryptoBuzz</b> reported a <b>4,000%</b> surge &nbsp;<span style="color:#4B5563">(it said 400%)</span></button>
@@ -102,8 +102,8 @@
     try{ var b=await fetch('/api/bounty/board').then(r=>r.json()); var s=b.stats||{};
       document.getElementById('held').textContent=(s.held!=null?s.held:0);
       document.getElementById('foolrate').textContent=((s.foolRate||0)*100).toFixed(0)+'%';
-    }catch(e){}
-    try{ var bm=await fetch('/api/benchmark').then(r=>r.json()); document.getElementById('bench').textContent=((bm.goldSet||0)+(bm.total||0)); }catch(e){}
+    }catch(e){ document.getElementById('held').title='live stats unavailable'; document.getElementById('foolrate').title='live stats unavailable'; }
+    try{ var bm=await fetch('/api/benchmark').then(r=>r.json()); document.getElementById('bench').textContent=((bm.goldSet||0)+(bm.total||0)); }catch(e){ document.getElementById('bench').title='live stats unavailable'; }
   }
   async function loadSources(){
     try{ var d=await fetch('/api/sources').then(r=>r.json());
@@ -120,7 +120,7 @@
       if(res.status===503){ show('<div class="err">The adversarial <b>LLM judge</b> is resting (this live demo runs keyless). But the <b>deterministic numeric verifier</b> never sleeps — try a claim with a fabricated <b>number</b> (like the one-click attacks above) and watch it get caught instantly.</div>'); return; }
       if(!res.ok){ show('<div class="err">'+esc(r.error||('error '+res.status))+'</div>'); return; }
       if(r.fooled){
-        show('<div class="fooled"><h3>⚠ Marked SUPPORTED</h3>The verifier paid this citation. <b>If the claim is genuinely false, you just found a defect</b> — that\'s the bounty, and the case is now in the gold set so it can never slip twice.<div class="meta">checked by: '+esc(r.by)+'</div></div>');
+        show('<div class="fooled"><h3>⚠ Marked SUPPORTED</h3>This citation would have been paid. <b>If the claim is genuinely false, you just found a defect</b> — that\'s the bounty, and the case is now in the gold set so it can never slip twice.<div class="meta">checked by: '+esc(r.by)+'</div></div>');
       } else {
         show('<div class="held"><h3>🛡 HELD — the lie was refused</h3>The verifier rejected this citation <b>before any USDC moved</b>, caught by the <b>'+esc(r.by)+'</b>. On a verified run, <code>MeritVerificationHook</code> reverts the on-chain settlement — a lie cannot get paid.<div class="meta">source: <code>'+esc(r.source)+'</code> · verdict: <code>REFUSED</code></div></div>');
       }
@@ -129,7 +129,13 @@
     finally{ go.disabled=false;go.textContent='Attack the verifier'; }
   }
   document.getElementById('examples').addEventListener('click',function(e){ var b=e.target.closest('.exbtn'); if(!b)return; srcSel.value=b.dataset.src; claim.value=b.dataset.claim; attack(b.dataset.src,b.dataset.claim); });
-  go.addEventListener('click',function(){ attack(srcSel.value,claim.value.trim()); });
+  go.addEventListener('click',function(){
+    srcSel.style.outline='';claim.style.outline='';
+    var s=srcSel.value,c=claim.value.trim();
+    if(!s){ srcSel.focus(); srcSel.style.outline='2px solid #DC2626'; return; }
+    if(!c){ claim.focus(); claim.style.outline='2px solid #DC2626'; return; }
+    attack(s,c);
+  });
   loadCounters(); loadSources();
 })();
 </script>

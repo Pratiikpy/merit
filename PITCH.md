@@ -96,17 +96,17 @@ standards (x402, AP2, ACP) as they shake out, rather than betting the product on
   Auditor's reason, and the on-chain tx, plus the crew paid and budget totals. The receipt is the
   **atomic unit the whole system compounds on** — audit, reputation, and dispute all read from it —
   and it's independently checkable, never trusted.
-- **Don't trust — verify, in one command.** `npm run verify-all -- <receipt> <buyer>` recovers the
+- **Don't trust — verify, in one command.** `npm run verify-all -- <receipt> [buyer]` recovers the
   receipt's signature (pinning it to the payer) and reads **every** paid/refused decision back from the
   ERC-8004 ValidationRegistry, **cross-checking each against the receipt** — a "paid" source must read
   100/100 on-chain, a "refused" 0/100, all by the pinned Auditor. Proof the receipt **cannot lie**; any
   divergence is flagged. (Four more verifiers each prove one claim, server-free: `recompute` the
   reputation · `verify-validation` the verdict · `verify-receipt` the signature · `verify-settlement` the money.)
 - **Challenge the verdict — the dispute path the agent economy still lacks.** Disputes and liability are flagged industry-wide as *unsolved*; Merit ships the appeal. Every check above proves a recorded *fact*; `npm run challenge -- "<source>" "<claim>"` re-derives the Auditor's **judgment** on any (source, claim) pair, independent of any run, reporting SUPPORTED/REFUSED. A refused creator appeals; a skeptic confirms a refusal holds. A **fabricated-figure** appeal resolves *deterministically* (the machine-verifiable numeric layer — no LLM, so it stands even under provider throttling); the rest re-run the judge. Live-proven: the trap stays refused, a matching claim is supported, and a trusted source is **not** rubber-stamped for a claim it doesn't back. The Auditor is accountable, not a black box.
-- **Engineered, not vibes:** 160 unit + 54 end-to-end smoke tests (incl. the pure crew-grade +
-  budget-guard logic and the Auditor-reply parser); **six independent reviews** — code-quality,
-  security (attack-surface *and* frontend, XSS-clean), an adversarial money-path *silent-failure* audit,
-  test-coverage, and type-design — findings triaged + fixed (prompt-injection hardening on the judge
+- **Engineered, not vibes:** 273 unit + 54 end-to-end smoke tests (incl. the pure crew-grade +
+  budget-guard logic and the Auditor-reply parser); **eight independent reviews — two code-quality,
+  two security (attack-surface + frontend), silent-failure, test-coverage, comment-accuracy,
+  type-design** — findings triaged + fixed (prompt-injection hardening on the judge
   **and** the public input endpoints, error/internal-detail scrubbing, budget-clamp, run-context TTL,
   HSTS+CSP, a concurrent-run guard, receipt-integrity, a keyboard-accessible UI, and a type
   refactor that makes inconsistent verdicts unrepresentable). Whole-run budget invariant proven

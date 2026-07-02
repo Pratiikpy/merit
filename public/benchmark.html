@@ -93,9 +93,11 @@
       var v = (c.verdict||c.expected||'').toUpperCase();
       var cls = v.indexOf('SUP')>=0 ? 'sup' : 'ref';
       var claim = c.claim || c.text || c.question || '(case)';
-      return '<tr><td><span class="v '+cls+'">'+esc(v||'CASE')+'</span></td><td>'+esc(String(claim).slice(0,140))+'</td></tr>';
+      var text = String(claim); if(text.length>140){ text = text.slice(0,140)+'…'; }
+      return '<tr><td><span class="v '+cls+'">'+esc(v||'CASE')+'</span></td><td>'+esc(text)+'</td></tr>';
     }).join('');
   }).catch(function(){
+    ['pairs','adv','harvest'].forEach(function(id){ var el = document.getElementById(id); el.textContent = '—'; el.title = 'Live figures unavailable — reproduce with npm run judge-eval'; });
     document.getElementById('candbody').innerHTML = '<tr><td colspan="2" class="muted">benchmark data unavailable</td></tr>';
   });
 })();

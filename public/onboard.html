@@ -67,7 +67,7 @@
       <input id="feed" type="url" placeholder="https://yourblog.com/feed.xml" autocomplete="off" spellcheck="false">
       <button id="go">Onboard</button>
     </div>
-    <div class="hint">No account, no key. The wallet is receive-only. To direct payouts to your own wallet, add <code>merit-verify:0xYourAddress</code> anywhere in your feed.</div>
+    <div class="hint">No account, no key. The wallet is receive-only. To direct payouts to your own wallet, add <code>merit-verify:0xYourAddress</code> anywhere in your feed. Funds accrue to a wallet reserved for you; verify ownership to claim them.</div>
     <div id="out" role="status" aria-live="polite"></div>
   </div>
 
@@ -79,7 +79,7 @@
 
   </main>
 
-  <footer>Merit — a proof-of-work economy for AI agents on Arc. Verified citations only.</footer>
+  <footer>Merit — a proof-of-citation economy for AI agents on Arc. Verified citations only.</footer>
 </div>
 
 <script>
@@ -98,12 +98,12 @@
       if(!res.ok){show('<div class="err">'+esc(r.error||('Onboarding failed ('+res.status+')'))+'</div>');return;}
       var verified=r.ownerVerified?'<span class="badge">owner-verified ✓</span>':'';
       show('<div class="ok"><h3>'+esc(r.name)+' is on Merit '+verified+'</h3>'+
-        row('recent entries cited', esc(r.entries)+' posts')+
+        row('recent entries indexed', esc(r.entries)+' posts')+
         row('payout wallet', esc(r.wallet))+
         row('ERC-8004 identity', '#'+esc(r.agentId||'—'))+
         (r.explorerUrl?row('on-chain', '<a href="'+esc(r.explorerUrl)+'" target="_blank" rel="noopener">view ↗</a>'):'')+
         '<div class="hint" style="margin-top:14px">'+(r.ownerVerified?'Payouts go to your verified wallet.':'Add <code>merit-verify:0xYourAddress</code> to your feed and re-onboard to claim payouts to your own wallet.')+'</div></div>');
-    }catch(e){show('<div class="err">Could not reach Merit. Is the server running?</div>');}
+    }catch(e){show('<div class="err">Couldn\'t reach Merit just now — please try again in a moment.</div>');}
     finally{go.disabled=false;go.textContent='Onboard';}
   }
   go.addEventListener('click',onboard);
