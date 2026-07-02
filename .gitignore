@@ -75,3 +75,6 @@ merit-cvo/*.egg-info/
 merit-cvo/**/__pycache__/
 nli-server/**/__pycache__/
 merit-cvo/dist/
+
+# generated benchmark run artifact (harness + dataset are tracked; results regenerate per run)
+benchmark/results.json

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyCitation, isVerifyError } from "@/lib/verify/engine";
 import { checkChallengeLimit } from "@/lib/ratelimit";
+import { recordAuditVerdict } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,6 +41,11 @@ export async function POST(req: Request) {
   }
 
   const v = out.verdict;
+  try {
+    recordAuditVerdict(v, body.claim ?? ""); // EU AI Act Art.12 traceability — tamper-evident, best-effort
+  } catch {
+    /* the audit log never fails a verdict */
+  }
   return NextResponse.json({
     ...v,
     by: v.methods.join(" + "), // back-compat alias for the layer(s) that decided

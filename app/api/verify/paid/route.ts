@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withGatewaySeller } from "@/lib/seller";
 import { verifyCitation, isVerifyError } from "@/lib/verify/engine";
+import { recordAuditVerdict } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,6 +30,11 @@ async function handler(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: out.error, ...(out.numericOnly ? { numericOnly: true } : {}) }, { status: out.status });
   }
   const v = out.verdict;
+  try {
+    recordAuditVerdict(v, body.claim ?? ""); // paid verdicts are logged for the compliance export too
+  } catch {
+    /* best-effort */
+  }
   return NextResponse.json({
     ...v,
     paid: true,

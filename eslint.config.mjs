@@ -18,4 +18,11 @@
 
 import nextConfig from "eslint-config-next";
 
-export default nextConfig;
+// Python sidecars (NLI server, merit-cvo package) ship their own vendored JS inside virtualenvs —
+// never Merit's TypeScript. Keep ESLint scoped to the app so third-party bundles don't add noise.
+const config = [
+  { ignores: ["nli-server/**", "merit-cvo/**"] },
+  ...(Array.isArray(nextConfig) ? nextConfig : [nextConfig]),
+];
+
+export default config;
