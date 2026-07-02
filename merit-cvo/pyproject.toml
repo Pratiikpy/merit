@@ -20,6 +20,9 @@ dependencies = []  # the free path (numeric + a MERIT_NLI_URL server) is stdlib-
 
 [project.optional-dependencies]
 hhem = ["torch", "transformers", "sentencepiece"]  # in-process NLI (else point MERIT_NLI_URL at the nli-server)
+langchain = ["langchain-core>=0.3"]                # merit_cvo.integrations.langchain: verify_citation tool
+llamaindex = ["llama-index-core>=0.11"]            # merit_cvo.integrations.llamaindex: grounding evaluator
+ragas = ["ragas>=0.2"]                             # merit_cvo.integrations.ragas: faithfulness metric
 dev = ["pytest>=7"]
 
 [project.urls]

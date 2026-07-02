@@ -74,3 +74,4 @@ merit-cvo/.venv/
 merit-cvo/*.egg-info/
 merit-cvo/**/__pycache__/
 nli-server/**/__pycache__/
+merit-cvo/dist/
