@@ -109,13 +109,13 @@
     <div data-card id="hero-card" style="background:#fff;border:1px solid #ECECEE;border-radius:18px;box-shadow:0 20px 50px -24px rgba(10,10,10,.22),0 4px 14px -8px rgba(10,10,10,.08);padding:20px;max-width:600px;margin:44px auto 0;text-align:left;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div><div style="font-size:12px;font-weight:600;color:#6B7280;">Total released to creators</div><div class="mono" id="hc-total" style="font-size:25px;font-weight:600;letter-spacing:-.01em;color:#0A0A0A;margin-top:2px;">$0.00</div><div style="font-size:11.5px;font-weight:600;color:#047857;margin-top:3px;">▲ <span id="hc-paid">0</span> creators paid · <a href="/api/metrics" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">verify ↗</a></div></div>
-        <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#10B981;"><span style="width:6px;height:6px;border-radius:50%;background:#10B981;animation:mblink 1.4s infinite;"></span>live</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#047857;"><span style="width:6px;height:6px;border-radius:50%;background:#10B981;animation:mblink 1.4s infinite;"></span>live</span>
       </div>
       <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">A sample run</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
         <div style="border:1px solid #ECECEE;border-radius:11px;padding:11px;background:#FFFFFF;"><div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Escrowed</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#0A0A0A;">$0.1970</div></div>
         <div style="border:1px solid #D1FAE5;border-radius:11px;padding:11px;background:#F0FDF4;"><div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Released</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#047857;">$0.1550</div></div>
-        <div style="border:1px solid #FECDD3;border-radius:11px;padding:11px;background:#FFF1F2;"><div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Refunded</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#BE123C;">$0.0420</div></div>
+        <div style="border:1px solid #FECDD3;border-radius:11px;padding:11px;background:#FFF1F2;"><div style="font-size:11px;font-weight:600;color:#4B5563;text-transform:uppercase;letter-spacing:.04em;">Refunded</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#BE123C;">$0.0420</div></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #ECECEE;border-radius:11px;padding:11px 13px;">
@@ -210,7 +210,7 @@
           </div>
 
           <div data-card style="background:#fff;border:1px solid #ECECEE;border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);padding:18px;margin-bottom:18px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span style="font-size:15px;font-weight:700;">Creator earnings</span><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#10B981;"><span style="width:6px;height:6px;border-radius:50%;background:#10B981;animation:mblink 1.4s infinite;"></span>live</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><span style="font-size:15px;font-weight:700;">Creator earnings</span><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#047857;"><span style="width:6px;height:6px;border-radius:50%;background:#10B981;animation:mblink 1.4s infinite;"></span>live</span></div>
             <div id="creators-mount" style="display:flex;flex-direction:column;gap:8px;max-height:250px;overflow:auto;"></div>
           </div>
 
@@ -396,9 +396,9 @@
   // ---- static data (ported verbatim from the DCLogic component) ----
   var baseSources = [
     {id:'stabledata',name:'StableData API',handle:'stabledata.xyz',kind:'API',initials:'SD',avatarBg:'#0A0A0A',merit:95,price:0.0090,nano:4,cited:true,verdict:'release',meritUp:1,base:128.40},
-    {id:'chainletter',name:'Chainletter Weekly',handle:'@chainletter',kind:'Newsletter',initials:'CL',avatarBg:'#0EA5E9',merit:92,price:0.0180,nano:3,cited:true,verdict:'release',meritUp:2,base:84.10},
-    {id:'ortiz',name:'Dr. Lena Ortiz',handle:'@lortiz_pay',kind:'Researcher',initials:'LO',avatarBg:'#8B5CF6',merit:88,price:0.0250,nano:2,cited:true,verdict:'release',meritUp:1,base:210.70},
-    {id:'ledgerlens',name:'Ledger Lens',handle:'@ledgerlens',kind:'Analyst',initials:'LL',avatarBg:'#0891B2',merit:79,price:0.0150,nano:1,cited:true,verdict:'release',meritUp:2,base:56.20},
+    {id:'chainletter',name:'Chainletter Weekly',handle:'@chainletter',kind:'Newsletter',initials:'CL',avatarBg:'#0369A1',merit:92,price:0.0180,nano:3,cited:true,verdict:'release',meritUp:2,base:84.10},
+    {id:'ortiz',name:'Dr. Lena Ortiz',handle:'@lortiz_pay',kind:'Researcher',initials:'LO',avatarBg:'#7C3AED',merit:88,price:0.0250,nano:2,cited:true,verdict:'release',meritUp:1,base:210.70},
+    {id:'ledgerlens',name:'Ledger Lens',handle:'@ledgerlens',kind:'Analyst',initials:'LL',avatarBg:'#0E7490',merit:79,price:0.0150,nano:1,cited:true,verdict:'release',meritUp:2,base:56.20},
     {id:'cryptobuzz',name:'CryptoBuzz Daily',handle:'@cryptobuzz',kind:'Blog',initials:'CB',avatarBg:'#6B7280',merit:41,price:0.0300,nano:0,cited:false,verdict:'refund',meritUp:-4,base:0.00,reason:'Not cited — the agent judged the content irrelevant and excluded it from the answer.'},
     {id:'anon',name:'Anon Substack #4412',handle:'unverified',kind:'Unverified',initials:'??',avatarBg:'#6B7280',merit:63,price:0.0120,nano:0,cited:false,verdict:'refund',meritUp:-6,base:0.00,reason:'Failed verification — identity could not be authenticated on Arc.'},
   ];
