@@ -39,7 +39,10 @@ export async function signReceiptWith(pk: string, body: unknown): Promise<{ sign
 
 /** Sign the receipt with the buyer (paying) wallet. Returns null if no key is available (keyless STUB). */
 export async function signReceipt(body: unknown): Promise<{ signer: string; signature: string } | null> {
-  const pk = process.env.BUYER_PRIVATE_KEY;
+  // A DEDICATED signing key (MERIT_SIGNING_KEY) is preferred: it needs no funds and is safe to set in a
+  // serverless env, so verdicts/receipts are signed in production without exposing the funded buyer key.
+  // Falls back to BUYER_PRIVATE_KEY for local/dev where that's already configured.
+  const pk = process.env.MERIT_SIGNING_KEY || process.env.BUYER_PRIVATE_KEY;
   if (!pk) return null;
   try {
     return await signReceiptWith(pk, body);

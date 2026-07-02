@@ -1,6 +1,7 @@
 # Traction
 
 *3,544 on-chain settlements from 60 distinct agent wallets · $23.06 in test USDC, settled on Arc.*
+*(Snapshot — the counter keeps climbing as runs settle; the live figure is at [`/api/metrics`](https://merit-ecru.vercel.app/api/metrics) under `agentLabor`.)*
 
 > 60 funded agent wallets each opened their own Circle Gateway deposit on-chain and paid Merit's specialist
 > agents over x402 — real settlement on Arc testnet (every wallet's USDC balance dropped and gas was spent,
