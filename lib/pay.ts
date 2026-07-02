@@ -86,11 +86,14 @@ export async function payOnce(url: string, expectedAmount?: number): Promise<Set
   // hard-fail it so the agent reports it as a settlement failure, not a paid source.
   if (!r.transaction) throw new Error("settlement returned no transfer id");
   const amount = round6(parseFloat(r.formattedAmount || "0"));
-  // Enforce the authorized price: a seller that charges more than the budget guard
-  // approved must fail, not silently over-debit the buyer. (amount===0 means the
-  // seller didn't echo a price; the agent then falls back to the authorized price.)
-  if (expectedAmount !== undefined && amount > 0 && Math.abs(amount - expectedAmount) > 1e-9) {
-    throw new Error(`settled ${amount} USDC but only ${expectedAmount} was authorized — refusing mismatched charge`);
+  // Over-charge protection as a CEILING, not an exact match: `expectedAmount` is the maximum the buyer will
+  // accept for this source (the merit-gated max = 1.5x base). A settle at or below it is honored and the ACTUAL
+  // amount is credited; only a charge ABOVE the ceiling is refused. Exact-match was wrong: the seller re-quotes
+  // the merit-gated price at settle time and a legitimate merit change makes the amount differ slightly from any
+  // pre-computed estimate — that must still settle, not be rejected as a "mismatch". (amount===0 → seller didn't
+  // echo a price; caller falls back to its estimate.)
+  if (expectedAmount !== undefined && amount > expectedAmount + 1e-9) {
+    throw new Error(`settled ${amount} USDC exceeds the authorized ceiling ${expectedAmount} — refusing over-charge`);
   }
   // Gateway batched settlement returns a transfer id (UUID); an on-chain 0x tx
   // hash only exists once the batch lands. Only link to arcscan for real hashes.

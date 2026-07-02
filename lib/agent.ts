@@ -517,17 +517,22 @@ export async function runAgent(
         let settled = 0;
         let onchain = true;
         let payErr = "";
+        // The seller re-quotes the live merit-gated price at settle; authorize up to its max (1.5x base) and
+        // credit whatever it actually charges. This tolerates a merit change between escrow and settle (and any
+        // cross-instance merit read) instead of failing an otherwise-valid payment on a penny of drift.
+        const ceiling = round6(s.price * 1.5);
         for (let k = 0; k < v.nano; k++) {
           try {
-            const r = await payOnce(url, price);
+            const r = await payOnce(url, ceiling);
             lastTx = r.transaction;
             explorerUrl = r.explorerUrl;
             onchain = onchain && r.onchain;
-            paid = round6(paid + (r.stub ? price : r.amount || price));
+            const charged = r.stub ? price : round6(r.amount || price);
+            paid = round6(paid + charged);
             settled++;
             // #13: stream each nanopayment AS it settles — money flows continuously, not in one lump at the end.
             await emit("settle-stream", {
-              id: s.id, name: s.name, k: settled, of: v.nano, amount: price, cumulative: paid,
+              id: s.id, name: s.name, k: settled, of: v.nano, amount: charged, cumulative: paid,
               tx: r.transaction, onchain: r.onchain, ledger: { ...ledger, released: round6(ledger.released + paid) },
             });
             await sleep(90);

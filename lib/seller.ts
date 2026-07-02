@@ -81,7 +81,10 @@ export function withGatewaySeller(
       );
       const verify = await facilitator.verify(payload, requirements);
       if (!verify.isValid) {
-        console.error(`[seller] verify invalid for ${endpoint}:`, JSON.stringify(verify), "| requirements:", JSON.stringify(requirements));
+        // Front-load the diagnostic facts (reason + the amount THIS instance required) so the log line survives
+        // truncation — cross-instance price drift shows up here as a required-amount that differs run-to-run.
+        const signed = (payload as { payload?: { authorization?: { value?: string } } })?.payload?.authorization?.value;
+        console.error(`[seller] VERIFY_FAIL reason=${verify.invalidReason} reqAmt=${requirements.amount} signedVal=${signed ?? "?"} ep=${endpoint}`);
         return NextResponse.json(
           { error: "verify failed", reason: verify.invalidReason },
           { status: 402 },
