@@ -7,24 +7,7 @@ export const dynamic = "force-dynamic";
 
 // GET /api/health — deployment status + verifiable on-chain references (public
 // addresses only, never keys). Doubles as the host health check.
-export async function GET(req: Request) {
-  // TEMP: ?judgeprobe=1 replays the exact judge-style call from this serverless fn to see status/finish/content.
-  if (new URL(req.url).searchParams.get("judgeprobe") === "1") {
-    const c = llmConfig();
-    const t0 = Date.now();
-    try {
-      const r = await fetch(`${c.baseUrl}/chat/completions`, {
-        method: "POST",
-        headers: { "content-type": "application/json", authorization: `Bearer ${c.key}` },
-        body: JSON.stringify({ model: c.model, messages: [{ role: "system", content: "You are a strict citation judge. Output ONLY JSON {\"refuted\":boolean,\"reason\":string}." }, { role: "user", content: "CLAIM: The Eiffel Tower is in Paris.\nSOURCE: The Eiffel Tower is a tower in Paris, France." }], max_tokens: 700, temperature: 0.2, stream: false }),
-        signal: AbortSignal.timeout(45000),
-      });
-      const j = await r.json();
-      return NextResponse.json({ probe: "judge", status: r.status, latencyMs: Date.now() - t0, finish: j?.choices?.[0]?.finish_reason ?? null, content: (j?.choices?.[0]?.message?.content ?? "").slice(0, 200), err: j?.error ?? null });
-    } catch (e) {
-      return NextResponse.json({ probe: "judge", error: (e as Error).name + ": " + (e as Error).message, latencyMs: Date.now() - t0 });
-    }
-  }
+export async function GET() {
   const c = llmConfig();
   return NextResponse.json({
     ok: true,
