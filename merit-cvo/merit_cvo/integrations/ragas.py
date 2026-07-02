@@ -9,11 +9,24 @@ from ..engine import verify_citation
 
 
 def merit_faithfulness(**cvo_kwargs):
-    """Return a Ragas single-turn metric backed by the Merit CVO (1.0 = grounded, 0.0 = not / abstained)."""
+    """Return a Ragas single-turn metric backed by the Merit CVO (1.0 = grounded, 0.0 = not / abstained).
+
+    Note: ragas has well-known transitive-dependency conflicts (langchain_community / langchain_openai /
+    langchain_core version churn). If the import below fails, it is ragas's environment, not this adapter —
+    pin a compatible stack (`pip install "ragas>=0.2,<0.3"` in a clean venv) or use the LangChain / LlamaIndex
+    adapters, which have stable interfaces.
+    """
     from dataclasses import dataclass, field
 
-    from ragas.dataset_schema import SingleTurnSample
-    from ragas.metrics.base import MetricType, SingleTurnMetric
+    try:
+        from ragas.dataset_schema import SingleTurnSample  # noqa: F401 (surfaces its own import errors)
+        from ragas.metrics.base import MetricType, SingleTurnMetric
+    except ImportError as e:
+        raise RuntimeError(
+            "Could not import ragas (known transitive-dependency conflict, not a merit-cvo issue). "
+            "Pin a compatible stack — e.g. `pip install \"ragas>=0.2,<0.3\"` in a clean env — or use the "
+            f"LangChain / LlamaIndex adapters. Underlying error: {e}"
+        ) from e
 
     @dataclass
     class MeritFaithfulness(SingleTurnMetric):
