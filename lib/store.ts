@@ -124,6 +124,31 @@ async function mirrorSave(name: string, obj: unknown): Promise<void> {
   }
 }
 
+/** Authoritative read from the Supabase mirror, BYPASSING the (possibly stale) local cache, then write-through
+ *  to the local file so the sync read path serves the fresh copy. Returns the value, or null when the mirror is
+ *  disabled/unavailable/empty. Use this for docs where a stale per-instance view is unacceptable — the audit log:
+ *  `hydrateDoc` only pulls when the local file is ABSENT, so a warm serverless instance otherwise never re-syncs
+ *  and serves an outdated copy while other instances have appended. Best-effort; never throws. */
+export async function loadDocFromMirror<T>(name: string): Promise<T | null> {
+  if (!mirrorEnabled()) return null;
+  const c = db();
+  if (!c) return null;
+  try {
+    const { data, error } = await c.from("merit_documents").select("data").eq("name", name).maybeSingle();
+    if (error || !data?.data) return null;
+    try {
+      fs.mkdirSync(dataDir(), { recursive: true });
+      fs.writeFileSync(docPath(name), JSON.stringify(data.data, null, 2));
+    } catch {
+      /* write-through is a cache warm-up; the returned value is authoritative regardless */
+    }
+    return data.data as T;
+  } catch (e) {
+    console.error(`[store] authoritative read ${name} failed:`, (e as Error).message);
+    return null;
+  }
+}
+
 /** Boot hydration: when the mirror is enabled and the LOCAL file is missing, pull the mirrored document and
  *  write it locally so the sync read path is seeded after a redeploy that lost the disk. Returns true when it
  *  actually hydrated a document. Best-effort; never throws. */

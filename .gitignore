@@ -78,3 +78,9 @@ merit-cvo/dist/
 
 # generated benchmark run artifact (harness + dataset are tracked; results regenerate per run)
 benchmark/results.json
+
+# generated QA run artifacts (regenerate via scripts/qa-*.mjs)
+qa-api-report.md
+qa-run-report.md
+TEST-PLAN-INVENTORY.md
+qa-evidence/

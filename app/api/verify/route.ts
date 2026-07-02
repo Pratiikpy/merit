@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyCitation, isVerifyError } from "@/lib/verify/engine";
 import { checkChallengeLimit } from "@/lib/ratelimit";
-import { recordAuditVerdict } from "@/lib/audit";
+import { recordAuditVerdict, refreshAuditFromMirror } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,6 +42,7 @@ export async function POST(req: Request) {
 
   const v = out.verdict;
   try {
+    await refreshAuditFromMirror(); // read-your-writes: append onto the authoritative log, not a stale cache
     recordAuditVerdict(v, body.claim ?? ""); // EU AI Act Art.12 traceability — tamper-evident, best-effort
   } catch {
     /* the audit log never fails a verdict */

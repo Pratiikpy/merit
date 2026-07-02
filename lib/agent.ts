@@ -742,6 +742,7 @@ export async function runAgent(
         paid: !!c.paid, // the REAL payment result — not the grade (c.ok)
       })),
       totals: {
+        escrowed: ledger.escrowed, // total locked to sources — released + refunded must reconcile to this
         released: ledger.released,
         refunded: ledger.refunded,
         labor: ledger.labor,

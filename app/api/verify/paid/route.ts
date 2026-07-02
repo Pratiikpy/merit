@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withGatewaySeller } from "@/lib/seller";
 import { verifyCitation, isVerifyError } from "@/lib/verify/engine";
-import { recordAuditVerdict } from "@/lib/audit";
+import { recordAuditVerdict, refreshAuditFromMirror } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +31,7 @@ async function handler(req: NextRequest): Promise<NextResponse> {
   }
   const v = out.verdict;
   try {
+    await refreshAuditFromMirror(); // read-your-writes against the durable mirror before appending
     recordAuditVerdict(v, body.claim ?? ""); // paid verdicts are logged for the compliance export too
   } catch {
     /* best-effort */

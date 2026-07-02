@@ -9,7 +9,7 @@
  * log PROVES what was verified and when, without retaining the user's text. Durable via the store (+ mirror).
  */
 import { keccak256, toHex } from "viem";
-import { loadDocFresh, saveDoc } from "./store";
+import { loadDocFresh, loadDocFromMirror, saveDoc } from "./store";
 
 export interface AuditEntry {
   index: number;
@@ -84,6 +84,23 @@ export function recordAuditVerdict(
   cache = log;
   saveDoc(DOC, log);
   return entry;
+}
+
+/**
+ * Read-your-writes refresh: pull the authoritative log from the mirror into the cache BEFORE an append or an
+ * export, so a warm serverless instance never extends or serves a stale per-instance copy (the cause of the
+ * count-lags-by-instance behavior — `hydrateDoc` only pulls when the local file is absent). Call from the route
+ * before `recordAuditVerdict` and before reading for `/api/audit`. No-op off the ephemeral Supabase mirror
+ * (local file stays authoritative in dev/tests, so the synchronous unit tests are unaffected). Best-effort.
+ *
+ * Known limit (tracked for post-launch hardening): the mirror stores the whole log as one row (last-writer-wins
+ * upsert), so under genuinely concurrent multi-instance appends a race could still drop an entry. The durable
+ * fix is an append-only `merit_audit_entries` table (one INSERT per verdict); this refresh eliminates the
+ * observed staleness/lag and the common append-onto-stale clobber.
+ */
+export async function refreshAuditFromMirror(): Promise<void> {
+  const v = await loadDocFromMirror<AuditLog>(DOC);
+  if (v && Array.isArray(v.entries)) cache = v;
 }
 
 /** Most-recent-first slice of the log. */

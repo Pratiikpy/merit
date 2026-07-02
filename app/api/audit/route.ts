@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { auditCount, auditEntries, euAiActMapping, verifyAuditChain } from "@/lib/audit";
+import { auditCount, auditEntries, euAiActMapping, refreshAuditFromMirror, verifyAuditChain } from "@/lib/audit";
 import { signReceipt } from "@/lib/receipt";
-import { ephemeralStore, hydrateDoc } from "@/lib/store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,8 +12,9 @@ export const dynamic = "force-dynamic";
 //   ?limit=N   (default 100, max 1000) — how many recent records to include
 //   ?verify=1  — (always runs) re-derives the chain and reports validity + the first broken index, if any
 export async function GET(req: Request) {
-  // Cold serverless instances hydrate the durable log lazily — pull it from the mirror first (no-op when warm).
-  if (ephemeralStore()) await hydrateDoc("audit").catch(() => false);
+  // Read authoritatively from the durable mirror so the export is COMPLETE and consistent — a warm instance
+  // otherwise serves its stale per-instance copy (hydrateDoc only pulls when the local file is missing).
+  await refreshAuditFromMirror().catch(() => {});
 
   const url = new URL(req.url);
   const limit = Math.min(1000, Math.max(1, Number(url.searchParams.get("limit")) || 100));
