@@ -778,7 +778,11 @@ export async function runAgent(
       const proofHash = keccak256(toHex(JSON.stringify(sig ? { ...receiptBody, ...sig } : receiptBody).slice(0, 8000)));
       const deliverableHash = keccak256(toHex(question));
       await emit("phase", { phase: "hook-settle" });
-      const gate = await settleViaHook({ amountAtomic: BigInt(1000), verified, deliverableHash, proofHash, description: `merit ${runId}` });
+      // Escrow the RUN'S REAL released total (USDC atomic, 6 dp) so the on-chain hook settlement carries the
+      // actual money, not a symbolic amount. A non-verified run keeps a minimal non-zero escrow to exercise
+      // the hook's REVERT-on-failure path.
+      const hookAtomic = verified ? BigInt(Math.max(1, Math.round(receiptBody.totals.released * 1e6))) : BigInt(1000);
+      const gate = await settleViaHook({ amountAtomic: hookAtomic, verified, deliverableHash, proofHash, description: `merit ${runId}` });
       if (gate)
         await emit("hook-settlement", {
           ...gate,

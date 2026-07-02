@@ -50,7 +50,7 @@
   <h2 class="lbl">Verified agents</h2>
   <div id="verified"></div>
 
-  <h2 class="lbl" style="margin-top:24px">Self-report agents</h2>
+  <h2 class="lbl" style="margin-top:24px">Self-report agents (not ranked)</h2>
   <div class="unranked" id="unranked"><span class="name">Unranked</span> — a citation that's one LLM self-reporting which sources it used has no independent grounding rate. There is nothing to verify until it routes through the oracle.</div>
 
   <div class="cta">
@@ -67,7 +67,7 @@
   function esc(s){return String(s==null?'':s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
   fetch('/api/honesty').then(function(r){return r.json();}).then(function(d){
     if(d.standard) document.getElementById('standard').innerHTML='<b>The standard:</b> '+esc(d.standard);
-    document.getElementById('verified').innerHTML=(d.verified||[]).map(function(a){
+    var _vh=(d.verified||[]).map(function(a){
       return '<div class="row"><span class="name">'+esc(a.agent)+'</span><span class="badge">'+esc(a.status)+'</span>'+
         '<div class="metrics">'+
         '<span class="m">precision/recall <b>'+esc((a.benchmark && /%/.test(a.benchmark)) ? a.benchmark.split(' on ')[0] : 'not yet measured')+'</b></span>'+
@@ -76,8 +76,9 @@
         '<span class="m">fool rate <b>'+((a.foolRate||0)*100).toFixed(0)+'%</b></span>'+
         '</div></div>';
     }).join('');
+    document.getElementById('verified').innerHTML = _vh || '<div class="unranked">Verified agents are loading from the live oracle — refresh in a moment.</div>';
     if(d.unranked&&d.unranked.note) document.getElementById('unranked').innerHTML='<span class="name">Unranked</span> — '+esc(d.unranked.note);
-  }).catch(function(){});
+  }).catch(function(){ document.getElementById('verified').innerHTML = '<div class="unranked">The live oracle is unavailable right now — refresh in a moment.</div>'; });
 })();
 </script>
 </body>
