@@ -1,5 +1,8 @@
 {
   "private": true,
+  "name": "merit",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -18,6 +21,7 @@
     "challenge": "node scripts/challenge.mjs",
     "prove": "node scripts/prove.mjs",
     "judge-eval": "node scripts/judge-eval.mjs",
+    "bench-judge": "node scripts/bench-judge.mjs",
     "verify-validation": "node scripts/verify-validation.mjs",
     "verify-receipt": "node scripts/verify-receipt.mjs",
     "verify-settlement": "node scripts/verify-settlement.mjs",

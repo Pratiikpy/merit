@@ -96,13 +96,11 @@ release is gated by an **`IACPHook`** (a settlement-gate contract interface) tha
 |---|---|---|
 | **MeritJob** | ERC-8183 job + escrow | [`0xdF81…6A05`](https://testnet.arcscan.app/address/0xdF81dCCFf8c8ea9e1fB6B5b2B790fAfF1Ebe6A05) |
 | **MeritVerificationHook** | proof-of-citation settlement gate | [`0xA30f…9ab1`](https://testnet.arcscan.app/address/0xA30f58f60725a978Ac09034F4FDd32efc29e9ab1) |
-| Escrow | conditional release/refund | [`0xbCaE…03Cd8`](https://testnet.arcscan.app/address/0xbCaEA25F7D3E64B337BeB4342945544970B03Cd8) |
-| Stake | source staking + slashing | [`0xFb10…ED6c`](https://testnet.arcscan.app/address/0xFb1090d03f0915cBd3930231Cf0A388B7a07ED6c) |
-| Insurance | reputation-underwritten guarantees | [`0xB90F…58A2`](https://testnet.arcscan.app/address/0xB90Fd2a103750a4a9a0Bb368B9bADA0a786A58A2) |
-| PredictionMarket | crowd-confidence on contested citations | [`0xb67C…EE6e`](https://testnet.arcscan.app/address/0xb67C595d1F13E01fFF1a5690B938A249fE1eEE6e) |
-| AttestationVerifier | on-chain signed-verdict check | [`0xD632…a297`](https://testnet.arcscan.app/address/0xD632eabAb9431aFa724522a196CEf7518016a297) |
 
-Full record in [`contracts/deployments.json`](contracts/deployments.json).
+These two are the settlement path (`lib/job.ts` gates release on the hook's verdict). Additional forge-tested
+contracts explored during development (Escrow, Stake, Insurance, PredictionMarket, AttestationVerifier) are
+deployed and recorded in [`contracts/deployments.json`](contracts/deployments.json) but are **not** on the
+default settlement path.
 
 ## 💡 Innovations only the oracle makes possible
 
@@ -234,7 +232,7 @@ Every claim Merit makes is independently recomputable from Arc, with **no Merit 
 
 | command | what it does |
 |---|---|
-| `npm test` | 287 unit tests (vitest) over the pure logic — the agency decision table, crew grade + whole-run budget-guard (`gradeSpecialist`/`withinBudget`), the run-receipt settlement-integrity rule (`summarizeRelease`), proof-of-citation matching (`citingSentence`, `parseJudgeVerdict`, `verifyCitations`, the pure `decideCitation` payment logic + the deterministic numeric verifier `fabricatedFigures`), RSS/Atom parsing, registry persistence, specialist hiring/grading/merit, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
+| `npm test` | 290 unit tests (vitest) over the pure logic — the agency decision table, crew grade + whole-run budget-guard (`gradeSpecialist`/`withinBudget`), the run-receipt settlement-integrity rule (`summarizeRelease`), proof-of-citation matching (`citingSentence`, `parseJudgeVerdict`, `verifyCitations`, the pure `decideCitation` payment logic + the deterministic numeric verifier `fabricatedFigures`), RSS/Atom parsing, registry persistence, specialist hiring/grading/merit, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
 | `npm run smoke` | end-to-end (54 checks): sources, full run, ledger consistency, the summary receipt, no private-key leak, the agent-labor market, a zero-budget pays-nothing invariant, off-topic pays no creators, onboarding, on-chain reputation, the MCP handshake, `verify-all`, `leaderboard`, the `challenge` re-audit |
 | `npm run prove-moat` | one command: a verified run **releases** the ERC-8183 escrow; an off-topic run **reverts** `complete()` via the hook, then refunds — the moat enforced on-chain |
 | `npm run audit-demo` | feeds the Auditor a genuine citation, two contradictions, and a **prompt-injection** — pays the real one, refuses the rest |
