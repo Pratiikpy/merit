@@ -38,6 +38,7 @@ function loadSet(rel) {
     source: r.source ?? r.context ?? r.document,
     claim: r.claim ?? r.statement ?? r.response,
     expect: (r.expect ?? r.label ?? "").toUpperCase(),
+    category: r.category ?? "uncategorized",
   }));
   return rows.filter((r) => r.source && r.claim && (r.expect === "SUPPORTED" || r.expect === "REFUSED"));
 }
@@ -72,23 +73,39 @@ const pct = (x) => (x == null ? "n/a" : `${(x * 100).toFixed(1)}%`);
 
 async function main() {
   const rows = loadSet(SET);
-  console.log(`bench-judge · ${rows.length} labeled pairs · set=${SET} · base=${BASE}`);
+  const repro = process.env.BENCH_REPRO === "1"; // run each pair TWICE and report run-to-run agreement
+  console.log(`bench-judge · ${rows.length} labeled pairs · set=${SET} · base=${BASE}${repro ? " · repro=on" : ""}`);
   // Convention: positive class = REFUSED (catching an unsupported/hallucinated citation is the job).
   let tp = 0, fp = 0, tn = 0, fn = 0, abstain = 0, errors = 0;
+  const cats = {}; // per-category { correct, total, decided } — where "correct" = matched the gold label
+  let reproAgree = 0, reproTotal = 0;
   for (const row of rows) {
     const res = await verifyOne(row.claim, row.source);
+    const c = (cats[row.category] ||= { correct: 0, total: 0, decided: 0 });
+    c.total++;
     if (res.abstain) { abstain++; continue; }
     if (res.error) { errors++; continue; }
+    c.decided++;
     const predRefused = res.verdict === "REFUSED";
     const goldRefused = row.expect === "REFUSED";
     if (goldRefused && predRefused) tp++;
     else if (!goldRefused && predRefused) fp++;
     else if (!goldRefused && !predRefused) tn++;
     else fn++;
+    if (predRefused === goldRefused) c.correct++;
+    if (repro) {
+      const res2 = await verifyOne(row.claim, row.source);
+      if (res2.verdict) { reproTotal++; if (res2.verdict === res.verdict) reproAgree++; }
+    }
   }
   const decided = tp + fp + tn + fn;
   const coverage = rows.length ? decided / rows.length : 0;
   const m = metrics(tp, fp, tn, fn);
+  const overRefusal = fp + tn ? fp / (fp + tn) : null; // fraction of genuinely-SUPPORTED pairs wrongly refused
+  const reproAgreement = repro && reproTotal ? reproAgree / reproTotal : null;
+  const perCategory = Object.fromEntries(
+    Object.entries(cats).map(([k, v]) => [k, { ...v, accuracy: v.decided ? v.correct / v.decided : null }]),
+  );
   const out = {
     set: SET,
     generatedAt: new Date().toISOString(),
@@ -99,6 +116,9 @@ async function main() {
     coverage,
     confusion: { tp, fp, tn, fn, positiveClass: "REFUSED" },
     metrics: m,
+    overRefusalRate: overRefusal, // the strict dual-gate's cost — measured, not hidden
+    reproAgreement, // run-to-run verdict agreement (null unless BENCH_REPRO=1); the seed-stability claim
+    perCategory,
     note:
       abstain > 0
         ? "Some pairs abstained (no LLM/NLI configured) — metrics are over DECIDED pairs only; set LLM_API_KEY or MERIT_NLI_URL for full coverage (see HUMAN.md)."
@@ -110,8 +130,14 @@ async function main() {
   console.log(
     `\ncoverage ${pct(coverage)} (${decided}/${rows.length}; ${abstain} abstained, ${errors} errors)\n` +
       `precision ${pct(m.precision)} · recall ${pct(m.recall)} · F1 ${pct(m.f1)} · balanced-acc ${pct(m.balancedAcc)}\n` +
+      `over-refusal ${pct(overRefusal)} (SUPPORTED pairs wrongly refused)` +
+      (reproAgreement != null ? ` · reproducibility ${pct(reproAgreement)}` : "") + "\n" +
       `confusion tp=${tp} fp=${fp} tn=${tn} fn=${fn} (positive=REFUSED)\n` +
-      `→ benchmark/results.json`,
+      `per-category catch/accuracy:\n` +
+      Object.entries(perCategory)
+        .map(([k, v]) => `  ${k.padEnd(34)} ${v.correct}/${v.decided} ${pct(v.accuracy)}${v.decided < v.total ? ` (+${v.total - v.decided} abstained)` : ""}`)
+        .join("\n") +
+      `\n→ benchmark/results.json`,
   );
   if (errors > 0 && decided === 0) process.exit(1);
 }

@@ -63,6 +63,9 @@ export interface VerifyOptions {
   high?: number;
   /** REFUSED threshold for the NLI score (default 0.25); between low..high escalates to the LLM judge. */
   low?: number;
+  /** STRICT dual-gate: SUPPORTED only if EVERY available model leg (NLI + judge) confirms support; any that
+   *  doesn't → REFUSED. Higher precision at a measured over-refusal cost. Defaults to env MERIT_STRICT_GATE=1. */
+  strict?: boolean;
   /** Skip signing (e.g. in tests). */
   sign?: boolean;
 }
@@ -104,7 +107,45 @@ export async function verifyCitation(
     reason = `The claim asserts ${fab.map((f) => f.raw).join(", ")}, which the source contradicts (deterministic numeric check).`;
   }
 
-  // Layer 2 — NLI / factual-consistency (pluggable, additive).
+  // Layers 2+3 — STRICT DUAL-GATE. Every AVAILABLE model leg (encoder-NLI + adversarial judge) must
+  // independently CONFIRM support (numeric already passed); if any leg fails to confirm, REFUSE. This is the
+  // "both gates must agree" mode that makes the verdict a high-precision, harder-to-game signal — at a
+  // measured over-refusal cost (see bench-judge). Opt-in via MERIT_STRICT_GATE=1 or opts.strict; when off, the
+  // cheaper cascade below runs unchanged. The two legs are independent evidence, so agreement is meaningful.
+  const strict = opts.strict ?? process.env.MERIT_STRICT_GATE === "1";
+  if (verdict === null && strict) {
+    const legs: Array<"support" | "fail"> = [];
+    if (opts.useNLI ?? nliAvailable()) {
+      const s = await scoreNLI(claim, source);
+      if (s !== null) {
+        score = s;
+        methods.push("nli");
+        legs.push(s >= high ? "support" : "fail"); // strict: only a high-confidence NLI score counts as support
+      }
+    }
+    const j = await judgeCitation(claim, source);
+    if (j !== null) {
+      methods.push("llm-judge");
+      const refuted = j === "unclear" || (typeof j === "object" && (j as { refuted?: boolean }).refuted);
+      legs.push(refuted ? "fail" : "support");
+    }
+    if (legs.length === 0) {
+      // No model leg available (keyless + no NLI): a non-numeric claim is genuinely undecidable — honest 503.
+      return {
+        error:
+          "the adversarial LLM judge is unavailable (keyless demo) — a claim with a verifiable number is still checked deterministically; configure MERIT_NLI_URL or an LLM key for full verification",
+        status: 503,
+        numericOnly: true,
+      };
+    }
+    const allConfirm = legs.every((l) => l === "support");
+    verdict = allConfirm ? "SUPPORTED" : "REFUSED";
+    reason = allConfirm
+      ? `Strict dual-gate: all ${legs.length} verifier leg(s) independently confirm the source supports the claim.`
+      : `Strict dual-gate refused — not every verifier leg confirmed support (strict mode requires unanimous confirmation).`;
+  }
+
+  // Layer 2 — NLI / factual-consistency (pluggable, additive). [cascade mode — skipped when strict already decided]
   if (verdict === null && (opts.useNLI ?? nliAvailable())) {
     score = await scoreNLI(claim, source);
     if (score !== null) {

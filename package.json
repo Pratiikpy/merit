@@ -22,6 +22,7 @@
     "prove": "node scripts/prove.mjs",
     "judge-eval": "node scripts/judge-eval.mjs",
     "bench-judge": "node scripts/bench-judge.mjs",
+    "bench-catch": "BENCH_SET=benchmark/catch.json node scripts/bench-judge.mjs",
     "verify-validation": "node scripts/verify-validation.mjs",
     "verify-receipt": "node scripts/verify-receipt.mjs",
     "verify-settlement": "node scripts/verify-settlement.mjs",

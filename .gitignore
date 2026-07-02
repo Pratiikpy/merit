@@ -63,3 +63,8 @@ register-entity.cjs
 
 circle-dcw/
 HUMAN.md
+
+# NLI backend local venv + logs + model cache (self-hostable service; not committed)
+nli-server/.venv/
+nli-server/_*.log
+nli-server/models/

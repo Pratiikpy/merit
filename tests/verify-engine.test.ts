@@ -56,4 +56,27 @@ describe("verifyCitation engine (M1)", () => {
       expect(out.numericOnly).toBe(true);
     }
   });
+
+  it("strict dual-gate: a fabricated numeric claim is still REFUSED (the numeric leg fires before the gate)", async () => {
+    const out = await engine.verifyCitation(
+      "The market hit $40 trillion in daily volume.",
+      "Reports show the market reached $4.1 trillion in daily volume.",
+      { sign: false, strict: true },
+    );
+    expect(engine.isVerifyError(out)).toBe(false);
+    if (!engine.isVerifyError(out)) expect(out.verdict.verdict).toBe("REFUSED");
+  });
+
+  it("strict dual-gate: with no model leg available, a non-numeric claim is an honest 503 (never a guess)", async () => {
+    const out = await engine.verifyCitation(
+      "The Eiffel Tower is in Paris.",
+      "The Eiffel Tower is a wrought-iron tower in Paris, France.",
+      { sign: false, strict: true, useNLI: false },
+    );
+    expect(engine.isVerifyError(out)).toBe(true);
+    if (engine.isVerifyError(out)) {
+      expect(out.status).toBe(503);
+      expect(out.numericOnly).toBe(true);
+    }
+  });
 });
