@@ -22,9 +22,16 @@ describe("gold set — the published proof-of-citation benchmark", () => {
     }
   });
 
-  it("summary surfaces the reproducible baseline the moat counters report", () => {
+  it("summary surfaces the gold-set composition + an HONEST (measured-or-pending) benchmark, never a hardcoded 100%", () => {
     const s = goldSummary();
-    expect(s).toMatchObject({ goldSet: 16, adversarial: 9, supported: 7, attacksHeld: 9, foolRate: 0 });
-    expect(s.precisionRecall).toMatch(/100%/);
+    expect(s).toMatchObject({ goldSet: 16, adversarial: 9, supported: 7 });
+    expect(typeof s.measured).toBe("boolean");
+    if (s.measured) {
+      expect(s.precisionRecall).toMatch(/precision\/recall/);
+    } else {
+      expect(s.precisionRecall).toMatch(/not yet measured/i);
+      expect(s.foolRate).toBeNull();
+      expect(s.attacksHeld).toBe(0);
+    }
   });
 });

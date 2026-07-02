@@ -11,7 +11,7 @@ beforeAll(async () => {
   process.env.STUB = "1";
   process.env.MERIT_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "merit-rep-"));
   rep = await import("../lib/reputation");
-});
+}, 60000); // first import pulls in viem + chain libs; allow cold-start beyond the 10s default
 
 describe("ensurePublisherIdentity (per-domain, single-flight)", () => {
   it("returns one shared identity per domain across repeated calls", async () => {
