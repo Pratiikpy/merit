@@ -1,0 +1,21 @@
+{
+  "x402Version": 2,
+  "name": "Merit",
+  "description": "Proof-of-citation verification for the agent economy. Merit verifies that a source actually supports a claim, and gates payment on the verdict.",
+  "services": [
+    {
+      "id": "citation-verification-oracle",
+      "name": "Citation Verification Oracle (CVO)",
+      "description": "Pay-per-call citation-faithfulness verification. POST {claim, source} and receive a signed, tamper-evident verdict (SUPPORTED / REFUSED) that an ERC-8183 settlement hook — or any payment — can consume BEFORE paying a citation. Layered engine: deterministic numeric verifier (catches fabricated figures with no LLM) -> pluggable NLI/factual-consistency -> adversarial LLM judge. Signed with schema merit.cvo/v2 so a third party can recover the signer offline without trusting Merit.",
+      "endpoint": "/api/verify/paid",
+      "method": "POST",
+      "input": { "claim": "string", "source": "string" },
+      "output": "signed Verdict { verdict, score, reason, methods[], grounded, modelVersion, signature }",
+      "price": { "amount": "0.005", "currency": "USDC", "network": "arc-testnet", "note": "default; the 402 response carries the live price" },
+      "settlement": "x402 (Circle Gateway) on Arc testnet 5042002",
+      "free_tier": { "endpoint": "/api/verify", "note": "rate-limited, same signed verdict, no metering — for adoption + demos" }
+    }
+  ],
+  "docs": "https://merit-ecru.vercel.app",
+  "mcp": { "tool": "verify_citation", "server": "scripts/mcp-server.mjs" }
+}
