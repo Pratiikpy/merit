@@ -4,6 +4,7 @@ import { checkChallengeLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60; // the adversarial judge call can take several seconds; don't let the default cut it off
 
 // POST /api/verify — the Citation Verification Oracle (CVO). Given a raw (claim, source) pair from ANY agent
 // (not just Merit's own runs), run Merit's verification engine — deterministic numeric verifier → pluggable

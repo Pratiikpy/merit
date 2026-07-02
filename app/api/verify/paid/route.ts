@@ -4,6 +4,7 @@ import { verifyCitation, isVerifyError } from "@/lib/verify/engine";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60; // the adversarial judge call can take several seconds; don't let the default cut it off
 
 // The metered Citation Verification Oracle (M3). Same engine + signed Verdict as the free `POST /api/verify`,
 // but x402-gated: any agent — no shared secret — pays MERIT_VERIFY_PRICE USDC per call and gets the verdict.
