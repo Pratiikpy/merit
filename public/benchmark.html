@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proof-of-Citation Benchmark — Merit</title>
+<meta name="description" content="Merit's citation-faithfulness verifier, scored on a fixed, reproducible gold set — a falsifiable baseline that co-evolves with live traffic. Regenerate every number with npm run judge-eval.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}html,body{margin:0;padding:0;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;}a{color:inherit;}
+  .wrap{max-width:680px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  nav a.back{font-size:14px;color:#6B7280;text-decoration:none;font-weight:600;}nav a.back:hover{color:#0A0A0A;}
+  h1{font-size:40px;line-height:1.05;letter-spacing:-.03em;margin:46px 0 14px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 28px;}
+  .lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin:26px 0 12px;}
+  .hero{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:8px;}
+  .hero .cell{border:1px solid #E5E7EB;border-radius:14px;padding:18px;text-align:center;}
+  .hero .n{font-size:34px;font-weight:700;letter-spacing:-.02em;font-family:'IBM Plex Mono',monospace;color:#0A0A0A;}
+  .hero .k{font-size:12.5px;color:#6B7280;margin-top:6px;}
+  .note{padding:16px 18px;border-left:3px solid #0369A1;background:#F0F9FF;border-radius:0 10px 10px 0;font-size:14.5px;margin:18px 0;}
+  .note code,.cta code{background:#0A0A0A;color:#F3F4F6;padding:2px 7px;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px;}
+  th{text-align:left;color:#6B7280;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:6px 8px;border-bottom:1px solid #ECECEE;}
+  td{padding:9px 8px;border-bottom:1px solid #F3F4F6;vertical-align:top;}
+  .v{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap;}
+  .v.sup{background:#DCFCE7;color:#15803D;}.v.ref{background:#FEE2E2;color:#B91C1C;}
+  .muted{color:#9CA3AF;}
+  .pending{border:1px dashed #D1D5DB;border-radius:14px;padding:16px 18px;margin:14px 0;color:#6B7280;font-size:14px;}
+  .pending b{color:#374151;}
+  footer{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:36px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <a class="back" href="/">← back to demo</a>
+  </nav>
+
+  <main>
+  <h1>The proof-of-citation benchmark.</h1>
+  <p class="sub">Merit's verifier scored on a <b>fixed, hand-labeled gold set</b> — a small, reproducible, <em>falsifiable</em> baseline, not a self-reported number. Every figure here regenerates from a fresh checkout with <code style="background:#0A0A0A;color:#F3F4F6;padding:2px 6px;border-radius:5px;font-size:13px" class="mono">npm run judge-eval</code>.</p>
+
+  <h2 class="lbl">Fixed gold set</h2>
+  <div class="hero">
+    <div class="cell"><div class="n" id="pairs">—</div><div class="k">gold-set pairs</div></div>
+    <div class="cell"><div class="n" id="adv">—</div><div class="k">adversarial attacks held</div></div>
+    <div class="cell"><div class="n" id="harvest">—</div><div class="k">live hard cases harvested</div></div>
+  </div>
+  <div class="note" id="prbanner">Precision / recall — loading…</div>
+  <div class="note">The gold set mixes <b>SUPPORTED</b> pairs a correct verifier must pay and <b>REFUSED</b> ones it must hold — off-topic, contradiction, a fabricated figure, and the on-topic-but-contradictory trap that only an adversarial judge (not a similarity filter) catches. It is deliberately small and public so anyone can falsify the claim.</div>
+
+  <h2 class="lbl">Self-bootstrapping set — boundary cases harvested from live traffic</h2>
+  <p style="font-size:14.5px;color:#4B5563;margin:0 0 12px">Every run logs the citations the verifier was <em>least</em> sure about as gold-set candidates, so the benchmark co-evolves with real adversarial traffic instead of staying a static snapshot. Newest first.</p>
+  <table id="cand"><thead><tr><th>verdict</th><th>claim</th></tr></thead><tbody id="candbody"><tr><td colspan="2" class="muted">loading…</td></tr></tbody></table>
+
+  <div class="pending"><b>Coming:</b> published external suites — <b>RAGTruth</b>, <b>FaithBench</b>, <b>FACTS Grounding</b> — scored by the same engine (<code class="mono">npm run bench-judge</code>). Drop the datasets under <code class="mono">benchmark/</code> and the harness reports balanced-accuracy / precision / recall / F1 with confidence intervals. Until then this page reports only the fixed gold set, labeled with its size.</div>
+
+  <div class="note" style="border-left-color:#0A0A0A;background:#FAFAFA">Want to move a number? <a href="/break.html" style="font-weight:700;text-decoration:underline">Try to get a lie paid →</a> Every attempt that survives becomes a new gold-set case.</div>
+  </main>
+
+  <footer>Merit — proof-of-citation for the agent economy. Data: <a href="/api/benchmark" class="mono" style="text-decoration:underline">/api/benchmark</a> · reproduce: <span class="mono">npm run judge-eval</span></footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+  fetch('/api/benchmark',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+    if(!d) return;
+    document.getElementById('pairs').textContent = (d.goldSet||0);
+    document.getElementById('adv').textContent = (d.adversarial||0);
+    document.getElementById('harvest').textContent = (d.total||0);
+    var pr = d.precisionRecall || '', measured = /\d/.test(pr);
+    var banner = document.getElementById('prbanner');
+    if(measured){
+      banner.style.borderLeftColor = '#15803D'; banner.style.background = '#F0FDF4';
+      banner.innerHTML = 'Measured on the gold set (n=' + (d.goldSet||0) + '): <b>' + pr.replace(/</g,'&lt;') + '</b> — reproduce with <code class="mono">npm run judge-eval</code>.';
+    } else {
+      banner.innerHTML = 'Precision / recall — <b>not yet measured on this deployment</b>. Run <code class="mono">npm run judge-eval</code> (scores the live judge against the gold set) to compute it; the number is reported only once measured, never asserted.';
+    }
+    var body = document.getElementById('candbody');
+    var rows = (d.candidates||[]);
+    if(!rows.length){ body.innerHTML = '<tr><td colspan="2" class="muted">No hard cases harvested yet — they accrue as live runs hit boundary-confidence citations.</td></tr>'; return; }
+    body.innerHTML = rows.map(function(c){
+      var v = (c.verdict||c.expected||'').toUpperCase();
+      var cls = v.indexOf('SUP')>=0 ? 'sup' : 'ref';
+      var claim = c.claim || c.text || c.question || '(case)';
+      return '<tr><td><span class="v '+cls+'">'+esc(v||'CASE')+'</span></td><td>'+esc(String(claim).slice(0,140))+'</td></tr>';
+    }).join('');
+  }).catch(function(){
+    document.getElementById('candbody').innerHTML = '<tr><td colspan="2" class="muted">benchmark data unavailable</td></tr>';
+  });
+})();
+</script>
+</body>
+</html>
