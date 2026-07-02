@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSource } from "@/lib/registry";
+import { getSource, refreshRegistryFromMirror } from "@/lib/registry";
 import { effectivePrice } from "@/lib/pricing";
 import { withGatewaySeller } from "@/lib/seller";
 
@@ -12,6 +12,9 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> },
 ) {
   const { id } = await ctx.params;
+  // Price the merit-gated source from the authoritative (mirror) merit so the 402 quote and the paid-request
+  // quote agree across serverless instances — otherwise the x402 signature fails verify and nothing settles.
+  await refreshRegistryFromMirror().catch(() => {});
   const s = getSource(id);
   if (!s) return NextResponse.json({ error: "unknown source" }, { status: 404 });
 

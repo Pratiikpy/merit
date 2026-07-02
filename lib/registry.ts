@@ -8,7 +8,7 @@ import path from "node:path";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { effectivePrice } from "./pricing";
 import { learnedTrust } from "./history";
-import { dataDir, saveDoc, ensureHydrating } from "./store";
+import { dataDir, saveDoc, ensureHydrating, loadDocFromMirror } from "./store";
 
 export interface Source {
   id: string;
@@ -232,6 +232,23 @@ export function getSources(): Source[] {
 
 export function getSource(id: string): Source | undefined {
   return ensureLoaded().find((s) => s.id === id) || discovered.get(id);
+}
+
+/**
+ * Pull the authoritative registry from the Supabase mirror into the cache so EVERY serverless instance prices
+ * a source identically. The x402 seller quotes a merit-gated price on the 402 and re-quotes on the paid request;
+ * if a warm instance holds a divergent merit (seed vs persisted), the buyer's signature (for the 402 amount)
+ * fails verify against the paid-request requirements — so a merit-gated citation never settles. Reading the
+ * mirror before quoting makes both handshake requests agree. No-op off the mirror (local file stays truth in
+ * dev). Best-effort: on any failure the existing cache is kept.
+ */
+export async function refreshRegistryFromMirror(): Promise<void> {
+  const v = await loadDocFromMirror<Source[]>("registry");
+  if (Array.isArray(v) && v.length) {
+    const have = new Set(v.map((s) => s.id));
+    const missing = seed().filter((s) => !have.has(s.id)); // forward-compat: keep newly-added seed sources
+    cache = missing.length ? v.concat(missing) : v;
+  }
 }
 
 export function addCreator(input: {
