@@ -69,11 +69,17 @@ export async function runAgent(
   opts?: { discover?: boolean; tier?: "pro" | "budget"; policy?: RunPolicy },
 ): Promise<void> {
   // x402 self-call target. This is a LOOPBACK — the lead calls its OWN specialist endpoints on the
-  // same server — so the only correct, safe target is localhost on the server's own port. Deliberately
-  // NOT the request's Host header: trusting that would let a forged `Host:` redirect the lead's work
-  // fetches and x402 payments to an attacker (SSRF + payment redirect). `next start` exposes $PORT
-  // here, so localhost:$PORT always reaches this server, on any port, with no BASE_URL needed.
-  const base = `http://localhost:${process.env.PORT || 3000}`;
+  // same server. Deliberately NOT the request's Host header: trusting that would let a forged `Host:`
+  // redirect the lead's work fetches and x402 payments to an attacker (SSRF + payment redirect). Only
+  // trusted config decides the target: on a classic server (`next start`) localhost:$PORT always reaches
+  // this server; on Vercel serverless there IS no localhost listener (functions are platform-invoked),
+  // so live settlements must loop through the deployment's own public origin — MERIT_ORIGIN (the stable
+  // alias, operator-set) first, else the platform-provided VERCEL_URL. Both are env, never request data.
+  const base = process.env.MERIT_ORIGIN
+    ? process.env.MERIT_ORIGIN.replace(/\/+$/, "")
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : `http://localhost:${process.env.PORT || 3000}`;
   // Candidate pool = the seed sources (stable, demo-reliable) — or, when
   // discovery is on, REAL publisher articles pulled live from RSS feeds.
   // Unguessable runId — the UNPAID specialist work endpoints key on it, so it must
