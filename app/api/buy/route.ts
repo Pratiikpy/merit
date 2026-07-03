@@ -7,6 +7,7 @@ import { procure } from "@/lib/procure";
 import { accrueCustody, refreshCustodyFromMirror } from "@/lib/custody";
 import { recordSettlement } from "@/lib/history";
 import { cardFromVerdict, refreshCardsFromMirror, saveCard } from "@/lib/cards";
+import { mintFulfillment, type FulfillmentCredential } from "@/lib/fulfillment";
 import { round6 } from "@/lib/arc";
 
 export const runtime = "nodejs";
@@ -79,10 +80,17 @@ export async function POST(req: Request) {
     wastedOnDeliveryRail = round6(wastedOnDeliveryRail + c.price);
   }
 
+  // A verified buy emits a portable AP2 fulfillment credential — a downstream rail can gate its next step on it.
+  let fulfillment: FulfillmentCredential | null = null;
+  if (bought && bought.verificationId) {
+    fulfillment = await mintFulfillment({ verificationId: bought.verificationId, claim, amount: bought.price, settledAt: new Date().toISOString(), sourceName: bought.source, receiptId: bought.receiptId });
+  }
+
   const skipped = compared.filter((c) => c.verdict !== "SUPPORTED").length;
   return NextResponse.json({
     claim,
     bought,
+    fulfillment,
     compared,
     triedCount: compared.length,
     skippedCount: skipped,

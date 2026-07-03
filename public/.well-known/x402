@@ -57,6 +57,16 @@
       "input": { "items": "[{ claim, sourceRef | source, amount?, sourceName? }] (<= 20)" },
       "output": "{ count, settledCount, quarantinedCount, totalAuthorized, totalSettled, totalQuarantined, lines[] }",
       "auth": "requires an API key (Authorization: Bearer <key>) — it settles value and verifies each line"
+    },
+    {
+      "id": "ap2-fulfillment-credential",
+      "name": "AP2 fulfillment credential",
+      "description": "The AP2 POST-condition to the mandate PRE-condition. Merit verifies delivered work and, only if it supports the claim, mints a signed, offline-recoverable fulfillment credential (merit.fulfillment/v1) attesting the obligation was satisfied — carrying the verificationId that ties back to the exact verdict that gated the payment. A downstream AP2/x402 rail gates its next step on this credential without trusting Merit (recover the signer from the canonical body + signature). A refused obligation yields no credential. Every verified /api/buy also returns one inline.",
+      "endpoint": "/api/fulfillment",
+      "method": "POST",
+      "input": { "claim": "string", "source or sourceRef": "string", "amount": "number (optional)", "mandate": "{ authorizer, nonce } (optional — binds the AP2 loop)" },
+      "output": "{ fulfilled: true, credential } | { fulfilled: false, verdict }",
+      "auth": "requires an API key (Authorization: Bearer <key>)"
     }
   ],
   "quality": {
