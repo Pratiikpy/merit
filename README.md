@@ -15,7 +15,7 @@ recompute without trusting a Merit server.
 <a href="https://merit-ecru.vercel.app"><img src="https://img.shields.io/badge/live%20demo-merit--ecru.vercel.app-16A34A?style=flat-square" alt="Live demo" /></a>
 <img src="https://img.shields.io/badge/Arc-testnet%205042002-0A0A0A?style=flat-square" alt="Arc testnet" />
 <img src="https://img.shields.io/badge/tests-357%20passing-3FB950?style=flat-square" alt="357 tests passing" />
-<img src="https://img.shields.io/badge/proof--of--citation-100%25%20precision%2Frecall-3FB950?style=flat-square" alt="100 percent precision and recall" />
+<img src="https://img.shields.io/badge/proof--of--citation-275--case%20adversarial%20benchmark-3FB950?style=flat-square" alt="275-case adversarial benchmark" />
 <img src="https://img.shields.io/badge/license-Apache--2.0-3178C6?style=flat-square" alt="Apache-2.0" />
 </p>
 
@@ -107,8 +107,13 @@ described.
   `MeritJob` job 1 is `Completed` (citation verified) and job 2 is `Rejected` (citation failed, the
   hook blocked the release). The release is bound to `keccak256` of the signed receipt; check it with
   `jobs(id)` and `verdictOf(host, id)`. Enabled by `MERIT_HOOK_ONCHAIN=1`.
-- The evaluator is measured, not asserted: a forkable, false-negative-gated benchmark scoring 100%
-  precision and recall on a balanced gold set. See [`BENCHMARK.md`](BENCHMARK.md) and `npm run judge-eval`.
+- The evaluator is measured, not asserted: a forkable **275-case adversarial benchmark** spanning 14 failure
+  modes (fabricated figures, contradiction, off-topic, right-entity-wrong-attribute, temporal error,
+  overgeneralization, prompt-injection, and more), each label independently double-checked. Measured result:
+  **100% recall** — every adversarial case caught, so nothing false reached settlement (197 held, 0 slipped) —
+  at **90.4% precision / 94.9% F1**, 97% coverage. The verifier is conservative *by design*: it over-refuses
+  ~30% of genuinely-supported claims rather than risk paying for one that isn't — the safe direction for money.
+  Reproduce with `npm run bench-judge`; details in [`BENCHMARK.md`](BENCHMARK.md).
 
 Most Arc and agent-economy projects gate payment on identity, a reputation score, or attested
 execution. None gate on whether the work is correct. Gating settlement on citation correctness is
@@ -289,7 +294,7 @@ Every claim Merit makes is recomputable from Arc with no Merit server.
 | `npm run recompute -- <agentId>` | an agent's ERC-8004 reputation straight from Arc (raw `eth_getLogs`), no server, no cache |
 | `npm run verify-settlement -- <wallet>` | the money moved; sums the USDC Transfer logs a payout wallet received |
 | `npm run verify-all -- <receipt.json> [buyer]` | the whole receipt; signature plus every paid or refused verdict cross-checked against the ValidationRegistry |
-| `npm run judge-eval` | the evaluator, measured; the 16-pair gold set through the live Auditor scores 100% precision, recall, and F1 (a wrongful pay fails the run) |
+| `npm run bench-judge` | the evaluator, measured; scores the 275-case adversarial gold set through the live Auditor → honest precision/recall/F1 + per-failure-mode breakdown + coverage (never a hardcoded number) |
 | `npm run prove -- <receipt.json>` | the whole run; chain facts plus judgment re-audited live |
 
 <details>
@@ -313,7 +318,7 @@ Every claim Merit makes is recomputable from Arc with no Merit server.
 | `npm run verify-all -- <receipt.json> [buyer]` | the whole receipt cross-checked against chain |
 | `npm run prove -- <receipt.json> [buyer]` | `verify-all` plus `challenge`: chain facts plus judgment re-audited |
 | `npm run challenge -- "<source>" "<claim>"` | appeal a verdict by re-running the judge on a `(source, claim)` pair |
-| `npm run judge-eval` | scores the 16-pair gold set for accuracy, precision, recall, and F1 |
+| `npm run judge-eval` | scores the 275-case adversarial gold set for accuracy, precision, recall, and F1 |
 | `npm run mcp` | the MCP server: Merit as a callable tool over stdio for any MCP client |
 | `npm run example -- "question" [--discover]` | drives a run programmatically; `--discover` pulls live web sources |
 | `npm run external-hire -- scout` | acts as an external agent: discovers a specialist's x402 challenge and pays it directly |

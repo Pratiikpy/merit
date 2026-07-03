@@ -1,12 +1,15 @@
 /**
- * The fixed, published proof-of-citation gold set — the SINGLE source of truth for both `npm run judge-eval`
- * (which scores the live Auditor against it) and the public moat surfaces (/api/honesty, /api/benchmark,
- * /api/bounty). 16 hand-labeled (source, claim) pairs: the `SUPPORTED` ones a correct Auditor must pay, the
- * `REFUSED` ones it must hold (off-topic, contradiction, a fabricated number, and the on-topic-but-contradictory
- * trap). On this fixed set (n=16) the Auditor MEASURES 100% precision/recall — a small, reproducible,
- * falsifiable baseline (regenerate with `npm run judge-eval`), NOT a general-accuracy claim and NOT a
- * self-reported number; `goldSummary()` computes P/R from the actual run and reports it only once measured.
- * The live bounty/benchmark counters extend this baseline; they never replace it.
+ * The published proof-of-citation gold set — the SINGLE source of truth for `npm run bench-judge` /
+ * `judge-eval` (which score the live Auditor against it) and the public moat surfaces (/api/honesty,
+ * /api/benchmark, /api/bounty). 275 (source, claim) pairs spanning 14 adversarial failure modes (fabricated
+ * figures/percentages, direct contradiction, off-topic, right-entity-wrong-attribute, overgeneralization,
+ * temporal error, negation/causation flip, unsupported addition, hard-borderline/rounding, prompt-injection,
+ * plus supported direct/paraphrase/synthesis). Authored by diverse independent writers, then EACH label
+ * blind-verified by two more independent annotators — only unanimous, unambiguous pairs were kept, so the
+ * labels are trustworthy rather than one author's opinion. Split into a dev set (benchmark/goldset-dev.json)
+ * and a held-out test set (benchmark/goldset-test.json). No hardcoded accuracy: `goldSummary()` computes
+ * precision/recall from an ACTUAL measured run (benchmark/results.json) and reports "not yet measured" until
+ * then. The whole product is honesty — the benchmark is falsifiable, reproducible, and never self-graded.
  */
 import gold from "./goldset.json";
 import fs from "node:fs";
@@ -16,6 +19,8 @@ export interface GoldPair {
   source: string;
   claim: string;
   expect: "SUPPORTED" | "REFUSED";
+  failureMode?: string; // the adversarial class this pair exercises (for per-failure-mode metrics)
+  domain?: string; // topic domain, for diversity auditing
 }
 
 export const GOLD: GoldPair[] = gold as GoldPair[];

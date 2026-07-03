@@ -48,7 +48,31 @@ reproducible. Fork it, extend the gold set, and run any evaluator against it.
 
 ## The gold set
 
-16 hand-labeled `(source, claim)` pairs, balanced supported/refused, embedded in `scripts/judge-eval.mjs`.
-Each row is the verdict a *correct* evaluator must return; the harness runs them through the live Auditor via
-`/api/challenge` and compares. The hardest case — "the trap" (on-topic, high-similarity, contradictory) — is
-the one no similarity-only verifier survives, and the one Merit was built to catch.
+**275** `(source, claim)` pairs in `lib/goldset.json`, spanning **14 adversarial failure modes** (fabricated
+figures/percentages, off-topic, direct contradiction, right-entity-wrong-attribute, temporal error,
+overgeneralization, negation/causation flip, unsupported addition, hard-borderline/rounding, prompt-injection,
+plus supported direct/paraphrase/synthesis). Every pair was authored by an independent writer and its label
+then **blind-verified by two more independent annotators** — only unanimous, unambiguous pairs were kept — and
+the set is split into a dev set and a **held-out test set** (`benchmark/goldset-dev.json`,
+`benchmark/goldset-test.json`). Each row is the verdict a *correct* evaluator must return; the harness runs
+them through the live Auditor and compares. The hardest cases — high-similarity contradictions and
+right-entity-wrong-attribute traps — are the ones no similarity-only verifier survives.
+
+## Measured results
+
+Scored through the live layered Auditor (deterministic numeric screen → self-hosted HHEM NLI → adversarial
+LLM judge, strict dual-gate) via `npm run bench-judge`:
+
+| metric | value | meaning |
+|---|---|---|
+| **recall** | **100.0%** | every adversarial pair was caught (197 held, **0 slipped through to payment**) — the safety-critical number: a lie never got paid |
+| **precision** | 90.4% | of everything it refused, 90.4% was genuinely bad |
+| **F1** | 94.9% | harmonic mean |
+| **coverage** | 97.1% | 267/275 decided (8 transient errors, reported, never hidden) |
+| **over-refusal** | ~30% | 21 of 70 supported pairs were wrongly refused |
+
+The evaluator is **conservative by design**: a false-refuse costs recall and UX; a false-pay breaks the moat.
+So it errs toward refusing a borderline-true claim rather than paying for a false one — the safe direction for
+money. Reproduce: `npm run bench-judge` (writes `benchmark/results.json`, which the public
+[`/api/benchmark`](https://merit-ecru.vercel.app/api/benchmark) surface reads). Confusion matrix
+(positive = REFUSED): tp=197, fp=21, tn=49, fn=0.

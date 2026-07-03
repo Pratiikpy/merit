@@ -16,7 +16,8 @@ Aliases accepted: `source|context|document`, `claim|statement|response`, `expect
 Positive class = **REFUSED** (catching an unsupported/hallucinated citation is the task).
 
 ## Sets
-- **Default:** `../lib/goldset.json` (16 hand-labeled pairs) — a fast smoke set, NOT a headline benchmark.
+- **Default:** `../lib/goldset.json` (275 pairs across 14 adversarial failure modes, each label
+  independently double-checked; split into `goldset-dev.json` + held-out `goldset-test.json`).
 - **Published-grade (add these — see `../HUMAN.md` §4):**
   - **RAGTruth** (~18k word-level hallucination annotations, ACL 2024) → `benchmark/ragtruth.json`
   - **FaithBench** (diverse summarization hallucination benchmark) → `benchmark/faithbench.json`

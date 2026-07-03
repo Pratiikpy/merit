@@ -77,7 +77,6 @@ nli-server/**/__pycache__/
 merit-cvo/dist/
 
 # generated benchmark run artifact (harness + dataset are tracked; results regenerate per run)
-benchmark/results.json
 
 # generated QA run artifacts (regenerate via scripts/qa-*.mjs)
 qa-api-report.md
@@ -93,3 +92,5 @@ docs/MASTER-PLAN.md
 docs/RESEARCH-RAW.md
 docs/ECOSYSTEM-INTEL.md
 docs/FEATURES.md
+docs/HUB-PLAN.md
+*.stackdump

@@ -6,5 +6,6 @@
       "framework": "nextjs",
       "buildCommand": "npm install && npm run build"
     }
-  }
+  },
+  "crons": [{ "path": "/api/warm", "schedule": "0 9 * * *" }]
 }

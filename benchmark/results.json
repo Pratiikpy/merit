@@ -1,0 +1,33 @@
+{
+  "set": "lib/goldset.json",
+  "generatedAt": "2026-07-03T12:44:12.638Z",
+  "total": 275,
+  "decided": 267,
+  "abstained": 0,
+  "errors": 8,
+  "coverage": 0.9709090909090909,
+  "confusion": {
+    "tp": 197,
+    "fp": 21,
+    "tn": 49,
+    "fn": 0,
+    "positiveClass": "REFUSED"
+  },
+  "metrics": {
+    "precision": 0.9036697247706422,
+    "recall": 1,
+    "f1": 0.9493975903614458,
+    "balancedAcc": 0.85
+  },
+  "overRefusalRate": 0.3,
+  "reproAgreement": null,
+  "perCategory": {
+    "uncategorized": {
+      "correct": 246,
+      "total": 275,
+      "decided": 267,
+      "accuracy": 0.9213483146067416
+    }
+  },
+  "note": "Full coverage."
+}

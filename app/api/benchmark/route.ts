@@ -5,8 +5,9 @@ import { goldSummary } from "@/lib/goldset";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// GET /api/benchmark — the proof-of-citation benchmark. `goldSet` is the FIXED, published baseline (scored
-// 100% P/R by `npm run judge-eval`); `total` is the SELF-BOOTSTRAPPING set — the boundary-confidence citations
+// GET /api/benchmark — the proof-of-citation benchmark. `goldSet` is the FIXED, published 275-case adversarial
+// baseline (precision/recall MEASURED by `npm run bench-judge`, never asserted); `total` is the
+// SELF-BOOTSTRAPPING set — the boundary-confidence citations
 // the live verifier was least sure about, harvested from real runs (it grows from 0 with traffic). Together:
 // a reproducible baseline that co-evolves, instead of a static snapshot. Pure data; never gates a payment.
 export async function GET() {

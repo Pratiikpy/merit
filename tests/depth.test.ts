@@ -1,8 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { asDepth, depthLayers, verifyDepthPrice, verifyTiers } from "../lib/pricing";
+import { affordableDepth, asDepth, cappedDepth, depthLayers, judgeMinPayment, verifyDepthPrice, verifyTiers } from "../lib/pricing";
 import { isVerifyError, verifyCitation } from "../lib/verify/engine";
 
 describe("verification-depth pricing (B6)", () => {
+  it("min-payment floor: the judge runs only when the payment covers it, else numeric+NLI", () => {
+    const floor = judgeMinPayment();
+    expect(floor).toBe(verifyDepthPrice("full")); // default floor = full-tier price
+    // a payment at/above the floor justifies the full judge
+    expect(affordableDepth(floor)).toBe("full");
+    expect(affordableDepth(floor + 0.01)).toBe("full");
+    // a payment below the floor gets numeric+NLI (never a judge that costs more than it protects)
+    expect(affordableDepth(floor - 0.001)).toBe("nli");
+    expect(affordableDepth(0)).toBe("nli");
+    // cappedDepth clamps DOWN only: a "full" request on a tiny payment degrades to "nli"...
+    expect(cappedDepth("full", floor - 0.001)).toBe("nli");
+    // ...but a big payment keeps the requested depth, and a shallower request is never upgraded
+    expect(cappedDepth("full", floor + 1)).toBe("full");
+    expect(cappedDepth("numeric", floor + 1)).toBe("numeric");
+    expect(cappedDepth("nli", 0)).toBe("nli");
+  });
+
   it("normalizes depth and maps layers", () => {
     expect(asDepth("numeric")).toBe("numeric");
     expect(asDepth("nli")).toBe("nli");

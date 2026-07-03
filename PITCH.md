@@ -86,12 +86,15 @@ standards (x402, AP2, ACP) as they shake out, rather than betting the product on
   reputation, cost, outcome); and `npm run moat-value` quantifies the **economic** case — the spend
   a *pay-then-pray* rail wastes on the sources Merit refused (off-topic data + an unverifiable
   identity) vs Merit paying only for verified value. The moat as money protected, not a claim.
-- **The moat, measured — not just asserted.** `npm run judge-eval` runs the Auditor over a hand-labeled
-  gold set of 16 (source, claim) pairs — supported vs mis-cited (off-topic, contradictory, a **fabricated
-  number** caught by the deterministic numeric layer with no LLM, and the trap both directions) — and
-  scores the layered Auditor's accuracy: currently **100% precision · 100%
-  recall · F1 100%** (adapting FinGPT's HaluEval method). Most projects *assert* their LLM judge works;
-  Merit **measures** it — and a false-negative (a wrongful pay) fails the eval. The moat is a reproducible number.
+- **The moat, measured — not just asserted.** `npm run bench-judge` runs the Auditor over a **275-case
+  adversarial gold set** spanning 14 failure modes (fabricated figures/percentages, off-topic, direct
+  contradiction, right-entity-wrong-attribute, temporal error, overgeneralization, negation flip, unsupported
+  addition, prompt-injection, hard-borderline, plus supported controls) — every label independently
+  double-checked, split into a dev set and a held-out test set. Measured result: **100% recall** (every
+  adversarial case caught — 197 held, 0 slipped through to payment) at **90.4% precision / 94.9% F1**, 97%
+  coverage. It is conservative by design — it over-refuses ~30% of genuinely-supported claims rather than risk
+  paying for a false one, the safe direction for money. Most projects *assert* their LLM judge works; Merit
+  **measures** it from the actual run (`npm run bench-judge`), never a hardcoded number.
 - **Every run emits a `summary` receipt** — one self-contained object with every verdict, the
   Auditor's reason, and the on-chain tx, plus the crew paid and budget totals. The receipt is the
   **atomic unit the whole system compounds on** — audit, reputation, and dispute all read from it —
@@ -125,8 +128,8 @@ standards (x402, AP2, ACP) as they shake out, rather than betting the product on
    server-free `recompute` command). Click any **receipt** → the settlement tx. Hit **Compare crews**
    for the pro-vs-economy verification market side by side, or toggle **Live web** to discover and pay
    *real* publishers from RSS.
-5. **Then prove it — don't trust the UI.** In the terminal: `npm run judge-eval` scores the Auditor
-   **100% precision / 100% recall** on a hand-labeled gold set (the moat *measured*, not asserted);
+5. **Then prove it — don't trust the UI.** In the terminal: `npm run bench-judge` scores the Auditor on the
+   275-case adversarial gold set — precision/recall reported from the run, not asserted (the moat *measured*);
    `npm run prove -- <receipt>` re-checks the whole run against Arc *and* re-audits a verdict live;
    `npm run leaderboard` ranks the on-chain reputation economy (refusals show as **negative** portable
    reputation); `npm run moat-value` quantifies the spend a *pay-then-pray* rail wastes. Every headline

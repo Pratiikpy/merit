@@ -67,6 +67,17 @@ export function llmConfig(): LlmProvider {
   );
 }
 
+/** The EMBEDDING provider — its OWN key/base/model, so embeddings can stay on a provider that HAS an
+ *  embeddings endpoint (e.g. NVIDIA) even when the chat/judge provider (e.g. 0G router) does not. Falls back
+ *  to the primary LLM config when no EMBED_API_KEY is set, so existing single-provider setups are unchanged.
+ *  Keeping this separate matters because embedRaw trips a circuit breaker on failure — without it, embed
+ *  failures on a no-embeddings chat provider would take the JUDGE offline. */
+export function embedConfig(): LlmProvider {
+  const key = process.env.EMBED_API_KEY;
+  if (!key) return llmConfig(); // no dedicated embed provider → use the primary (unchanged behavior)
+  return buildProvider(key, process.env.EMBED_BASE_URL, undefined, process.env.EMBED_MODEL, process.env.EMBED_INPUT_TYPE);
+}
+
 /** The ordered LLM provider chain: the primary first, then any distinct fallbacks — an explicit
  *  `LLM_FALLBACK_*` provider, plus any separately-configured OpenAI/NVIDIA key. `chat()` fails over across
  *  this chain on a 429/5xx/timeout, so a single throttled key no longer collapses the proof-of-citation moat

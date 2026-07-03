@@ -1,7 +1,8 @@
 /**
  * Self-bootstrapping benchmark — the gold set grows from production.
  *
- * Merit's verifier is benchmarked at 100% precision/recall on a FIXED gold set. The hardest, most valuable
+ * Merit's verifier is scored on a FIXED 275-case adversarial gold set (precision/recall measured by
+ * bench-judge, never asserted). The hardest, most valuable
  * cases to add are the ones the live verifier is least sure about — citations whose support confidence lands
  * near the decision boundary. Every run logs those uncertain cases as benchmark CANDIDATES; over time the
  * benchmark co-evolves with real traffic (active learning on an adversarial oracle) instead of staying static.

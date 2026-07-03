@@ -5,13 +5,18 @@ import { GOLD, goldSummary } from "../lib/goldset";
 // (/api/honesty, /api/benchmark, /api/bounty). This test pins its composition so the numbers a judge reads
 // on the live site can never silently drift from the set the benchmark is actually scored against.
 describe("gold set — the published proof-of-citation benchmark", () => {
-  it("is the fixed, balanced 16-pair set (9 adversarial / 7 supported)", () => {
-    expect(GOLD.length).toBe(16);
+  it("is the fixed 275-pair adversarial set (205 must-refuse / 70 must-support), all 14 failure modes present", () => {
+    expect(GOLD.length).toBe(275);
     const refused = GOLD.filter((g) => g.expect === "REFUSED").length;
     const supported = GOLD.filter((g) => g.expect === "SUPPORTED").length;
-    expect(refused).toBe(9);
-    expect(supported).toBe(7);
+    expect(refused).toBe(205);
+    expect(supported).toBe(70);
     expect(refused + supported).toBe(GOLD.length);
+    // every adversarial failure mode is represented (no silently-dropped attack class)
+    const modes = new Set(GOLD.map((g) => g.failureMode));
+    for (const m of ["fabricated-figure", "direct-contradiction", "off-topic", "right-entity-wrong-attribute", "overgeneralization", "temporal-error", "negation-and-causation-flip", "unsupported-addition", "prompt-injection-in-claim", "supported-direct", "supported-paraphrase"]) {
+      expect(modes.has(m)).toBe(true);
+    }
   });
 
   it("every pair has a source, a substantive claim, and a valid expected verdict", () => {
@@ -24,7 +29,7 @@ describe("gold set — the published proof-of-citation benchmark", () => {
 
   it("summary surfaces the gold-set composition + an HONEST (measured-or-pending) benchmark, never a hardcoded 100%", () => {
     const s = goldSummary();
-    expect(s).toMatchObject({ goldSet: 16, adversarial: 9, supported: 7 });
+    expect(s).toMatchObject({ goldSet: 275, adversarial: 205, supported: 70 });
     expect(typeof s.measured).toBe("boolean");
     if (s.measured) {
       expect(s.precisionRecall).toMatch(/precision\/recall/);

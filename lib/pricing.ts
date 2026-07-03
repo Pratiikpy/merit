@@ -41,6 +41,30 @@ export function verifyDepthPrice(depth: VerifyDepth): number {
   return Math.round(full * factor * 1e6) / 1e6;
 }
 
+// ---- Minimum-payment floor (economics guard) ----
+// The numeric verifier (deterministic) and the NLI check (self-hosted HHEM) are ~free to run; the adversarial
+// LLM judge is the ONLY layer with real per-call inference cost. So a payment that can't cover the judge should
+// still get the full numeric+NLI decision (enough to decide most claims) — but NOT a judge that costs more than
+// the payment it protects. Env-tunable via MERIT_JUDGE_MIN_PAYMENT; defaults to the full-tier price.
+export function judgeMinPayment(): number {
+  const v = Number(process.env.MERIT_JUDGE_MIN_PAYMENT);
+  return Number.isFinite(v) && v > 0 ? v : verifyDepthPrice("full");
+}
+
+/** The deepest depth a settlement of `amount` USDC justifies: the judge runs only when the payment covers it;
+ *  smaller payments still get numeric+NLI. Never runs an LLM judge that costs more than the payment protects. */
+export function affordableDepth(amount: number): VerifyDepth {
+  return (Number(amount) || 0) + 1e-9 >= judgeMinPayment() ? "full" : "nli";
+}
+
+/** Clamp a requested depth DOWN to what the payment justifies (never up). A caller asking for "full" on a
+ *  sub-threshold payment gets "nli" — and the receipt honestly shows the judge did not fire. */
+export function cappedDepth(requested: VerifyDepth, amount: number): VerifyDepth {
+  const order: VerifyDepth[] = ["numeric", "nli", "full"];
+  const cap = affordableDepth(amount);
+  return order.indexOf(requested) <= order.indexOf(cap) ? requested : cap;
+}
+
 /** The machine-readable verification price ladder — advertised at /api/pricing for agent-side discovery. */
 export function verifyTiers() {
   const tiers: VerifyDepth[] = ["numeric", "nli", "full"];

@@ -343,7 +343,7 @@ export async function runAgent(
     await emit("stake", staking);
 
     // ---- 4d. SELF-BOOTSTRAPPING BENCHMARK — log the citations the verifier was LEAST sure about (boundary
-    // confidence) as gold-set candidates, so the 100% P/R benchmark co-evolves with real traffic (active
+    // confidence) as gold-set candidates, so the adversarial benchmark co-evolves with real traffic (active
     // learning on the oracle) instead of staying a static snapshot. Pure data — never gates a payment. ----
     recordBenchCandidates(
       verdicts
