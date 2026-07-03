@@ -613,12 +613,14 @@ export function recentCertificates(limit = 20): CertSummary[] {
 export function juryStats(): { panels: number; claimsGraded: number; claimsSupported: number; claimsRefused: number; claimsEscalated: number; gradedUsdc: number } {
   const c = loadCerts().certs;
   let claimsGraded = 0, claimsSupported = 0, claimsRefused = 0, claimsEscalated = 0, gradedUsdc = 0;
+  // Coerce every field (|| 0): a legacy/partial summary row (e.g. one written before a field rename) must never
+  // turn the public aggregate into NaN — a broken traction number is worse than a conservative one.
   for (const x of c) {
-    claimsGraded += x.claims;
-    claimsSupported += x.supported;
-    claimsRefused += x.refused;
-    claimsEscalated += x.escalated;
-    gradedUsdc += x.gradedUsdc;
+    claimsGraded += x.claims || 0;
+    claimsSupported += x.supported || 0;
+    claimsRefused += x.refused || 0;
+    claimsEscalated += x.escalated || 0;
+    gradedUsdc += x.gradedUsdc || 0;
   }
   return { panels: c.length, claimsGraded, claimsSupported, claimsRefused, claimsEscalated, gradedUsdc: round6(gradedUsdc) };
 }
