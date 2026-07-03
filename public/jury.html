@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Consensus jury — Merit</title>
+<meta name="description" content="Merit's premium verification tier: a panel of diverse models from different families (0G DeepSeek / GLM / Qwen / MiniMax / Kimi, each TEE-attested) votes on each atomic claim; a reputation-weighted supermajority decides; settlement is graded per claim. Watch a real panel vote.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Consensus jury — Merit">
+<meta property="og:description" content="A diverse, TEE-attested model panel votes on each claim; a weighted supermajority decides; settlement is graded per claim.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:72ch;}
+  .roster{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px;}
+  .mchip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;background:#FAFAFA;border:1px solid #E4E4E7;border-radius:999px;padding:5px 12px;}
+  .mchip .fam{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#9CA3AF;}
+  .mchip .tee{font-size:9.5px;font-weight:700;color:#047857;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:5px;padding:1px 5px;}
+  .cert{border:1px solid #E4E4E7;border-radius:18px;padding:22px;margin-bottom:16px;}
+  .certtop{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
+  .certtop .q{font-size:13px;color:#6B7280;}
+  .certtop .gr{font-size:13px;font-weight:700;color:#065F46;}
+  .claim{border-top:1px solid #F3F4F6;padding:16px 0 4px;}
+  .claim:first-of-type{border-top:none;}
+  .ctext{font-weight:600;font-size:15px;margin-bottom:12px;}
+  .ctext .n{font-size:11px;font-weight:700;color:#9CA3AF;margin-right:6px;}
+  .ballots{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .ballot{display:flex;flex-direction:column;gap:5px;border:1px solid #ECECEE;border-radius:11px;padding:9px 12px;min-width:150px;flex:1;}
+  .ballot .bm{font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+  .ballot .bv{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;width:fit-content;}
+  .bv.SUPPORTED{background:#DCFCE7;color:#047857;} .bv.REFUTED{background:#FEE2E2;color:#BE123C;}
+  .bv.UNCLEAR{background:#FEF3C7;color:#B45309;} .bv.ABSTAIN{background:#F4F4F5;color:#71717A;}
+  .ballot .att{font-size:9.5px;font-weight:700;color:#047857;display:inline-flex;align-items:center;gap:3px;}
+  .ballot .att.no{color:#9CA3AF;}
+  .ballot .br{font-size:11px;color:#6B7280;line-height:1.35;}
+  .tally{display:flex;align-items:center;gap:12px;margin-top:6px;}
+  .tally .bar{flex:1;height:9px;border-radius:999px;background:#F1F5F9;overflow:hidden;position:relative;}
+  .tally .bar>i{display:block;height:100%;background:#10B981;}
+  .tally .thr{position:absolute;top:-3px;bottom:-3px;width:2px;background:#0A0A0A;}
+  .tally .lg{font-size:12px;font-weight:600;white-space:nowrap;}
+  .verdict{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:3px 11px;border-radius:999px;}
+  .verdict.SUPPORTED{background:#DCFCE7;color:#047857;} .verdict.REFUSED{background:#FEE2E2;color:#BE123C;}
+  .certfoot{margin-top:16px;padding-top:12px;border-top:1px solid #F3F4F6;font-size:11.5px;color:#9CA3AF;display:flex;flex-wrap:wrap;gap:14px;}
+  .certfoot .mono{color:#6B7280;}
+  .run{border:1px solid #E4E4E7;border-radius:16px;padding:18px;margin-bottom:16px;background:#FCFCFD;}
+  .run summary{cursor:pointer;font-weight:700;font-size:14px;}
+  .run .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .run input,.run textarea{font-family:inherit;font-size:13.5px;padding:10px 12px;border:1px solid #D4D4D8;border-radius:9px;width:100%;}
+  .run textarea{min-height:64px;resize:vertical;}
+  .run .btn{font-size:13px;font-weight:700;color:#fff;background:#0A0A0A;border:none;border-radius:9px;padding:10px 18px;cursor:pointer;}
+  .run .btn:disabled{opacity:.5;}
+  .run .hint{font-size:11.5px;color:#9CA3AF;margin-top:8px;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}.ballot{min-width:120px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/proof.html">Ledger</a>
+      <a href="/statement.html">Statement</a>
+      <a href="/compliance.html">Compliance</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>The consensus jury</h1>
+  <p class="sub">Merit's premium high-assurance tier. Each answer is broken into atomic claims; only borderline claims escalate to a panel of models from <strong>different families</strong> — so their errors are uncorrelated, not five copies of one model agreeing on the same hallucination. A reputation-weighted supermajority decides each claim, and settlement is <strong>graded per claim</strong> (pay what passes, never all-or-nothing). Every ballot is TEE-attested and committed under a Merkle root.</p>
+
+  <div class="roster" id="roster"></div>
+
+  <details class="run" id="runbox">
+    <summary>Run a live panel with your API key →</summary>
+    <div class="row"><input type="text" id="key" placeholder="Authorization key (merit_sk_…)" spellcheck="false" autocomplete="off"></div>
+    <div class="row"><input type="text" id="rclaim" placeholder="Claim to adjudicate" value="Regulatory clarity from MiCA and the GENIUS Act unlocked enterprise stablecoin volume."></div>
+    <div class="row"><textarea id="rsrc" placeholder="Source text">Cross-border B2B stablecoin settlement crossed $4.1T in annualized volume in 2026. Regulatory clarity from MiCA and the GENIUS Act unlocked that enterprise volume.</textarea></div>
+    <div class="row"><button class="btn" id="rgo">Convene the panel</button></div>
+    <div class="hint">Runs the real diverse-model panel on the 0G judge (forcePanel, $0 — no settlement). Your key is used only for this request and never stored.</div>
+  </details>
+
+  <div id="certs"></div>
+  </main>
+
+  <footer class="foot">Prior art, stated plainly: the decompose → diverse-panel → weighted-consensus design is Mira/Atoma's published playbook, which Merit composes. The novel part is binding that consensus to the on-chain payment-settlement decision beneath a deterministic numeric $0 floor. Each ballot carries its 0G attestation handle (TEE-attested, TDX), so the panel is checkable, not asserted. <a href="/api/jury" style="text-decoration:underline">Manifest →</a></footer>
+</div>
+
+<script>
+(function(){
+  var rosterEl=document.getElementById('roster'),certsEl=document.getElementById('certs');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function usd(n){return '$'+Number(n||0).toFixed(4);}
+  var FAM={'deepseek':'DeepSeek','glm':'GLM','qwen':'Qwen','minimax':'MiniMax','kimi':'Kimi','0gm':'0G'};
+  function fam(m){m=(m||'').toLowerCase();for(var k in FAM){if(m.indexOf(k)===0||m.indexOf(k)>-1)return FAM[k];}return '';}
+  function renderRoster(models){
+    rosterEl.innerHTML=(models||[]).map(function(m){
+      return '<span class="mchip"><span class="fam">'+esc(fam(m))+'</span>'+esc(m)+'<span class="tee">TEE·TDX</span></span>';
+    }).join('');
+  }
+  function renderBallot(b){
+    var att=b.attestation;
+    var attHtml = att&&att.provider
+      ? '<span class="att">🛡 '+esc(att.teeType||'TEE')+' attested</span>'
+      : '<span class="att no">no attestation</span>';
+    return '<div class="ballot"><span class="bm">'+esc(b.model)+'</span>'
+      + '<span class="bv '+esc(b.vote)+'">'+esc(b.vote)+'</span>'
+      + attHtml
+      + '<span class="br">'+esc((b.reason||'').slice(0,80))+'</span></div>';
+  }
+  function renderClaim(cl,i){
+    var ballots=(cl.ballots||[]);
+    var cons=cl.consensus;
+    var body='<div class="claim"><div class="ctext"><span class="n">CLAIM '+(i+1)+'</span>'+esc(cl.claim)+'</div>';
+    if(ballots.length){
+      body+='<div class="ballots">'+ballots.map(renderBallot).join('')+'</div>';
+      if(cons){
+        var ratio=Math.round((cons.supportRatio||0)*100);
+        var thr=Math.round((cons.threshold||.66)*100);
+        body+='<div class="tally"><div class="bar"><i style="width:'+ratio+'%"></i><span class="thr" style="left:'+thr+'%"></span></div>'
+          + '<span class="lg">'+ratio+'% weighted support · needs '+thr+'%</span>'
+          + '<span class="verdict '+esc(cl.verdict)+'">'+(cl.verdict==='SUPPORTED'?'✓ ':'✕ ')+esc(cl.verdict)+'</span></div>';
+      }
+    } else {
+      body+='<div style="font-size:12.5px;color:#6B7280">Decided free by the pre-gate ('+esc((cl.reason||'').slice(0,90))+') — <span class="verdict '+esc(cl.verdict)+'" style="font-size:11px">'+esc(cl.verdict)+'</span></div>';
+    }
+    body+='</div>';
+    return body;
+  }
+  function renderCert(c){
+    var t=c.tally||{};
+    var head='<div class="certtop"><div class="q">'+(c.question?esc(c.question):'Panel of '+((c.jurors||[]).length)+' diverse models')+'</div>'
+      + '<div class="gr">'+t.supported+'/'+t.totalClaims+' claims cleared · '+usd(t.gradedUsdc)+' graded</div></div>';
+    var claims=(c.claims||[]).map(renderClaim).join('');
+    var foot='<div class="certfoot"><span>schema '+esc(c.schema)+'</span>'
+      + '<span class="mono">merkle '+esc((c.merkleRoot||'').slice(0,16))+'…</span>'
+      + (c.signer?'<span class="mono">signer '+esc((c.signer||'').slice(0,10))+'…</span>':'')
+      + (c.ballotCount!=null?'<span>'+c.ballotCount+' ballots</span>':'')+'</div>';
+    return '<div class="cert">'+head+claims+foot+'</div>';
+  }
+  function renderCerts(list){
+    if(!list||!list.length){ certsEl.innerHTML='<div class="empty">No panels convened yet. Use “Run a live panel” above with your API key to watch a real diverse-model vote — each model’s ballot, its TEE attestation, and the weighted tally appear here.</div>'; return; }
+    certsEl.innerHTML=list.map(renderCert).join('');
+  }
+  async function loadManifest(){ try{ var r=await fetch('/api/jury',{cache:'no-store'}); var m=await r.json(); renderRoster(m.roster); }catch(e){} }
+  async function loadCerts(){ try{ var r=await fetch('/api/jury?recent=1',{cache:'no-store'}); var d=await r.json(); renderCerts(d.certificates||[]); }catch(e){ renderCerts([]); } }
+  loadManifest(); loadCerts();
+
+  // Live run with the visitor's own key.
+  var rgo=document.getElementById('rgo');
+  rgo.onclick=async function(){
+    var key=(document.getElementById('key').value||'').trim();
+    var claim=(document.getElementById('rclaim').value||'').trim();
+    var src=(document.getElementById('rsrc').value||'').trim();
+    if(!key){ alert('Paste your API key (merit_sk_…) to run a live panel.'); return; }
+    if(!claim||!src){ alert('Provide a claim and a source.'); return; }
+    rgo.disabled=true; rgo.textContent='Convening… (models are voting)';
+    try{
+      var res=await fetch('/api/jury',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({claim:claim,source:src,amount:0,forcePanel:true})});
+      var d=await res.json();
+      if(!res.ok){ certsEl.innerHTML='<div class="empty" style="color:#BE123C">'+esc(d.error||('error '+res.status))+'</div>'; }
+      else certsEl.innerHTML=renderCert(d)+certsEl.innerHTML;
+    }catch(e){ certsEl.innerHTML='<div class="empty" style="color:#BE123C">request failed</div>'+certsEl.innerHTML; }
+    rgo.disabled=false; rgo.textContent='Convene the panel';
+  };
+})();
+</script>
+</body>
+</html>

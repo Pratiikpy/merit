@@ -117,6 +117,49 @@ rec("security", "X-Content-Type-Options nosniff", (h.get("x-content-type-options
 rec("security", "Referrer-Policy", !!h.get("referrer-policy"));
 rec("security", "HSTS", !!h.get("strict-transport-security"));
 
+// ---- H. Consensus jury (Phase 6) ----
+const juryM = await get("/api/jury");
+rec("jury", "GET /api/jury manifest → 200 + cvo/v3 schema", juryM.status === 200 && juryM.body?.schema === "merit.cvo/v3", `schema=${juryM.body?.schema}`);
+rec("jury", "manifest lists a diverse roster (≥3 models)", Array.isArray(juryM.body?.roster) && juryM.body.roster.length >= 3, `roster=${(juryM.body?.roster || []).length}`);
+rec("jury", "POST /api/jury (no key) → 401 (value-moving gate)", (await post("/api/jury", { claim: "a", source: "b", amount: 0.01 })).status === 401);
+const juryR = await get("/api/jury?recent=1");
+rec("jury", "GET /api/jury?recent=1 → 200 + certificates array", juryR.status === 200 && Array.isArray(juryR.body?.certificates), `certs=${(juryR.body?.certificates || []).length}`);
+if ((juryR.body?.certificates || []).length) {
+  const c = juryR.body.certificates[0];
+  const hasBallots = (c.claims || []).some((cl) => (cl.ballots || []).length > 0);
+  rec("jury", "a recent certificate carries per-ballot votes", hasBallots, `merkleRoot=${(c.merkleRoot || "").slice(0, 14)}…`);
+  rec("jury", "the certificate is signed (offline-verifiable)", !!c.signer && !!c.signature);
+}
+
+// ---- I. Compliance pre-gate (Phase 7) ----
+const compM = await get("/api/compliance");
+rec("compliance", "GET /api/compliance → 200 + stats", compM.status === 200 && !!compM.body?.stats, `provider=${(compM.body?.provider || "").slice(0, 24)}`);
+const compBad = await post("/api/compliance", { address: "garbage-not-an-address" });
+rec("compliance", "screen a malformed address → DENIED (fail-safe)", compBad.body?.decision === "DENIED", `decision=${compBad.body?.decision}`);
+const compClean = await post("/api/compliance", { address: "0x1111111111111111111111111111111111111111" });
+rec("compliance", "screen a clean address → 200 with a decision", compClean.status === 200 && !!compClean.body?.decision, `decision=${compClean.body?.decision} source=${compClean.body?.source}`);
+rec("compliance", "a local APPROVED is honestly NOT a clearance (cleared=false)", compClean.body?.source !== "local" || compClean.body?.cleared === false, `source=${compClean.body?.source} cleared=${compClean.body?.cleared}`);
+rec("compliance", "POST denylist mutation (no admin token) → 403", (await post("/api/compliance", { action: "deny", address: "0x1111111111111111111111111111111111111111" })).status === 403);
+rec("compliance", "public GET hides recent-screen risk labels (no PII oracle)", !("recent" in (compM.body || {})), `recent present=${"recent" in (compM.body || {})}`);
+
+// ---- J. Verified-spend statement (Phase 7) ----
+const stmt = await get("/api/statement");
+rec("statement", "GET /api/statement → 200 + statement schema", stmt.status === 200 && stmt.body?.schema === "merit.statement/v1", `schema=${stmt.body?.schema}`);
+rec("statement", "statement is signed + content-addressed", !!stmt.body?.signer && /^0x[0-9a-f]{64}$/.test(stmt.body?.statementId || ""), `signer=${!!stmt.body?.signer}`);
+if (stmt.body?.signer) {
+  const { signer, signature, statementId, ...sbody } = stmt.body;
+  let recovered = null;
+  try { recovered = await recoverMessageAddress({ message: canonicalize(sbody), signature }); } catch {}
+  rec("statement", "statement signature recovers the signer OFFLINE", recovered && recovered.toLowerCase() === signer.toLowerCase(), `recovered=${(recovered || "").slice(0, 10)}…`);
+}
+rec("statement", "verification refusedShare is a real fraction 0..1", typeof stmt.body?.verification?.refusedShare === "number" && stmt.body.verification.refusedShare >= 0 && stmt.body.verification.refusedShare <= 1, `refusedShare=${stmt.body?.verification?.refusedShare}`);
+
+// ---- K. Settlement tx-simulation pre-flight (Phase 7) ----
+const simM = await get("/api/simulate");
+rec("simulate", "GET /api/simulate → 200 + schema", simM.status === 200 && simM.body?.schema === "merit.simulate/v1", `schema=${simM.body?.schema}`);
+const simOver = await post("/api/simulate", { to: "0x2222222222222222222222222222222222222222", amount: 999999999 });
+rec("simulate", "over-balance transfer predicted to FAIL (before any gas)", simOver.status === 200 && (simOver.body?.simulated === false || simOver.body?.wouldSucceed === false), `simulated=${simOver.body?.simulated} wouldSucceed=${simOver.body?.wouldSucceed}`);
+
 // ---- Report ----
 const pass = results.filter((r) => r.pass === true).length;
 const warn = results.filter((r) => r.pass === "warn").length;

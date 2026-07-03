@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { authGate } from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
-import { runJury, juryRoster, refreshJuryFromMirror, refreshRepFromMirror, JURY_SCHEMA, JURY_ENGINE, JURY_PRIOR_ART, type JuryInput } from "@/lib/jury";
+import { runJury, juryRoster, refreshJuryFromMirror, refreshRepFromMirror, recentFullCertificates, JURY_SCHEMA, JURY_ENGINE, JURY_PRIOR_ART, type JuryInput } from "@/lib/jury";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,7 +9,12 @@ export const maxDuration = 300;
 
 // GET /api/jury — the premium consensus-jury tier: what it is, the roster, and the economics (honest: this is a
 // high-assurance premium tier, never the sub-cent default). Public read; moves no value.
-export async function GET() {
+export async function GET(req: Request) {
+  // ?recent=1 → the most recent FULL certificates (per-ballot votes + attestation) for the public visualizer.
+  if (new URL(req.url).searchParams.has("recent")) {
+    await refreshJuryFromMirror().catch(() => {});
+    return NextResponse.json({ certificates: recentFullCertificates(3) });
+  }
   return NextResponse.json({
     schema: JURY_SCHEMA,
     engine: JURY_ENGINE,

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compliance pre-gate — Merit</title>
+<meta name="description" content="Before Merit moves USDC to a payee, the recipient is screened for sanctions / illicit-behaviour risk — so a disbursement is compliance-cleared AND work-verified. Screen any address live against Circle's Compliance Engine.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Compliance pre-gate — Merit">
+<meta property="og:description" content="Payee screening fused with the verify gate: compliance-cleared AND work-verified before any USDC moves.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 24px;max-width:72ch;}
+  .prov{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 11px;vertical-align:middle;margin-left:10px;}
+  .prov.circle{color:#1D4ED8;background:#EFF6FF;border:1px solid #BFDBFE;}
+  .prov.local{color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;}
+  .card{border:1px solid #E4E4E7;border-radius:16px;padding:20px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  input[type=text]{flex:1;min-width:240px;font-family:'IBM Plex Mono',monospace;font-size:14px;padding:12px 14px;border:1px solid #D4D4D8;border-radius:10px;color:#0A0A0A;}
+  input[type=text]:focus{outline:none;border-color:#0A0A0A;}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#fff;background:#0A0A0A;border:none;border-radius:10px;padding:12px 20px;cursor:pointer;}
+  .btn:hover{background:#18181B;} .btn:disabled{opacity:.5;cursor:default;}
+  .samples{margin-top:12px;font-size:12.5px;color:#6B7280;}
+  .samples b{color:#374151;font-weight:600;}
+  .schip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:7px;padding:2px 7px;margin:3px 4px 0 0;cursor:pointer;color:#3F3F46;}
+  .schip:hover{border-color:#A1A1AA;}
+  .result{margin-top:16px;border:1px solid #E4E4E7;border-radius:16px;padding:20px;display:none;}
+  .verdict{display:flex;align-items:center;gap:12px;}
+  .vchip{display:inline-flex;align-items:center;gap:7px;font-size:15px;font-weight:800;padding:6px 14px;border-radius:999px;letter-spacing:-.01em;}
+  .vchip.APPROVED{background:#DCFCE7;color:#047857;} .vchip.REVIEW{background:#FEF3C7;color:#B45309;} .vchip.DENIED{background:#FEE2E2;color:#BE123C;}
+  .srcbadge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;}
+  .srcbadge.circle{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;} .srcbadge.local{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;}
+  .kv{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;margin-top:16px;font-size:13.5px;}
+  .kv .kk{color:#6B7280;font-weight:600;} .kv .vv{color:#0A0A0A;} .kv .vv.mono{font-family:'IBM Plex Mono',monospace;font-size:12.5px;word-break:break-all;}
+  .note{font-size:12.5px;color:#6B7280;margin-top:14px;padding-top:12px;border-top:1px solid #F3F4F6;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:22px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:24px;font-weight:800;margin-top:3px;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/proof.html">Ledger</a>
+      <a href="/statement.html">Statement</a>
+      <a href="/jury.html">Jury</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Compliance pre-gate<span class="prov local" id="prov" hidden></span></h1>
+  <p class="sub">Before Merit moves USDC to a payee, the recipient is screened for sanctions, terrorist-financing and illicit-behaviour risk — so a disbursement is <strong>compliance-cleared AND work-verified</strong>. Screening runs against Circle's Compliance Engine, with an operator denylist as an authoritative hard floor. Try it on any address.</p>
+
+  <div class="card">
+    <div class="row">
+      <input type="text" id="addr" placeholder="0x… address to screen" spellcheck="false" autocomplete="off">
+      <button class="btn" id="go">Screen</button>
+    </div>
+    <div class="samples">
+      <b>Try a documented test address:</b><br>
+      <span class="schip" data-a="0x7fb49965753A9eC3646fd5d004ee5AeD6Cc89999">…9999 · sanctions blocklist</span>
+      <span class="schip" data-a="0x0000000000000000000000000000000000008888">…8888 · frozen (review)</span>
+      <span class="schip" data-a="0x1111111111111111111111111111111111111111">clean address</span>
+      <span class="schip" data-a="not-an-address">malformed</span>
+    </div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  </main>
+
+  <footer class="foot">Honesty: a <span class="mono">cleared:true</span> result is a real Circle answer; a local APPROVED means only “no rule matched”, not a sanctions clearance. The operator denylist + structural checks DENY even over a vendor approval; if the vendor is configured but unavailable, a screen degrades to REVIEW — never a silent approval. <a href="/api/compliance" style="text-decoration:underline">Raw manifest →</a></footer>
+</div>
+
+<script>
+(function(){
+  var addrEl=document.getElementById('addr'),goEl=document.getElementById('go'),resEl=document.getElementById('result'),statsEl=document.getElementById('stats'),provEl=document.getElementById('prov');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function kv(k,v,mono){return '<div class="kk">'+esc(k)+'</div><div class="vv'+(mono?' mono':'')+'">'+v+'</div>';}
+  function show(d){
+    var dec=d.decision||'?';
+    var cats=(d.riskCategories||[]).map(esc).join(', ')||'—';
+    resEl.innerHTML='<div class="verdict">'
+      + '<span class="vchip '+esc(dec)+'">'+(dec==='APPROVED'?'✓ ':dec==='DENIED'?'✕ ':'⚠ ')+esc(dec)+'</span>'
+      + '<span class="srcbadge '+(d.source==='circle'?'circle':'local')+'">'+(d.source==='circle'?'Circle Compliance Engine':'local screen')+'</span>'
+      + (d.cleared?'<span class="srcbadge circle">vendor-cleared</span>':'')
+      + '</div>'
+      + '<div class="kv">'
+      + kv('Address', esc(d.address||''), true)
+      + kv('Rule', esc(d.ruleName||'—'))
+      + kv('Risk', esc(d.riskScore||'—')+' · '+cats)
+      + kv('Basis', esc(d.basis||''))
+      + (d.signer? kv('Signed by', esc((d.signer||'').slice(0,14))+'…', true):'')
+      + (d.screeningId? kv('Screening id', esc((d.screeningId||'').slice(0,20))+'…', true):'')
+      + '</div>'
+      + '<div class="note">'+(dec==='DENIED'?'A DENIED payee is blocked — no USDC would move to this address.':dec==='REVIEW'?'A REVIEW payee is flagged (allowed by default; blocked under strict enterprise posture).':'This payee would pass the compliance pre-gate; settlement still requires the citation to VERIFY.')+'</div>';
+    resEl.style.display='block';
+  }
+  async function screen(a){
+    a=(a||addrEl.value||'').trim(); if(!a) return; addrEl.value=a;
+    goEl.disabled=true; goEl.textContent='Screening…';
+    try{
+      var res=await fetch('/api/compliance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:a})});
+      var d=await res.json();
+      if(!res.ok){ resEl.innerHTML='<div class="note" style="color:#BE123C">'+esc(d.error||('error '+res.status))+'</div>'; resEl.style.display='block'; }
+      else show(d);
+    }catch(e){ resEl.innerHTML='<div class="note" style="color:#BE123C">request failed</div>'; resEl.style.display='block'; }
+    goEl.disabled=false; goEl.textContent='Screen'; loadStats();
+  }
+  goEl.onclick=function(){screen();};
+  addrEl.addEventListener('keydown',function(e){if(e.key==='Enter')screen();});
+  Array.prototype.forEach.call(document.querySelectorAll('.schip'),function(c){c.onclick=function(){screen(c.getAttribute('data-a'));};});
+  async function loadStats(){
+    try{
+      var res=await fetch('/api/compliance',{cache:'no-store'}); var m=await res.json(); var s=m.stats||{};
+      if(m.provider){ provEl.hidden=false; var isC=/^circle/.test(m.provider); provEl.className='prov '+(isC?'circle':'local'); provEl.textContent=isC?'Circle live':'local mode'; }
+      statsEl.innerHTML=''
+        + '<div class="stat"><div class="k">Screenings</div><div class="v">'+((s.screens||0).toLocaleString())+'</div></div>'
+        + '<div class="stat"><div class="k">Approved</div><div class="v" style="color:#047857">'+(s.approved||0)+'</div></div>'
+        + '<div class="stat"><div class="k">Review</div><div class="v" style="color:#B45309">'+(s.review||0)+'</div></div>'
+        + '<div class="stat"><div class="k">Denied</div><div class="v" style="color:#BE123C">'+(s.denied||0)+'</div></div>'
+        + '<div class="stat"><div class="k">Via Circle</div><div class="v" style="color:#1D4ED8">'+(s.viaCircle||0)+'</div></div>';
+    }catch(e){}
+  }
+  loadStats();
+})();
+</script>
+</body>
+</html>

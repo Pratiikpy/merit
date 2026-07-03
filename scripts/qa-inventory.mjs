@@ -9,6 +9,11 @@ import fs from "node:fs";
 const BASE = process.env.QA_BASE || "https://merit-ecru.vercel.app";
 const PAGES = [
   { slug: "home", path: "/" },
+  { slug: "verify", path: "/verify.html" },
+  { slug: "proof", path: "/proof.html" },
+  { slug: "statement", path: "/statement.html" },
+  { slug: "jury", path: "/jury.html" },
+  { slug: "compliance", path: "/compliance.html" },
   { slug: "break", path: "/break.html" },
   { slug: "honesty", path: "/honesty.html" },
   { slug: "benchmark", path: "/benchmark.html" },

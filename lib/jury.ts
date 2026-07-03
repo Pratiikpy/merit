@@ -581,7 +581,32 @@ function loadCerts(): JuryLog {
   if (cacheable) certCache = value;
   return value;
 }
+
+// A small bounded ring of the most recent FULL certificates (with per-ballot votes + attestation) — powers the
+// public consensus-vote visualizer (the money-shot) so a reader sees a real panel, not just a summary. No PII
+// (it is a verification record: claim + source preview + model votes), so it is safe to expose read-only.
+interface JuryFullLog { certs: JuryCertificate[] }
+const FULL_DOC = "juryfull";
+const MAX_FULL = 5;
+let fullCache: JuryFullLog | null = null;
+function loadFull(): JuryFullLog {
+  if (fullCache) return fullCache;
+  const { value, cacheable } = loadDocFresh<JuryFullLog>(FULL_DOC, { certs: [] });
+  if (!value.certs) value.certs = [];
+  if (cacheable) fullCache = value;
+  return value;
+}
+export function recentFullCertificates(limit = 3): JuryCertificate[] {
+  const c = loadFull().certs;
+  return c.slice(Math.max(0, c.length - limit)).reverse();
+}
+
 function recordCertificate(cert: JuryCertificate): void {
+  const full = loadFull();
+  full.certs.push(cert);
+  if (full.certs.length > MAX_FULL) full.certs = full.certs.slice(-MAX_FULL);
+  fullCache = full;
+  saveDoc(FULL_DOC, full);
   const log = loadCerts();
   log.certs.push({
     id: cert.certificateId!,
@@ -602,8 +627,9 @@ function recordCertificate(cert: JuryCertificate): void {
 }
 /** Read-your-writes refresh from the mirror before reading/appending (matches lib/audit). Best-effort. */
 export async function refreshJuryFromMirror(): Promise<void> {
-  const v = await loadDocFromMirror<JuryLog>(CERT_DOC);
+  const [v, f] = await Promise.all([loadDocFromMirror<JuryLog>(CERT_DOC), loadDocFromMirror<JuryFullLog>(FULL_DOC)]);
   if (v && Array.isArray(v.certs)) certCache = v;
+  if (f && Array.isArray(f.certs)) fullCache = f;
 }
 export function recentCertificates(limit = 20): CertSummary[] {
   const c = loadCerts().certs;
@@ -628,6 +654,7 @@ export function juryStats(): { panels: number; claimsGraded: number; claimsSuppo
 /** Test seam. */
 export function _resetJury(): void {
   certCache = null;
+  fullCache = null;
   repCache = null;
   rosterMeta = null;
   rosterMetaAt = 0;
