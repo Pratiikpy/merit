@@ -14,6 +14,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { ARC, explorerTx, isStub, round6 } from "./arc";
 import { loadDocFresh, loadDocFromMirror, saveDoc } from "./store";
 import { assertPayeeCompliant } from "./compliance";
+import { simulateUsdcTransfer } from "./simulate";
 
 export interface CustodyEntry {
   id: string;
@@ -113,6 +114,14 @@ export async function claimCustody(id: string, toWallet: string): Promise<{ tx: 
   if (!pk || isStub()) return { error: "on-chain claim is unavailable on this deployment (keyless / stub mode)", status: 503 };
   try {
     const account = privateKeyToAccount((pk.startsWith("0x") ? pk : `0x${pk}`) as `0x${string}`);
+    // Settlement pre-flight (Phase 7): dry-run the transfer before broadcasting. A predicted failure (insufficient
+    // custodial balance, would-revert, no gas) is caught here so we never waste gas on a doomed tx nor strand the
+    // claim. Safety optimisation, not a gate: an inability to simulate (RPC down) does NOT block — only a RAN
+    // simulation that predicts failure does. Balance is left untouched on a pre-flight block.
+    const sim = await simulateUsdcTransfer({ from: account.address, to, amount });
+    if (sim.simulated && !sim.wouldSucceed) {
+      return { error: `payout pre-flight predicts failure — ${sim.reason}`, status: 422 };
+    }
     const rpc = process.env.ARC_RPC_URL || ARC.rpcUrl;
     const wallet = createWalletClient({ account, transport: http(rpc) });
     const pub = createPublicClient({ transport: http(rpc) });
