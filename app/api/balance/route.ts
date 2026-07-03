@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authGate, keyFromRequest } from "@/lib/auth";
+import { authGate, keyFromRequest , refreshAuthFromMirror} from "@/lib/auth";
 import { isSessionKey } from "@/lib/session";
 import { balanceStatus, creditDeposit, depositAddressFor, refreshBalanceFromMirror, simulateDeposit, withdrawBalance } from "@/lib/balance";
 import { isStub } from "@/lib/arc";
@@ -11,9 +11,10 @@ export const maxDuration = 60; // crediting a deposit / withdrawing waits on an 
 
 // A prepaid balance is tied to an API-key principal — resolve it, or 401. (Auth may be OFF for the public demo,
 // but a balance still needs a key to belong to; an anonymous caller has nowhere to hold one.)
-function principalOr401(req: Request) {
+async function principalOr401(req: Request) {
   // A session key is verify-only — it must never reach deposit/withdraw/status here.
   if (isSessionKey(keyFromRequest(req))) return { error: "a session key can only verify (POST /api/verify/balance); use the parent API key for balance operations", status: 403 } as const;
+  await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   if (!gate.ok) return { error: gate.error, status: gate.status } as const;
   if (!gate.principal) return { error: "a prepaid balance requires an API key (Authorization: Bearer <key>)", status: 401 } as const;
@@ -22,7 +23,7 @@ function principalOr401(req: Request) {
 
 // GET /api/balance — the principal's prepaid balance + where to deposit.
 export async function GET(req: Request) {
-  const g = principalOr401(req);
+  const g = await principalOr401(req);
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
   await refreshBalanceFromMirror().catch(() => {});
   // Only disclose the deposit address when it's derived from a REAL seed (or in stub/demo). On a live deploy
@@ -42,7 +43,7 @@ export async function GET(req: Request) {
 
 // POST /api/balance { action:"deposit", txHash } | { action:"withdraw", toWallet } — fund or cash out.
 export async function POST(req: Request) {
-  const g = principalOr401(req);
+  const g = await principalOr401(req);
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
   let body: { action?: string; txHash?: string; toWallet?: string; amount?: number };
   try {

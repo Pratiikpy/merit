@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authGate } from "@/lib/auth";
+import { authGate , refreshAuthFromMirror} from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { listWebhooks, refreshWebhooksFromMirror, registerWebhook, removeWebhook } from "@/lib/webhooks";
 
@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 // GET /api/webhooks — list this principal's registered webhook endpoints (never returns the secret).
 export async function GET(req: Request) {
+  await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
   await refreshWebhooksFromMirror().catch(() => {});
@@ -17,6 +18,7 @@ export async function GET(req: Request) {
 // POST /api/webhooks { url, events? } — register a webhook that receives SIGNED settlement/verification events.
 // The secret is returned ONCE (derived, never stored). The URL is SSRF-validated (no localhost/private/IPv6-loopback).
 export async function POST(req: Request) {
+  await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = checkChallengeLimit(Date.now());
@@ -49,6 +51,7 @@ export async function POST(req: Request) {
 
 // DELETE /api/webhooks?id=wh_… — remove one of this principal's webhooks.
 export async function DELETE(req: Request) {
+  await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const id = new URL(req.url).searchParams.get("id") || "";

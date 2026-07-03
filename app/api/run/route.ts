@@ -3,7 +3,7 @@ import { runAgent } from "@/lib/agent";
 import { parsePolicy, type RunPolicy } from "@/lib/policy";
 import { looksLikeInjection } from "@/lib/llm";
 import { checkRunLimit, tryAcquireRunSlot, releaseRunSlot } from "@/lib/ratelimit";
-import { authGate, remainingBudget, chargePrincipal } from "@/lib/auth";
+import { authGate, remainingBudget, chargePrincipal , refreshAuthFromMirror} from "@/lib/auth";
 import { recordExternalHire } from "@/lib/hires";
 import { hydrateDoc, ephemeralStore } from "@/lib/store";
 
@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
   }
   // Per-principal auth + fail-closed firewall (W2.1). When MERIT_REQUIRE_AUTH=1 a missing/invalid key is
   // rejected here, before a slot is taken; a provided key is always validated. Budget is checked once parsed.
+  await refreshAuthFromMirror().catch(() => {});
   const ag = authGate(req);
   if (!ag.ok) {
     return new Response(JSON.stringify({ error: ag.error }), {

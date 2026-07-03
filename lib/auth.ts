@@ -9,7 +9,7 @@
  * keyless demo + smoke keep working; even with auth off, a PROVIDED key is still validated + budget-tracked.
  */
 import crypto from "node:crypto";
-import { loadDoc, saveDoc } from "./store";
+import { loadDoc, loadDocFromMirror, saveDoc } from "./store";
 import { isStub } from "./arc";
 
 export interface Principal {
@@ -31,6 +31,18 @@ function load(): Store {
 }
 function persist(store: Store): void {
   saveDoc("apikeys", store);
+}
+
+/**
+ * Read-your-writes refresh of the API-key store from the durable mirror. WITHOUT this, a key minted on one
+ * serverless instance is invisible to other (cold or warm-stale) instances — they read their own local `apikeys`
+ * doc and 401 a perfectly valid key. Call it in every keyed route BEFORE authGate, and before minting (so a new
+ * key merges onto the current authoritative set instead of clobbering another instance's keys — the same
+ * last-writer-wins caveat lib/audit documents). Best-effort; never throws. No-op off the ephemeral mirror.
+ */
+export async function refreshAuthFromMirror(): Promise<void> {
+  const v = await loadDocFromMirror<Store>("apikeys");
+  if (v && typeof v === "object") cache = v;
 }
 
 export function hashKey(plain: string): string {

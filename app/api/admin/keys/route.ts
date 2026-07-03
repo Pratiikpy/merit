@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createApiKey, listPrincipals } from "@/lib/auth";
+import { createApiKey, listPrincipals, refreshAuthFromMirror } from "@/lib/auth";
 import { deriveWallet } from "@/lib/wallet";
 
 export const runtime = "nodejs";
@@ -24,6 +24,9 @@ export async function POST(req: Request) {
   }
   const name = String(body.name || "").slice(0, 80) || "agent";
   const budgetCap = Number.isFinite(Number(body.budgetCap)) ? Math.max(0, Number(body.budgetCap)) : 0;
+  // Pull the authoritative key set first so a mint MERGES onto it (never clobbers keys minted on other instances)
+  // and is immediately mirror-visible to the keyed routes (which now refresh before gating).
+  await refreshAuthFromMirror().catch(() => {});
   const { key, principal } = createApiKey(name, budgetCap);
   const wallet = deriveWallet(principal.id); // this principal's own deposit address (W2.2 — no shared EOA)
   return NextResponse.json({
@@ -36,5 +39,6 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   if (!adminOk(req)) return NextResponse.json({ error: "admin disabled or unauthorized" }, { status: 403 });
+  await refreshAuthFromMirror().catch(() => {});
   return NextResponse.json({ principals: listPrincipals() });
 }

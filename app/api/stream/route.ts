@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authGate } from "@/lib/auth";
+import { authGate , refreshAuthFromMirror} from "@/lib/auth";
 import { isVerifyError, verifyCitation } from "@/lib/verify/engine";
 import { verifyWithCache, refreshVcacheFromMirror } from "@/lib/vcache";
 import { available, balanceStatus, chargeVerified, depositAddressFor, noteRefused, refreshBalanceFromMirror } from "@/lib/balance";
@@ -17,7 +17,8 @@ export const maxDuration = 60;
 // amount from the prepaid balance; a FAILING tick releases nothing and HALTS the stream (auto-stop on quality
 // drift); the cap being reached halts it too. Value flows only toward verified-correct delivery, second by
 // second. Every tick is a signed receipt carrying the verificationId join key.
-function principalOr401(req: Request) {
+async function principalOr401(req: Request) {
+  await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   if (!gate.ok) return { error: gate.error, status: gate.status } as const;
   if (!gate.principal) return { error: "a stream requires an API key (Authorization: Bearer <key>)", status: 401 } as const;
@@ -26,7 +27,7 @@ function principalOr401(req: Request) {
 
 // GET /api/stream?id=… — one stream's status, or list this principal's streams.
 export async function GET(req: Request) {
-  const g = principalOr401(req);
+  const g = await principalOr401(req);
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
   await refreshStreamsFromMirror().catch(() => {});
   const id = new URL(req.url).searchParams.get("id");
@@ -40,7 +41,7 @@ export async function GET(req: Request) {
 
 // POST /api/stream { action:"open", ratePerTick, cap, label } | { action:"tick", streamId, claim, source } | { action:"close", streamId }
 export async function POST(req: Request) {
-  const g = principalOr401(req);
+  const g = await principalOr401(req);
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
   let body: { action?: string; streamId?: string; ratePerTick?: number; cap?: number; label?: string; claim?: string; source?: string };
   try {
@@ -153,7 +154,7 @@ export async function POST(req: Request) {
 
 // DELETE /api/stream?id=… — close a stream.
 export async function DELETE(req: Request) {
-  const g = principalOr401(req);
+  const g = await principalOr401(req);
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
   await refreshStreamsFromMirror().catch(() => {});
   const view = closeStream(new URL(req.url).searchParams.get("id") || "", g.principal.id);

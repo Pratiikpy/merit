@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authGate } from "@/lib/auth";
+import { authGate , refreshAuthFromMirror} from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { procure } from "@/lib/procure";
 import { cardFromVerdict, refreshCardsFromMirror, saveCard } from "@/lib/cards";
@@ -13,6 +13,7 @@ export const maxDuration = 60;
 // supports the claim it was procured for, records the seller's delivery outcome (feeding the reputation firewall),
 // mints a shareable receipt, and returns the verdict. A firewalled seller is refused before any fetch/pay.
 export async function POST(req: Request) {
+  await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
   const rl = checkChallengeLimit(Date.now());

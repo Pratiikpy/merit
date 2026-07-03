@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authGate } from "@/lib/auth";
+import { authGate , refreshAuthFromMirror} from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { runJury, juryRoster, refreshJuryFromMirror, refreshRepFromMirror, recentFullCertificates, JURY_SCHEMA, JURY_ENGINE, JURY_PRIOR_ART, type JuryInput } from "@/lib/jury";
 
@@ -43,6 +43,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const rl = checkChallengeLimit(Date.now());
   if (!rl.allowed) return NextResponse.json({ error: "busy — try again in a moment" }, { status: rl.status });
+  await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
   if (!gate.principal) return NextResponse.json({ error: "the consensus jury requires an API key (Authorization: Bearer <key>) — it convenes a paid model panel and can settle value" }, { status: 401 });

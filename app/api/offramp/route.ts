@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authGate } from "@/lib/auth";
+import { authGate , refreshAuthFromMirror} from "@/lib/auth";
 import { initiateOfframp, offrampConfigured, offrampProvider } from "@/lib/offramp";
 import { available, refreshBalanceFromMirror, releasePayoutReservation, reserveForPayout } from "@/lib/balance";
 
@@ -7,7 +7,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-function principalOr401(req: Request) {
+async function principalOr401(req: Request) {
+  await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   if (!gate.ok) return { error: gate.error, status: gate.status } as const;
   if (!gate.principal) return { error: "cashing out requires an API key (Authorization: Bearer <key>)", status: 401 } as const;
@@ -29,7 +30,7 @@ export async function GET() {
 // The amount is gated on and DEBITED from the principal's available balance (reserve-before-pay, rolled back if
 // the provider fails), so a cash-out can never exceed the unused, funded USDC the principal actually holds.
 export async function POST(req: Request) {
-  const g = principalOr401(req);
+  const g = await principalOr401(req);
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
   let body: { amount?: number; destination?: string };
   try {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authGate } from "@/lib/auth";
+import { authGate , refreshAuthFromMirror} from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { resolveSourceRef, refreshRegistryFromMirror } from "@/lib/registry";
 import { effectivePrice } from "@/lib/pricing";
@@ -20,6 +20,7 @@ const MAX_ITEMS = 20;
 export async function POST(req: Request) {
   const rl = checkChallengeLimit(Date.now());
   if (!rl.allowed) return NextResponse.json({ error: "busy — try again in a moment" }, { status: rl.status });
+  await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
   if (!gate.principal) return NextResponse.json({ error: "batch settlement requires an API key (Authorization: Bearer <key>)" }, { status: 401 });

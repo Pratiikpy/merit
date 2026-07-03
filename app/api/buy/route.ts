@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authGate } from "@/lib/auth";
+import { authGate , refreshAuthFromMirror} from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { applyOutcome, getSources, refreshRegistryFromMirror } from "@/lib/registry";
 import { rankCandidates } from "@/lib/buyer";
@@ -24,6 +24,7 @@ export async function POST(req: Request) {
   if (!rl.allowed) return NextResponse.json({ error: "busy — try again in a moment" }, { status: rl.status });
   // A buy settles value to a creator and runs multiple verification passes — require an accountable principal
   // explicitly (not just the global auth gate, which is relaxed on some deployments), like /api/stream.
+  await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
   if (!gate.principal) return NextResponse.json({ error: "a buy requires an API key (Authorization: Bearer <key>)" }, { status: 401 });
