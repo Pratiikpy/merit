@@ -70,8 +70,9 @@ export async function POST(req: Request) {
       ? "GROUNDED — a verification-gated payment MAY settle this citation."
       : "NOT GROUNDED — a verification-gated payment MUST REFUSE this citation. (A self-report system would pay it.)",
     // The self-contained signed receipt: the top level mixes the signed verdict with unsigned presentation
-    // fields (cached/depth/by/reasoning/settlement), so `signed` carries JUST the object the verifier signed.
-    // Recover offline: strip signer/signature, canonicalize the rest, recoverMessageAddress → must equal signer.
-    signed: v,
+    // fields (cached/depth/by/reasoning/settlement/verificationId), so `signed` carries JUST the object the
+    // verifier signed — NOTE verificationId is EXCLUDED (it's derived AFTER signing). Recover offline: strip
+    // signer/signature from `signed`, canonicalize the rest, recoverMessageAddress → must equal signer.
+    signed: ((): unknown => { const { verificationId: _vid, ...signedBody } = v; return signedBody; })(),
   });
 }

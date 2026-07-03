@@ -35,6 +35,9 @@ export async function GET(req: Request) {
     custody: !!c.custody,
     onchain: !!c.explorerUrl, // a real on-chain tx (vs a batched transfer-id or an accrual)
     explorerUrl: c.explorerUrl || null,
+    // the join key — ties this ledger row to the exact signed verdict that gated its payment (and the
+    // on-chain hook proofHash), so a reader can trace any settlement back to the verification that allowed it.
+    verificationId: c.verificationId || null,
     receiptUrl: `/v/${c.id}`,
     createdAt: c.createdAt,
   }));

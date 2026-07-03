@@ -19,7 +19,7 @@
 import { keccak256, toHex } from "viem";
 import { judgeCitation, looksLikeInjection } from "../llm";
 import { fabricatedFigures } from "../numcheck";
-import { signReceipt } from "../receipt";
+import { signReceipt, verificationId } from "../receipt";
 import { scoreNLI, nliAvailable, nliModelTag } from "./nli";
 
 export const ENGINE_VERSION = "merit-verify/0.1.0";
@@ -51,6 +51,9 @@ export interface Verdict {
   signer?: string;
   signature?: string;
   digest?: string;
+  // The join key: keccak256 of the canonical signed verdict (see lib/receipt.verificationId). The SAME id
+  // appears in the x402 challenge, the receipt, the /proof ledger, reputation, and the on-chain hook proofHash.
+  verificationId?: `0x${string}`;
 }
 
 export interface VerifyError {
@@ -246,6 +249,10 @@ export async function verifyCitation(
       /* signing is best-effort; an unsigned verdict is still valid, just not offline-recoverable */
     }
   }
+
+  // The join key — computed over the (now signed) verdict, so it commits to the exact bytes. Every downstream
+  // surface (402 challenge, receipt, /proof ledger, reputation, on-chain hook proofHash) references THIS id.
+  body.verificationId = verificationId(body);
 
   return { verdict: body };
 }

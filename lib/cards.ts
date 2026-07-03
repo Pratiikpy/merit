@@ -31,6 +31,7 @@ export interface VerifyCard {
   engineVersion?: string;
   sourceHash?: string;
   verifiedAt?: string;
+  verificationId?: string; // the join key (keccak of the signed verdict) — ties this receipt to its 402 charge, the /proof ledger, and the on-chain hook
   signer?: string;
   signature?: string;
   paidUsdc?: number; // settlement cards: USDC released to the source (on-chain settle OR custody accrual)
@@ -96,6 +97,7 @@ export function cardFromVerdict(
     engineVersion: v.engineVersion,
     sourceHash: v.sourceHash,
     verifiedAt: v.verifiedAt,
+    verificationId: v.verificationId,
     signer: v.signer,
     signature: v.signature,
     paidUsdc: extra.paidUsdc,

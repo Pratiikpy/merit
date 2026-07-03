@@ -33,6 +33,10 @@ function buildRequirements(price: number, payTo: string) {
       name: "GatewayWalletBatched",
       version: "1",
       verifyingContract: ARC.gatewayWallet,
+      // Merit-specific: this settlement is CORRECTNESS-gated — it releases only if the delivered work passes
+      // the CVO verdict, and the response carries the `verificationId` (the join key) proving which verdict
+      // gated it. A plain rail pays on delivery; this one pays on verification.
+      verificationGated: true,
     },
   };
 }

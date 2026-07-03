@@ -155,6 +155,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
           {c.signer && (
             <div className={mono.className} style={{ fontSize: 11.5, color: MUTED, marginTop: 16, lineHeight: 1.6 }}>
               Signed by {c.signer} · verifier {c.modelTag} · {new Date(c.createdAt).toISOString().replace("T", " ").slice(0, 19)} UTC
+              {c.verificationId ? <><br />Verification id <span style={{ color: SLATE }}>{c.verificationId.slice(0, 18)}…</span> — the join key tying this verdict to its payment, the /proof ledger, and the on-chain settlement gate.</> : null}
               {recoverable ? (
                 <>
                   <br />Recover the signer offline — no need to trust Merit&apos;s server: <span style={{ color: SLATE }}>GET /api/card/{c.id}</span> → the <span style={{ color: SLATE }}>signed</span> object → <span style={{ color: SLATE }}>scripts/verify-receipt.mjs</span> recovers this exact address.

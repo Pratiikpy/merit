@@ -138,6 +138,20 @@ describe("shareable verification cards", () => {
     expect((s as string).toLowerCase()).toBe(account.address.toLowerCase());
   });
 
+  it("derives a stable, tamper-evident verificationId (the join key) and carries it on the card", async () => {
+    const { verificationId } = await import("../lib/receipt");
+    const v = mkVerdict({ claim: "join key stability test" });
+    const id1 = verificationId(v);
+    expect(id1).toMatch(/^0x[0-9a-f]{64}$/);
+    expect(verificationId({ ...v })).toBe(id1); // same content → same id (deterministic)
+    // any change to the verdict changes the id (tamper-evident)
+    expect(verificationId({ ...v, verdict: "SUPPORTED" })).not.toBe(verificationId({ ...v, verdict: "REFUSED" }));
+    expect(verificationId({ ...v, score: 0.5 })).not.toBe(id1);
+    // the card carries the join key
+    const card = cards.cardFromVerdict({ ...v, verificationId: id1 }, { source: "s", createdAt: v.verifiedAt });
+    expect(card.verificationId).toBe(id1);
+  });
+
   it("signedReceipt returns null when the card is unsigned or predates full-body storage", () => {
     const unsigned = cards.cardFromVerdict(mkVerdict({ signer: undefined, signature: undefined }), { source: "s", createdAt: new Date(10).toISOString() });
     expect(cards.signedReceipt(unsigned)).toBeNull();

@@ -6,7 +6,7 @@
  * than failing the run.
  */
 import { privateKeyToAccount } from "viem/accounts";
-import { recoverMessageAddress } from "viem";
+import { recoverMessageAddress, keccak256, toHex } from "viem";
 
 // Deterministic JSON with recursively-sorted keys, so the signed bytes are reproducible by any verifier
 // (the verifier re-canonicalizes the same body and must get identical bytes to recover the same signer).
@@ -24,6 +24,17 @@ function sortKeys(v: unknown): unknown {
 }
 export function canonicalize(value: unknown): string {
   return JSON.stringify(sortKeys(value));
+}
+
+/**
+ * The verificationId — a stable, tamper-evident id for one verification: keccak256 of the canonical (signed)
+ * verdict. This is Merit's JOIN KEY: the SAME id ties together the /api/verify response, the shareable
+ * receipt (`/v/[id]`), the /proof ledger, the reputation score, the x402 payment challenge, and the on-chain
+ * settlement hook's `proofHash`. So any payment can always be traced to the exact verification that gated it,
+ * and any change to the verdict changes the id. It is a bytes32 hex — directly usable as the hook proofHash.
+ */
+export function verificationId(receipt: unknown): `0x${string}` {
+  return keccak256(toHex(canonicalize(receipt)));
 }
 
 function normalizeKey(pk: string): `0x${string}` {
