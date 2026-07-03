@@ -78,11 +78,12 @@
       <button class="btn" id="go">Screen</button>
     </div>
     <div class="samples">
-      <b>Try a documented test address:</b><br>
-      <span class="schip" data-a="0x7fb49965753A9eC3646fd5d004ee5AeD6Cc89999">…9999 · sanctions blocklist</span>
-      <span class="schip" data-a="0x0000000000000000000000000000000000008888">…8888 · frozen (review)</span>
-      <span class="schip" data-a="0x1111111111111111111111111111111111111111">clean address</span>
-      <span class="schip" data-a="not-an-address">malformed</span>
+      <b>Try one:</b><br>
+      <span class="schip" data-a="0x00000000000000000000000000000000deadbeef">operator-denylisted → blocked</span>
+      <span class="schip" data-a="not-an-address">malformed → blocked</span>
+      <span class="schip" data-a="0x1111111111111111111111111111111111111111">clean → approved</span>
+      <span class="schip" data-a="0x7fb49965753A9eC3646fd5d004ee5AeD6Cc89999">…9999 Circle sanctions vector*</span>
+      <div style="margin-top:8px;color:#6B7280;">*Circle's testnet sanctions vector blocks only when screening rules are configured on the Circle account; this deployment runs Circle with no custom rules, so the vendor approves it — the operator denylist + structural checks are the authoritative floor that blocks here.</div>
     </div>
     <div class="result" id="result"></div>
   </div>
