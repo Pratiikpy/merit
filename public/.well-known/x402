@@ -47,6 +47,16 @@
       "input": { "claim": "string", "maxTry": "number (optional, default 3)" },
       "output": "{ bought: { source, price, verificationId, receiptUrl } | null, compared[], skippedCount, wastedOnDeliveryRail }",
       "auth": "requires an API key (Authorization: Bearer <key>) — it settles value and runs verification"
+    },
+    {
+      "id": "verified-net-settlement",
+      "name": "Verified net settlement (batch)",
+      "description": "Pay a whole basket of cited lines in one call, netted to the VERIFIED subset: Merit verifies every line and settles only the ones whose delivered content actually supports its claim, quarantining (never paying for) the rest. The buyer authorizes N lines and pays only the k that verify — a pay-on-delivery rail would move the full amount, including for unverified work. Each settled line is a signed /v/<id> receipt.",
+      "endpoint": "/api/settle/batch",
+      "method": "POST",
+      "input": { "items": "[{ claim, sourceRef | source, amount?, sourceName? }] (<= 20)" },
+      "output": "{ count, settledCount, quarantinedCount, totalAuthorized, totalSettled, totalQuarantined, lines[] }",
+      "auth": "requires an API key (Authorization: Bearer <key>) — it settles value and verifies each line"
     }
   ],
   "quality": {
