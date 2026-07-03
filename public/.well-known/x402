@@ -51,6 +51,7 @@
   ],
   "quality": {
     "note": "Merit's listing carries a quality signal a pay-on-retrieval seller cannot emit: every verdict is signed and reproducible, every payment is gated on a verified support check, and the whole verification history is a tamper-evident audit chain.",
+    "directory": "/api/directory — every buyable source ranked by verified-quality-per-dollar (measured citation-faithfulness, not a self-reported rating), for agents to shortlist before buying via /api/buy",
     "honestyIndex": "/api/honesty",
     "benchmark": "/api/benchmark",
     "liveProof": "/proof.html",
