@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { authGate, keyFromRequest , refreshAuthFromMirror} from "@/lib/auth";
-import { issueSession, isSessionKey, listSessions, revokeSession } from "@/lib/session";
+import { issueSession, isSessionKey, listSessions, revokeSession, refreshSessionsFromMirror } from "@/lib/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,6 +19,7 @@ async function parentOr401(req: Request) {
 export async function GET(req: Request) {
   const g = await parentOr401(req);
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
+  await refreshSessionsFromMirror().catch(() => {});
   return NextResponse.json({ sessions: listSessions(g.principal.id) });
 }
 
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
   const cap = Number(body.cap);
   if (!Number.isFinite(cap) || cap <= 0) return NextResponse.json({ error: "provide a positive { cap } (USDC this session may spend)" }, { status: 400 });
   const ttlMs = (Number.isFinite(Number(body.ttlHours)) && Number(body.ttlHours) > 0 ? Number(body.ttlHours) : 24) * 60 * 60 * 1000;
+  await refreshSessionsFromMirror().catch(() => {}); // merge onto the authoritative session set (no cross-instance clobber)
   const s = issueSession(g.principal.id, { cap, ttlMs, label: body.label });
   return NextResponse.json({
     ok: true,
@@ -54,5 +56,6 @@ export async function DELETE(req: Request) {
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
   const id = new URL(req.url).searchParams.get("id") || "";
   if (!id) return NextResponse.json({ error: "provide ?id=<session id>" }, { status: 400 });
+  await refreshSessionsFromMirror().catch(() => {});
   return NextResponse.json({ revoked: revokeSession(id, g.principal.id), id });
 }

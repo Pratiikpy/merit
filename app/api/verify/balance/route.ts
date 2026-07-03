@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { authGate, keyFromRequest , refreshAuthFromMirror} from "@/lib/auth";
-import { chargeSession, isSessionKey, refundSession, resolveSession } from "@/lib/session";
+import { chargeSession, isSessionKey, refundSession, resolveSession, refreshSessionsFromMirror } from "@/lib/session";
 import { isVerifyError, verifyCitation } from "@/lib/verify/engine";
 import { verifyWithCache, refreshVcacheFromMirror } from "@/lib/vcache";
 import { available, balanceStatus, chargeVerified, depositAddressFor, noteRefused, refreshBalanceFromMirror } from "@/lib/balance";
@@ -24,6 +24,7 @@ export async function POST(req: Request) {
   let pid: string;
   let sessionId: string | null = null;
   if (isSessionKey(rawKey)) {
+    await refreshSessionsFromMirror().catch(() => {}); // pull the authoritative session set before resolving (cross-instance)
     const s = resolveSession(rawKey);
     if (!s) return NextResponse.json({ error: "invalid, revoked, or expired session key" }, { status: 401 });
     pid = s.parentId;

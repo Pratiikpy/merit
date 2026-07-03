@@ -8,7 +8,7 @@
  * Store-backed; only the key HASH is persisted (the plaintext is shown once).
  */
 import crypto from "node:crypto";
-import { loadDoc, saveDoc } from "./store";
+import { loadDoc, loadDocFromMirror, saveDoc } from "./store";
 
 export interface Session {
   id: string;
@@ -34,6 +34,13 @@ function load(): Store {
 }
 function persist(): void {
   if (cache) saveDoc(DOC, cache);
+}
+/** Read-your-writes refresh of the session store from the mirror — WITHOUT it a session key issued on one
+ *  serverless instance can't be resolved/charged on another (and issuance clobbers). Call before issue/resolve/
+ *  charge/list/revoke. Best-effort; never throws. Mirrors the lib/auth fix. */
+export async function refreshSessionsFromMirror(): Promise<void> {
+  const v = await loadDocFromMirror<Store>(DOC);
+  if (v && typeof v === "object") cache = v;
 }
 function hash(plain: string): string {
   return crypto.createHash("sha256").update(plain).digest("hex");

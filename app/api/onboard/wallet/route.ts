@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createApiKey } from "@/lib/auth";
+import { createApiKey, refreshAuthFromMirror } from "@/lib/auth";
 import { provisionWallet, walletMode, circleDcwConfigured, walletSeedConfigured } from "@/lib/wallet";
 import { depositAddressFor } from "@/lib/balance";
 import { isStub } from "@/lib/arc";
@@ -30,6 +30,9 @@ export async function POST(req: Request) {
 
   const cap = Number(process.env.MERIT_ONBOARD_CAP);
   const budgetCap = Number.isFinite(cap) && cap > 0 ? cap : 1; // bound a self-serve principal (default $1)
+  // Merge onto the authoritative key set before minting, so self-serve onboarding never clobbers keys minted on
+  // another instance (the same cross-instance last-writer-wins hazard fixed in /api/admin/keys).
+  await refreshAuthFromMirror().catch(() => {});
   const { key, principal } = createApiKey(label, budgetCap);
 
   let wallet: { address: string | null; mode: string };
