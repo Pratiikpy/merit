@@ -13,7 +13,7 @@ import { ensureDeposit, payOnce } from "@/lib/pay";
 import { serialize } from "@/lib/locks";
 import { recordLedgerSettlement } from "@/lib/ledger";
 import { recordSettlement } from "@/lib/history";
-import { effectivePrice } from "@/lib/pricing";
+import { cappedDepth, depthLayers, effectivePrice } from "@/lib/pricing";
 import { isStub, round6 } from "@/lib/arc";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { randomBytes } from "node:crypto";
@@ -67,8 +67,17 @@ export async function POST(req: Request, ctx: { params: Promise<{ handle: string
   const claim = (body.claim || "").trim();
   if (!claim) return NextResponse.json({ error: "provide a { claim } to cite this creator for" }, { status: 400 });
 
+  // The toll price is known before the verify — cap the verification DEPTH by it (min-payment floor): a source
+  // whose toll can't cover the adversarial judge still gets the full numeric+NLI check, but not a judge that
+  // would cost more than the payment it protects. Most sources price above the floor and stay at full depth.
+  const price = round6(effectivePrice(s.price, s.merit, s.priceMode));
+  const depth = cappedDepth("full", price);
+  const { useNLI, useJudge } = depthLayers(depth);
+
   await refreshVcacheFromMirror().catch(() => {});
-  const { outcome: out, cached } = await verifyWithCache(claim, s.content, () => verifyCitation(claim, s.content));
+  // Depth-scope the cache key so a shallower verdict is never served for a full-depth toll (and vice-versa).
+  const cacheClaim = depth === "full" ? claim : `${claim} [depth:${depth}]`;
+  const { outcome: out, cached } = await verifyWithCache(cacheClaim, s.content, () => verifyCitation(claim, s.content, { useNLI, useJudge }));
   if (isVerifyError(out)) {
     return NextResponse.json({ error: out.error, ...(out.numericOnly ? { numericOnly: true } : {}) }, { status: out.status });
   }
@@ -82,7 +91,6 @@ export async function POST(req: Request, ctx: { params: Promise<{ handle: string
     }
   }
 
-  const price = round6(effectivePrice(s.price, s.merit, s.priceMode));
   const now = Date.now();
   // settled shapes: {onchain-real} | {custody} | {stub} | {paused} | {error}; null = refused (no payment attempted).
   let settled:
@@ -164,6 +172,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ handle: string
       source: s.content,
       sourceUrl: s.url,
       sourceName: s.name,
+      depth, // the actual verification depth the toll paid for (capped by the min-payment floor)
       paidUsdc: paid,
       custody: isCustody || undefined,
       // When the accrual was distributed, carry the per-recipient breakdown so the receipt attributes each
