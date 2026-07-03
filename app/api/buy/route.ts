@@ -21,8 +21,11 @@ export const maxDuration = 60;
 export async function POST(req: Request) {
   const rl = checkChallengeLimit(Date.now());
   if (!rl.allowed) return NextResponse.json({ error: "busy — try again in a moment" }, { status: rl.status });
+  // A buy settles value to a creator and runs multiple verification passes — require an accountable principal
+  // explicitly (not just the global auth gate, which is relaxed on some deployments), like /api/stream.
   const gate = authGate(req);
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  if (!gate.principal) return NextResponse.json({ error: "a buy requires an API key (Authorization: Bearer <key>)" }, { status: 401 });
 
   let body: { claim?: string; maxTry?: number };
   try {
