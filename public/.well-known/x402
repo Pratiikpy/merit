@@ -37,6 +37,16 @@
       "endpoint": "/api/procure",
       "method": "POST",
       "input": { "url or content": "string", "claim": "string" }
+    },
+    {
+      "id": "verified-buy-agent",
+      "name": "API-discovery-and-buy agent",
+      "description": "Give it a claim it needs backed; it ranks every buyable source by VERIFIED-QUALITY-PER-DOLLAR — each source's measured citation-faithfulness (a signal a price/latency directory can't produce), per dollar of price — then buys them in ranked order and PAYS ONLY the first whose delivered content actually supports the claim, skipping (never paying for) the rest. Settles the winner to its creator and returns the full comparison plus what a pay-on-delivery rail would have wasted on content that didn't verify.",
+      "endpoint": "/api/buy",
+      "method": "POST",
+      "input": { "claim": "string", "maxTry": "number (optional, default 3)" },
+      "output": "{ bought: { source, price, verificationId, receiptUrl } | null, compared[], skippedCount, wastedOnDeliveryRail }",
+      "auth": "requires an API key (Authorization: Bearer <key>) — it settles value and runs verification"
     }
   ],
   "quality": {
