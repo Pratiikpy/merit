@@ -3,6 +3,7 @@ import { listCards, refreshCardsFromMirror } from "@/lib/cards";
 import { auditStats, refreshAuditFromMirror, verifyAuditChain } from "@/lib/audit";
 import { snapshotMetrics } from "@/lib/metrics";
 import { refreshVcacheFromMirror } from "@/lib/vcache";
+import { juryStats, recentCertificates, refreshJuryFromMirror } from "@/lib/jury";
 import { ephemeralStore, hydrateDoc } from "@/lib/store";
 
 export const runtime = "nodejs";
@@ -15,10 +16,10 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   if (ephemeralStore()) {
     await Promise.all(
-      ["ledger", "history", "registry", "agentlabor", "vcache", "audit", "cards"].map((n) => hydrateDoc(n).catch(() => false)),
+      ["ledger", "history", "registry", "agentlabor", "vcache", "audit", "cards", "jury"].map((n) => hydrateDoc(n).catch(() => false)),
     );
   }
-  await Promise.all([refreshAuditFromMirror(), refreshCardsFromMirror(), refreshVcacheFromMirror()].map((p) => p.catch(() => {})));
+  await Promise.all([refreshAuditFromMirror(), refreshCardsFromMirror(), refreshVcacheFromMirror(), refreshJuryFromMirror()].map((p) => p.catch(() => {})));
 
   const limit = Math.min(100, Math.max(1, Number(new URL(req.url).searchParams.get("limit")) || 40));
   const m = snapshotMetrics();
@@ -52,6 +53,9 @@ export async function GET(req: Request) {
     agentLabor: m.agentLabor,
     // Verified-citation cache — re-verifications avoided (true count) + honestly-labelled cost estimate.
     cache: m.cache,
+    // The premium consensus-jury tier — panels convened + graded per-claim outcomes, with recent certificate ids
+    // (each carries a Merkle root over its ballots + 0G attestation handles). Distinct from the single-judge totals.
+    jury: { ...juryStats(), recent: recentCertificates(10) },
     rows,
   });
 }
