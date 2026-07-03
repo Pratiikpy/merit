@@ -1,21 +1,52 @@
 {
   "x402Version": 2,
   "name": "Merit",
-  "description": "Proof-of-citation verification for the agent economy. Merit verifies that a source actually supports a claim, and gates payment on the verdict.",
+  "description": "Proof-of-citation verification for the agent economy. Merit verifies that a source actually supports a claim, and gates payment on the verdict — pay only for citations that verify, in sub-cent USDC on Circle's Arc.",
+  "network": "arc-testnet",
+  "chainId": 5042002,
+  "pricing": "https://merit-ecru.vercel.app/api/pricing",
   "services": [
     {
       "id": "citation-verification-oracle",
       "name": "Citation Verification Oracle (CVO)",
-      "description": "Pay-per-call citation-faithfulness verification. POST {claim, source} and receive a signed, tamper-evident verdict (SUPPORTED / REFUSED) that an ERC-8183 settlement hook — or any payment — can consume BEFORE paying a citation. Layered engine: deterministic numeric verifier (catches fabricated figures with no LLM) -> pluggable NLI/factual-consistency -> adversarial LLM judge. Signed with schema merit.cvo/v2 so a third party can recover the signer offline without trusting Merit.",
+      "description": "Pay-per-call citation-faithfulness verification. POST {claim, source} and receive a signed, tamper-evident verdict (SUPPORTED / REFUSED) that an ERC-8183 settlement hook — or any payment — can consume BEFORE paying a citation. Layered engine: deterministic numeric verifier (catches fabricated figures with no LLM) -> pluggable NLI/factual-consistency -> adversarial LLM judge. Price scales with verification DEPTH (numeric < NLI < full judge) — see /api/pricing. Signed with schema merit.cvo/v2 so a third party can recover the signer offline without trusting Merit.",
       "endpoint": "/api/verify/paid",
       "method": "POST",
-      "input": { "claim": "string", "source": "string" },
-      "output": "signed Verdict { verdict, score, reason, methods[], grounded, modelVersion, signature }",
-      "price": { "amount": "0.005", "currency": "USDC", "network": "arc-testnet", "note": "default; the 402 response carries the live price" },
+      "input": { "claim": "string", "source": "string", "depth": "numeric | nli | full (optional)" },
+      "output": "signed Verdict { verdict, score, reason, methods[], grounded, gates, signature } + a shareable /v/<id> receipt",
+      "price": { "amount": "0.005", "currency": "USDC", "network": "arc-testnet", "note": "full-depth default; the 402 response carries the live price; numeric/nli tiers cost less" },
       "settlement": "x402 (Circle Gateway) on Arc testnet 5042002",
-      "free_tier": { "endpoint": "/api/verify", "note": "rate-limited, same signed verdict, no metering — for adoption + demos" }
+      "free_tier": { "endpoint": "/api/verify", "note": "rate-limited, same signed verdict, no metering — for adoption + demos" },
+      "prepaid_tier": { "endpoint": "/api/verify/balance", "note": "fund a balance once; billed ONLY for citations that verify — a refused citation costs nothing" },
+      "roi_preflight": { "endpoint": "/api/opportunity", "note": "free: see what you'd pay on a pay-on-retrieval rail vs Merit (refused citations are free) before committing" }
+    },
+    {
+      "id": "creator-citation-toll",
+      "name": "Merit Link — verified citation toll",
+      "description": "Cite a creator and settle real USDC to them — but ONLY if the citation passes the same three-gate verifier. A cited-but-unsupported claim pays nothing. Each settlement is a shareable, signed receipt.",
+      "endpoint": "/api/link/{handle}",
+      "method": "POST",
+      "input": { "claim": "string" },
+      "output": "verdict + settlement (real USDC on Arc when SUPPORTED) + a /v/<id> receipt",
+      "settlement": "x402 (Circle Gateway) on Arc testnet 5042002"
+    },
+    {
+      "id": "verified-procurement",
+      "name": "Verified procurement",
+      "description": "Verify the work, not just pay for it: check that what an external seller DELIVERED supports the claim it was procured for, and firewall sellers that keep delivering unsupported content. See /api/sellers for the reputation ledger.",
+      "endpoint": "/api/procure",
+      "method": "POST",
+      "input": { "url or content": "string", "claim": "string" }
     }
   ],
+  "quality": {
+    "note": "Merit's listing carries a quality signal a pay-on-retrieval seller cannot emit: every verdict is signed and reproducible, every payment is gated on a verified support check, and the whole verification history is a tamper-evident audit chain.",
+    "honestyIndex": "/api/honesty",
+    "benchmark": "/api/benchmark",
+    "liveProof": "/proof.html",
+    "receiptSchema": "merit.cvo/v2 — signed, offline-recoverable; open any /v/<id> receipt",
+    "auditChain": "/api/audit?verify=1 — keccak256 hash chain over every verdict (EU AI Act Art. 12)"
+  },
   "docs": "https://merit-ecru.vercel.app",
-  "mcp": { "tool": "verify_citation", "server": "scripts/mcp-server.mjs" }
+  "mcp": { "server": "server.json", "tools": ["verify_citation", "merit_research"], "run": "node scripts/mcp-server.mjs" }
 }

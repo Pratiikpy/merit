@@ -37,6 +37,12 @@ describe("verification audit log (EU AI Act traceability)", () => {
     expect(entries[0].prevHash).toBe(entries[1].hash); // chained to the prior record
     expect(entries[2].prevHash).toBe("0x" + "0".repeat(64)); // genesis
     expect(entries[0].hash).toMatch(/^0x[0-9a-f]{64}$/);
+
+    // the verified-vs-refused split powers the public /proof ledger's headline honesty number
+    const s = audit.auditStats();
+    expect(s.total).toBe(3);
+    expect(s.supported).toBe(2);
+    expect(s.refused).toBe(1);
   });
 
   it("detects tampering — a mutated past record breaks the chain", async () => {

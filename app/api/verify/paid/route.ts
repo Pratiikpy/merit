@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withGatewaySeller } from "@/lib/seller";
 import { verifyCitation, isVerifyError } from "@/lib/verify/engine";
+import { verifyWithCache, refreshVcacheFromMirror } from "@/lib/vcache";
+import { cardFromVerdict, refreshCardsFromMirror, saveCard } from "@/lib/cards";
 import { recordAuditVerdict, refreshAuditFromMirror } from "@/lib/audit";
 
 export const runtime = "nodejs";
@@ -25,20 +27,33 @@ async function handler(req: NextRequest): Promise<NextResponse> {
   } catch {
     return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
   }
-  const out = await verifyCitation(body.claim ?? "", body.source ?? "");
+  const claim = body.claim ?? "";
+  const source = body.source ?? "";
+  await refreshVcacheFromMirror().catch(() => {});
+  const { outcome: out, cached } = await verifyWithCache(claim, source, () => verifyCitation(claim, source));
   if (isVerifyError(out)) {
     return NextResponse.json({ error: out.error, ...(out.numericOnly ? { numericOnly: true } : {}) }, { status: out.status });
   }
   const v = out.verdict;
-  try {
-    await refreshAuditFromMirror(); // read-your-writes against the durable mirror before appending
-    recordAuditVerdict(v, body.claim ?? ""); // paid verdicts are logged for the compliance export too
-  } catch {
-    /* best-effort */
+  if (!cached) {
+    try {
+      await refreshAuditFromMirror(); // read-your-writes against the durable mirror before appending
+      recordAuditVerdict(v, claim); // paid verdicts are logged for the compliance export too
+    } catch {
+      /* best-effort */
+    }
   }
+  // Mint the shareable, signed receipt INLINE so a paying agent gets a checkable `/v/[id]` permalink with its
+  // verdict — the "pay and get the signed receipt inline" the metered oracle is meant to deliver.
+  await refreshCardsFromMirror().catch(() => {});
+  const card = saveCard(cardFromVerdict(v, { kind: "verify", source, createdAt: new Date().toISOString() }));
+  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
   return NextResponse.json({
     ...v,
     paid: true,
+    cached, // recompute was skipped (same signed verdict) — Merit's margin, the agent still paid for the verdict
+    receiptId: card.id,
+    receiptUrl: `${origin}/v/${card.id}`, // the signed receipt, inline
     by: v.methods.join(" + "),
     settlement: v.grounded
       ? "GROUNDED — a verification-gated payment MAY settle this citation."

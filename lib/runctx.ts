@@ -1,10 +1,16 @@
 /**
- * In-process run context. The lead agent and the specialist endpoints share one
- * Node process (Next API routes), so heavy data (question, sources, answer) lives
- * here keyed by runId — only a tiny `?run=<id>` crosses the x402 wire. The payment
- * is real (buyer → specialist wallet); the work product flows through this store.
+ * Run context shared between the lead agent and the specialist endpoints, keyed by runId — only a tiny
+ * `?run=<id>` crosses the x402 wire; the heavy work product (question, sources, answer, cite) flows through here.
+ *
+ * On a single-process server (`next start`) the in-process Map below is the whole story. On Vercel serverless
+ * the lead and each specialist self-fetch land on DIFFERENT instances, each with its own empty Map — so the
+ * context is ALSO mirrored to the shared store (Supabase). The lead persists the context (awaited) before each
+ * specialist self-fetch; the specialist hydrates it, does its work, persists its output; the lead hydrates the
+ * result back. Postgres is strongly consistent, so the persist→hydrate round-trip is reliable. When the mirror
+ * is disabled (local/tests) hydrate/persist are no-ops and the shared in-process Map serves the whole run.
  */
 import type { Source } from "./registry";
+import { deleteDoc, loadDocFromMirror, saveDocNow } from "./store";
 
 export interface CiteResult {
   cited: boolean; // the answer cites this source (exact tag match)
@@ -58,6 +64,31 @@ export function patchCtx(runId: string, patch: Partial<RunCtx>): void {
   if (e) Object.assign(e.ctx, patch);
 }
 
+const docName = (runId: string) => `runctx_${runId}`;
+
+/** Mirror the current context (awaited) so a specialist endpoint on ANOTHER serverless instance can read it.
+ *  No-op when the mirror is disabled (a single process already shares the Map). */
+export async function persistCtx(runId: string): Promise<void> {
+  const e = ctxs.get(runId);
+  if (e) await saveDocNow(docName(runId), e);
+}
+
+/** patchCtx + persist, so the next specialist self-fetch sees the update across instances. */
+export async function persistPatch(runId: string, patch: Partial<RunCtx>): Promise<void> {
+  patchCtx(runId, patch);
+  await persistCtx(runId);
+}
+
+/** Load the context from the shared mirror into the local Map — an authoritative read that is read-your-writes
+ *  with persistCtx (Postgres strong consistency). A specialist endpoint calls this before reading the context;
+ *  the lead calls it to pick up a specialist's write-back that landed on another instance. No-op when the
+ *  mirror is disabled (single process) or the doc is absent/expired — the local Map then stands. */
+export async function rehydrateCtx(runId: string): Promise<void> {
+  const v = await loadDocFromMirror<{ ctx: RunCtx; at: number }>(docName(runId));
+  if (v && v.ctx && typeof v.at === "number" && Date.now() - v.at <= TTL_MS) ctxs.set(runId, v);
+}
+
 export function deleteCtx(runId: string): void {
   ctxs.delete(runId);
+  void deleteDoc(docName(runId)); // reap the mirror row (best-effort; the run is over)
 }

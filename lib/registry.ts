@@ -9,6 +9,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { effectivePrice } from "./pricing";
 import { learnedTrust } from "./history";
 import { dataDir, saveDoc, ensureHydrating, loadDocFromMirror } from "./store";
+import type { SplitRecipient } from "./splits";
 
 export interface Source {
   id: string;
@@ -32,6 +33,7 @@ export interface Source {
   agentId?: string; // ERC-8004 IdentityRegistry token id, once minted
   balance: number; // lifetime earnings (leaderboard)
   trap?: boolean; // a demo source whose on-topic content CONTRADICTS the claim — only the Auditor catches it
+  splits?: SplitRecipient[]; // #12: a multi-author source distributes a VERIFIED settlement across contributors
 }
 
 // Configurable so a deploy can mount a persistent disk (set MERIT_DATA_DIR); on serverless (Vercel) the cwd
@@ -81,6 +83,12 @@ function seed(): Source[] {
       id: "ledgerlens", name: "Ledger Lens", handle: "@ledgerlens", kind: "Analyst",
       initials: "LL", avatarBg: "#0891B2", merit: 79, price: 0.015, balance: 56.2,
       verified: true,
+      // #12: a multi-author desk — a VERIFIED citation splits 2:1 between the lead analyst and the data author,
+      // strictly downstream of the verify gate (a refused citation splits nothing).
+      splits: [
+        { name: "Ana Reyes (lead analyst)", weight: 2, domain: "ana.ledgerlens.io" },
+        { name: "Ben Cho (data)", weight: 1, domain: "ben.ledgerlens.io" },
+      ],
       content:
         "Sub-cent nanopayments are the fastest-growing payment primitive of 2026. Gas-free batched settlement made amounts as small as $0.000001 economical, opening pay-per-call, pay-per-second and pay-per-citation models that card rails could never support below ~30 cents.",
     }),
@@ -126,6 +134,22 @@ function seed(): Source[] {
 
 let cache: Source[] | null = null;
 
+/** Forward-compat for NEW structural seed FIELDS (e.g. `splits`) added after a registry was persisted: copy a
+ *  missing field from the seed onto the matching existing row, WITHOUT touching accumulated merit/balance/agentId.
+ *  Returns true if anything changed. Keeps demo seed sources current without a full reset. */
+function patchSeedFields(list: Source[]): boolean {
+  const seedById = new Map(seed().map((s) => [s.id, s]));
+  let changed = false;
+  for (const row of list) {
+    const sd = seedById.get(row.id);
+    if (sd?.splits && !row.splits) {
+      row.splits = sd.splits;
+      changed = true;
+    }
+  }
+  return changed;
+}
+
 // Discovered (live-RSS) sources are ephemeral and payable for the duration of a
 // run, but not persisted to the seed registry or the leaderboard.
 const discovered = new Map<string, Source>();
@@ -162,10 +186,9 @@ function ensureLoaded(): Source[] {
     // an existing row, so accumulated merit / balances / agentIds are preserved. Persist if anything changed.
     const have = new Set(cache.map((s) => s.id));
     const missing = seed().filter((s) => !have.has(s.id));
-    if (missing.length) {
-      cache.push(...missing);
-      persist();
-    }
+    if (missing.length) cache.push(...missing);
+    const patched = patchSeedFields(cache); // add any new structural seed field (e.g. splits) to existing rows
+    if (missing.length || patched) persist();
     return cache;
   }
   // No local file. On a serverless + Supabase deploy the durable Supabase copy is the source of truth and
@@ -237,6 +260,29 @@ export function getSource(id: string): Source | undefined {
 }
 
 /**
+ * Resolve a source for a public Merit Link (`/l/<ref>`): match the exact id, a NORMALIZED handle (strip a
+ * leading @, any scheme, and the path so `@chainletter` and `stabledata.xyz` both resolve), or a name slug.
+ * Lets `/l/stabledata`, `/l/@chainletter`, and `/l/stabledata.xyz` all reach the same creator toll-page.
+ */
+export function resolveSourceRef(ref: string): Source | undefined {
+  if (!ref) return undefined;
+  const norm = (s: string) => s.replace(/^@/, "").replace(/^https?:\/\//i, "").split("/")[0].toLowerCase().trim();
+  let key = ref.trim();
+  try {
+    key = decodeURIComponent(key);
+  } catch {
+    /* keep the raw ref if it isn't valid percent-encoding */
+  }
+  const nkey = norm(key);
+  const all = [...ensureLoaded(), ...discovered.values()];
+  return (
+    all.find((s) => s.id.toLowerCase() === key.toLowerCase()) ||
+    all.find((s) => norm(s.handle) === nkey) ||
+    all.find((s) => s.name.toLowerCase().replace(/\s+/g, "") === nkey)
+  );
+}
+
+/**
  * Pull the authoritative registry from the Supabase mirror into the cache so EVERY serverless instance prices
  * a source identically. The x402 seller quotes a merit-gated price on the 402 and re-quotes on the paid request;
  * if a warm instance holds a divergent merit (seed vs persisted), the buyer's signature (for the 402 amount)
@@ -250,6 +296,7 @@ export async function refreshRegistryFromMirror(): Promise<void> {
     const have = new Set(v.map((s) => s.id));
     const missing = seed().filter((s) => !have.has(s.id)); // forward-compat: keep newly-added seed sources
     cache = missing.length ? v.concat(missing) : v;
+    patchSeedFields(cache); // + add any new structural seed field (e.g. splits) to existing rows
   }
 }
 

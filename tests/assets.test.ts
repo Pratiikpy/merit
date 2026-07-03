@@ -37,9 +37,9 @@ describe("lib/assets (USDC default + EURC/CCTP gated drop-ins)", () => {
   });
 
   it("toAtomic uses 6 decimals for both assets", () => {
-    expect(toAtomic(0.01)).toBe(10000n);
-    expect(toAtomic(1.5, "EURC")).toBe(1500000n);
-    expect(toAtomic(-5)).toBe(0n); // clamped
+    expect(toAtomic(0.01)).toBe(BigInt(10000));
+    expect(toAtomic(1.5, "EURC")).toBe(BigInt(1500000));
+    expect(toAtomic(-5)).toBe(BigInt(0)); // clamped
   });
 
   it("cctpConfigured reflects the env (gated)", () => {

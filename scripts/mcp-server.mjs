@@ -57,8 +57,10 @@ const VERIFY_TOOL = {
     "Verify whether a citation is GROUNDED before paying for it. Give Merit's Citation Verification Oracle a " +
     "(claim, source) pair; it runs a deterministic numeric verifier + an adversarial proof-of-citation judge " +
     "and returns a SIGNED, tamper-evident verdict (SUPPORTED/REFUSED) a settlement hook can consume so a " +
-    "hallucinated citation never settles. Read-only, idempotent, spends no USDC. Use it to gate ANY agent's " +
-    "citation payments — including self-report agents whose 'citation' is one LLM grading its own homework.",
+    "hallucinated citation never settles. Read-only, idempotent, spends no USDC, and publishes nothing — your " +
+    "source stays private. (For a shareable `/v/<id>` receipt permalink, use the metered x402 tier at POST " +
+    "/api/verify/paid, or the public tool POST /api/card.) Use it to gate ANY agent's citation payments — " +
+    "including self-report agents whose 'citation' is one LLM grading its own homework.",
   inputSchema: {
     type: "object",
     properties: {
@@ -148,6 +150,9 @@ async function runVerify(args) {
   const claim = String(args.claim || "").trim();
   const source = String(args.source || "").trim();
   if (!claim || !source) throw meritErr("`claim` and `source` are both required (raw text).", false);
+  // Route through /api/verify: the raw signed verdict, READ-ONLY — it neither publishes a public receipt nor
+  // reveals the (possibly private) source anywhere. For a shareable /v/<id> receipt, use the paid tier
+  // (POST /api/verify/paid) or the public tool (POST /api/card), which explicitly mint one.
   const res = await fetch(`${BASE}/api/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -162,6 +167,7 @@ async function runVerify(args) {
     `checked by: ${v.by}`,
     `reasoning: ${v.reasoning}`,
     `settlement: ${v.settlement}`,
+    v.cached ? "served from the verified-citation cache — recompute skipped, same signed verdict" : "",
     v.signature ? `signed verdict — signer ${v.signer}, sig ${String(v.signature).slice(0, 18)}… (re-canonicalize the body to verify offline)` : "",
   ].filter(Boolean).join("\n");
 }

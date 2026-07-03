@@ -86,3 +86,10 @@ TEST-PLAN-INVENTORY.md
 qa-evidence/
 qa-repo-report.md
 qa-a11y-report.md
+
+# private competitive-strategy reference (do not publish)
+docs/COMPETITIVE-LANDSCAPE.md
+docs/MASTER-PLAN.md
+docs/RESEARCH-RAW.md
+docs/ECOSYSTEM-INTEL.md
+docs/FEATURES.md

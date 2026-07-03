@@ -1,0 +1,26 @@
+# Secrets / local env — env is injected from the Vercel dashboard, never from these files.
+.env
+.env.local
+.env*.local
+
+# Local durable state (ephemeral / rebuilt) — never ship.
+.data/
+
+# Internal & private working docs — never ship.
+HUMAN.md
+docs/COMPETITIVE-LANDSCAPE.md
+docs/MASTER-PLAN.md
+docs/RESEARCH-RAW.md
+docs/ECOSYSTEM-INTEL.md
+docs/FEATURES.md
+
+# Self-hosted NLI service local env + model cache.
+nli-server/.venv/
+merit-cvo/.venv/
+
+# Build artifacts — Vercel runs `npm install && npm run build` fresh.
+.next/
+node_modules/
+
+# Scratch / logs.
+*.log

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyCitation, isVerifyError } from "@/lib/verify/engine";
+import { verifyWithCache, refreshVcacheFromMirror } from "@/lib/vcache";
+import { asDepth, depthLayers } from "@/lib/pricing";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { recordAuditVerdict, refreshAuditFromMirror } from "@/lib/audit";
 
@@ -22,7 +24,7 @@ export async function POST(req: Request) {
       { status: gate.status, headers: { "Retry-After": String(Math.ceil((gate.retryMs ?? 3000) / 1000)) } },
     );
   }
-  let body: { claim?: string; source?: string };
+  let body: { claim?: string; source?: string; depth?: string };
   try {
     body = await req.json();
   } catch {
@@ -31,8 +33,17 @@ export async function POST(req: Request) {
 
   // Layered verifier lives in the engine: numeric check needs no LLM, so a fabricated FIGURE is caught even in a
   // keyless deployment; NLI + LLM judge add coverage when configured (see HUMAN.md). Verdicts are signed so a
-  // third party (or a settlement hook) can recover the signer offline without trusting Merit's server.
-  const out = await verifyCitation(body.claim ?? "", body.source ?? "");
+  // third party (or a settlement hook) can recover the signer offline without trusting Merit's server. The
+  // verified-citation cache serves an identical (claim, source) from its already-signed verdict, skipping the
+  // recompute (a changed source hashes differently → re-verifies). The `depth` tier (B6) picks which layers run;
+  // the cache key is depth-scoped so a shallow (numeric/NLI-only) verdict is never served for a full request.
+  const depth = asDepth(body.depth);
+  const { useNLI, useJudge } = depthLayers(depth);
+  const cacheClaim = depth === "full" ? (body.claim ?? "") : `${body.claim ?? ""} [depth:${depth}]`;
+  await refreshVcacheFromMirror().catch(() => {});
+  const { outcome: out, cached } = await verifyWithCache(cacheClaim, body.source ?? "", () =>
+    verifyCitation(body.claim ?? "", body.source ?? "", { useNLI, useJudge }),
+  );
   if (isVerifyError(out)) {
     return NextResponse.json(
       { error: out.error, ...(out.numericOnly ? { numericOnly: true } : {}) },
@@ -41,18 +52,26 @@ export async function POST(req: Request) {
   }
 
   const v = out.verdict;
-  try {
-    await refreshAuditFromMirror(); // read-your-writes: append onto the authoritative log, not a stale cache
-    recordAuditVerdict(v, body.claim ?? ""); // EU AI Act Art.12 traceability — tamper-evident, best-effort
-  } catch {
-    /* the audit log never fails a verdict */
+  if (!cached) {
+    try {
+      await refreshAuditFromMirror(); // read-your-writes: append onto the authoritative log, not a stale cache
+      recordAuditVerdict(v, body.claim ?? ""); // EU AI Act Art.12 traceability — tamper-evident, best-effort
+    } catch {
+      /* the audit log never fails a verdict */
+    }
   }
   return NextResponse.json({
     ...v,
+    cached, // true when served from the verified-citation cache (recompute skipped; same signed verdict)
+    depth, // the verification depth tier that ran (numeric | nli | full)
     by: v.methods.join(" + "), // back-compat alias for the layer(s) that decided
     reasoning: v.reason, // back-compat alias
     settlement: v.grounded
       ? "GROUNDED — a verification-gated payment MAY settle this citation."
       : "NOT GROUNDED — a verification-gated payment MUST REFUSE this citation. (A self-report system would pay it.)",
+    // The self-contained signed receipt: the top level mixes the signed verdict with unsigned presentation
+    // fields (cached/depth/by/reasoning/settlement), so `signed` carries JUST the object the verifier signed.
+    // Recover offline: strip signer/signature, canonicalize the rest, recoverMessageAddress → must equal signer.
+    signed: v,
   });
 }

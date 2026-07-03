@@ -9,6 +9,8 @@ import { listPrincipals } from "./auth";
 import { getSources } from "./registry";
 import { ledgerTotals } from "./ledger";
 import { laborTotals } from "./labor";
+import { cacheStats, type CacheStats } from "./vcache";
+import { guardStatus } from "./guard";
 
 export interface MetricsSnapshot {
   sources: number;
@@ -23,6 +25,10 @@ export interface MetricsSnapshot {
   // The agent-to-agent x402 labor market — real on-chain settlements, NOT judge-gated (kept distinct from the
   // verified creator totals above so it never inflates them).
   agentLabor: { settlements: number; volumeUsdc: number; distinctAgents: number; distinctSpecialists: number };
+  // The verified-citation cache — re-verifications avoided (a true count) + an honestly-labelled cost estimate.
+  cache: CacheStats;
+  // Operator safety guard (public subset): is settlement frozen, and the daily spend vs its cap.
+  guard: { frozen: boolean; spentToday: number; dailyCap: number };
 }
 
 export function snapshotMetrics(): MetricsSnapshot {
@@ -46,5 +52,10 @@ export function snapshotMetrics(): MetricsSnapshot {
     runCount: led.runCount,
     leaderboard: board,
     agentLabor: laborTotals(),
+    cache: cacheStats(),
+    guard: (() => {
+      const g = guardStatus(Date.now());
+      return { frozen: g.frozen, spentToday: g.spentToday, dailyCap: g.dailyCap };
+    })(),
   };
 }

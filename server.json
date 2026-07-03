@@ -1,0 +1,39 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.merit-ecru/merit",
+  "description": "Proof-of-citation verification for AI agents. Verify a (claim, source) before paying for it — a signed, tamper-evident SUPPORTED/REFUSED verdict a settlement hook can consume so a hallucinated citation never settles — or run a full research agent that pays sources only for citations that verify, in sub-cent USDC on Circle's Arc.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://merit-ecru.vercel.app",
+    "source": "web"
+  },
+  "websiteUrl": "https://merit-ecru.vercel.app",
+  "packages": [
+    {
+      "registryType": "local",
+      "identifier": "scripts/mcp-server.mjs",
+      "transport": { "type": "stdio" },
+      "runtimeHint": "node",
+      "environmentVariables": [
+        {
+          "name": "MERIT_BASE",
+          "description": "Base URL of a running Merit server (default http://localhost:3000; the hosted instance is https://merit-ecru.vercel.app).",
+          "isRequired": false,
+          "default": "http://localhost:3000"
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "name": "verify_citation",
+      "description": "Verify whether a citation is GROUNDED before paying for it. Give a (claim, source) pair; get back a SIGNED, tamper-evident verdict (SUPPORTED/REFUSED) from a deterministic numeric verifier + NLI + an adversarial LLM judge. Read-only, idempotent, spends no USDC, publishes nothing. Gate ANY agent's citation payments with it — including self-report agents whose 'citation' is one LLM grading its own homework.",
+      "readOnly": true
+    },
+    {
+      "name": "merit_research",
+      "description": "Ask Merit a question with a USDC budget: it hires specialist sub-agents, writes a cited answer, verifies each citation with an adversarial proof-of-citation judge, pays only the sources actually used (sub-cent USDC on Arc) and refuses the rest, and records on-chain ERC-8004 reputation. Returns the answer plus a receipt. SPENDS real USDC and is NOT idempotent.",
+      "readOnly": false
+    }
+  ]
+}

@@ -93,6 +93,34 @@ export function saveDoc(name: string, obj: unknown, opts?: { mirror?: boolean })
   if (opts?.mirror !== false) scheduleMirror(name, obj);
 }
 
+/** Like saveDoc, but AWAITS the mirror upsert instead of deferring it via after(). Use when a DIFFERENT
+ *  serverless instance must read the write immediately in the same wall-clock window — e.g. the run context
+ *  the lead agent hands to a specialist endpoint on another instance mid-run (after() would only flush when
+ *  the lead's SSE response closes, far too late). Postgres is strongly consistent, so a subsequent
+ *  loadDocFromMirror (authoritative read) is read-your-writes with this upsert. No-op mirror when disabled. */
+export async function saveDocNow(name: string, obj: unknown): Promise<void> {
+  saveDoc(name, obj, { mirror: false }); // atomic local write, no deferred mirror
+  await mirrorSave(name, obj); // awaited — completes before the caller's next await
+}
+
+/** Best-effort delete of a document locally + in the Supabase mirror (used to reap ephemeral run contexts so
+ *  the mirror table doesn't accumulate one row per run forever). Never throws into a caller. */
+export async function deleteDoc(name: string): Promise<void> {
+  try {
+    fs.rmSync(docPath(name), { force: true });
+  } catch {
+    /* local file may not exist */
+  }
+  if (!mirrorEnabled()) return;
+  const c = db();
+  if (!c) return;
+  try {
+    await c.from("merit_documents").delete().eq("name", name);
+  } catch (e) {
+    console.error(`[store] delete ${name} failed:`, (e as Error).message);
+  }
+}
+
 /** Schedule the Supabase mirror so it actually completes on serverless. On Vercel the function FREEZES the
  *  instant the response is sent — a bare `void mirrorSave()` is cut off before its upsert flushes (this is why
  *  the live mirror silently never landed). `after()` keeps the function alive until the mirror finishes. Outside

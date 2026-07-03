@@ -57,10 +57,10 @@
   #proof-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;}
   [data-card]{transition:transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .2s cubic-bezier(.2,.7,.2,1);}
   [data-card]:hover{transform:translateY(-3px);box-shadow:0 18px 40px -14px rgba(16,24,40,.22)!important;}
-  @media(max-width:980px){#hero-grid{grid-template-columns:1fr;gap:36px;}#demo-grid{grid-template-columns:1fr;}#how-grid,#feat-grid{grid-template-columns:1fr 1fr;}#prob-grid,#persona-grid{grid-template-columns:1fr;}#proof-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:980px){#hero-grid{grid-template-columns:1fr;gap:36px;}#demo-grid{grid-template-columns:1fr;}#how-grid,#feat-grid{grid-template-columns:1fr 1fr;}#prob-grid,#persona-grid{grid-template-columns:1fr;}#proof-grid{grid-template-columns:1fr 1fr;}#ref-grid{grid-template-columns:1fr !important;gap:36px;}}
   #nav-menu-btn{display:none;}
   @media(max-width:900px){#nav-links{display:none!important;}#nav-menu-btn{display:inline-flex!important;}#nav-links.open{display:flex!important;position:absolute;top:58px;right:12px;left:12px;flex-direction:column;align-items:stretch;background:#fff;border:1px solid #ECECEE;border-radius:12px;padding:8px;gap:2px;box-shadow:0 14px 34px -12px rgba(16,24,40,.28);z-index:50;}#nav-links.open a{padding:11px 12px;}}
-  @media(max-width:600px){#how-grid,#feat-grid{grid-template-columns:1fr;}#merit-h1{font-size:42px!important;}}
+  @media(max-width:600px){#how-grid,#feat-grid{grid-template-columns:1fr;}#merit-h1{font-size:42px!important;}#nav-earn-link{display:none;}}
 </style>
 </head>
 <body>
@@ -72,16 +72,18 @@
       <span style="font-weight:700;font-size:19px;letter-spacing:-.02em;">Merit</span>
     </a>
     <div id="nav-links" style="display:flex;align-items:center;gap:4px;">
-      <a href="#how" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">How it works</a>
-      <a href="#demo" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">Live demo</a>
-      <a href="#features" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">Features</a>
-      <a href="#creators" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">For creators</a>
-      <a href="/break.html" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">Break it ↗</a>
-      <a href="/honesty.html" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 12px;border-radius:8px;">Honesty index ↗</a>
+      <a href="#how" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 10px;border-radius:8px;">How it works</a>
+      <a href="#demo" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 10px;border-radius:8px;">Live demo</a>
+      <a href="#features" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 10px;border-radius:8px;">Features</a>
+      <a href="#creators" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 10px;border-radius:8px;">For creators</a>
+      <a href="/verify.html" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 10px;border-radius:8px;">Verify a claim ↗</a>
+      <a href="/proof.html" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 10px;border-radius:8px;">Live ledger ↗</a>
+      <a href="/break.html" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 10px;border-radius:8px;">Break it ↗</a>
+      <a href="/honesty.html" style="font-size:14px;font-weight:500;color:#52525B;padding:8px 10px;border-radius:8px;">Honesty index ↗</a>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       <button id="nav-menu-btn" aria-label="Open menu" aria-expanded="false" style="cursor:pointer;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid #E4E4E7;background:#fff;border-radius:9px;font-size:17px;color:#0A0A0A;">☰</button>
-      <a href="#creators" style="font-size:14px;font-weight:600;color:#0A0A0A;padding:9px 12px;">Become earnable</a>
+      <a id="nav-earn-link" href="#creators" style="font-size:14px;font-weight:600;color:#0A0A0A;padding:9px 12px;">Become earnable</a>
       <a href="#demo" data-card class="btn-primary" style="font-size:14px;font-weight:600;color:#fff;background:#0A0A0A;padding:9px 16px;border-radius:9px;box-shadow:0 1px 2px rgba(16,24,40,.1),0 2px 8px rgba(10,10,10,.28);">Run the demo</a>
     </div>
   </nav>
@@ -379,7 +381,7 @@
     <div style="display:flex;gap:56px;flex-wrap:wrap;">
       <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">Product</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="#how">How it works</a><a href="#demo">Live demo</a><a href="#features">Features</a></div></div>
       <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">People</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="#creators">For creators</a><a href="#creators">For developers</a></div></div>
-      <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">Proof &amp; tools</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="/break.html">Break the verifier ↗</a><a href="/honesty.html">Citation honesty index ↗</a><a href="/benchmark.html">Benchmark ↗</a><a href="/onboard.html">Onboard your feed ↗</a><a href="/passport.html">Domain passport ↗</a></div></div>
+      <div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6B7280;margin-bottom:12px;">Proof &amp; tools</div><div style="display:flex;flex-direction:column;gap:9px;font-size:14px;color:#52525B;"><a href="/verify.html">Verify a claim ↗</a><a href="/proof.html">Live ledger (proof) ↗</a><a href="/break.html">Break the verifier ↗</a><a href="/honesty.html">Citation honesty index ↗</a><a href="/benchmark.html">Benchmark ↗</a><a href="/onboard.html">Onboard your feed ↗</a><a href="/passport.html">Domain passport ↗</a></div></div>
     </div>
   </div>
   <div class="mono" style="max-width:1200px;margin:28px auto 0;border-top:1px solid #ECECEE;padding-top:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;color:#6B7280;">

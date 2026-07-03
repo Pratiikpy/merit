@@ -26,6 +26,14 @@ export const ENGINE_VERSION = "merit-verify/0.1.0";
 
 export type VerifyMethod = "injection-guard" | "numeric" | "nli" | "llm-judge";
 
+/** Per-gate breakdown — what each of the three verifiers found. Surfaced so a receipt/tool can SHOW the moat
+ *  (numeric + NLI + adversarial judge), not just a final verdict. `ran:false` = that gate didn't fire this run. */
+export interface GateBreakdown {
+  numeric: { ran: boolean; pass: boolean; detail: string };
+  nli: { ran: boolean; score: number | null; pass: boolean | null; detail: string };
+  judge: { ran: boolean; verdict: "support" | "refute" | null; reason: string };
+}
+
 export interface Verdict {
   schema: "merit.cvo/v2";
   engineVersion: string;
@@ -38,6 +46,7 @@ export interface Verdict {
   reason: string;
   modelTag: string;
   verifiedAt: string;
+  gates?: GateBreakdown; // what each of the three verifiers found (for a shareable, moat-visible receipt)
   // signature fields (best-effort; present only if a signer wallet is configured)
   signer?: string;
   signature?: string;
@@ -66,6 +75,10 @@ export interface VerifyOptions {
   /** STRICT dual-gate: SUPPORTED only if EVERY available model leg (NLI + judge) confirms support; any that
    *  doesn't → REFUSED. Higher precision at a measured over-refusal cost. Defaults to env MERIT_STRICT_GATE=1. */
   strict?: boolean;
+  /** Run the adversarial LLM judge (default true). Set false for a shallower, cheaper depth tier: with NLI it
+   *  decides by the factual-consistency score alone; without NLI it reduces to the deterministic numeric screen
+   *  (a non-numeric claim then returns the honest "needs a model" 503). Reuses the judge-unavailable fallback. */
+  useJudge?: boolean;
   /** Skip signing (e.g. in tests). */
   sign?: boolean;
 }
@@ -93,14 +106,25 @@ export async function verifyCitation(
   const methods: VerifyMethod[] = ["injection-guard"];
   const high = opts.high ?? 0.75;
   const low = opts.low ?? 0.25;
+  const useJudge = opts.useJudge ?? true; // depth tier: false → shallower/cheaper (NLI-only or numeric-only)
 
   let verdict: "SUPPORTED" | "REFUSED" | null = null;
   let score: number | null = null;
   let reason = "";
+  const gates: GateBreakdown = {
+    numeric: { ran: false, pass: false, detail: "" },
+    nli: { ran: false, score: null, pass: null, detail: "" },
+    judge: { ran: false, verdict: null, reason: "" },
+  };
 
   // Layer 1 — deterministic numeric verifier (no model).
   const fab = fabricatedFigures(claim, source);
   methods.push("numeric");
+  gates.numeric = {
+    ran: true,
+    pass: fab.length === 0,
+    detail: fab.length ? `the claim asserts ${fab.map((f) => f.raw).join(", ")}, which the source contradicts` : "no fabricated figures — every number in the claim checks out against the source",
+  };
   if (fab.length > 0) {
     verdict = "REFUSED";
     score = 0;
@@ -120,13 +144,20 @@ export async function verifyCitation(
       if (s !== null) {
         score = s;
         methods.push("nli");
-        legs.push(s >= high ? "support" : "fail"); // strict: only a high-confidence NLI score counts as support
+        const pass = s >= high; // strict: only a high-confidence NLI score counts as support
+        gates.nli = { ran: true, score: s, pass, detail: `factual-consistency score ${s.toFixed(3)} ${pass ? "≥" : "<"} ${high} support bar` };
+        legs.push(pass ? "support" : "fail");
       }
     }
-    const j = await judgeCitation(claim, source);
+    const j = useJudge ? await judgeCitation(claim, source) : null;
     if (j !== null) {
       methods.push("llm-judge");
       const refuted = j === "unclear" || (typeof j === "object" && (j as { refuted?: boolean }).refuted);
+      gates.judge = {
+        ran: true,
+        verdict: refuted ? "refute" : "support",
+        reason: (typeof j === "object" && (j as { reason?: string }).reason) || (refuted ? "the source does not clearly support the claim" : "the source supports the claim"),
+      };
       legs.push(refuted ? "fail" : "support");
     }
     if (legs.length === 0) {
@@ -150,6 +181,8 @@ export async function verifyCitation(
     score = await scoreNLI(claim, source);
     if (score !== null) {
       methods.push("nli");
+      const nliPass = score >= high ? true : score <= low ? false : null; // null = borderline → judge decides
+      gates.nli = { ran: true, score, pass: nliPass, detail: `factual-consistency score ${score.toFixed(3)} (support ≥ ${high}, refuse ≤ ${low})` };
       if (score >= high) {
         verdict = "SUPPORTED";
         reason = `Source supports the claim (factual-consistency score ${score.toFixed(3)} ≥ ${high}).`;
@@ -163,7 +196,7 @@ export async function verifyCitation(
 
   // Layer 3 — adversarial LLM judge (borderline, or when no numeric/NLI decision).
   if (verdict === null) {
-    const j = await judgeCitation(claim, source);
+    const j = useJudge ? await judgeCitation(claim, source) : null;
     if (j === null) {
       // No judge available (keyless demo). If NLI gave a (borderline) score, decide by the midpoint so we still
       // return a verdict; otherwise this is genuinely undecidable without a model — surface it honestly.
@@ -185,6 +218,7 @@ export async function verifyCitation(
       reason =
         (typeof j === "object" && (j as { reason?: string }).reason) ||
         (j === "unclear" ? "the source does not clearly support the claim" : "the source supports the claim");
+      gates.judge = { ran: true, verdict: refuted ? "refute" : "support", reason };
     }
   }
 
@@ -201,6 +235,7 @@ export async function verifyCitation(
     reason,
     modelTag: nliModelTag(),
     verifiedAt: new Date().toISOString(),
+    gates,
   };
 
   if (opts.sign !== false) {

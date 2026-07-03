@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verify a claim — Merit</title>
+<meta name="description" content="Paste a claim and a source. Merit runs a deterministic numeric check, a factual-consistency (NLI) gate, and an adversarial judge — and tells you whether the source actually supports it. Every check is a shareable, signed receipt.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Verify a claim — Merit">
+<meta property="og:description" content="Does the source actually support the claim? Three gates decide — numeric, factual-consistency, and an adversarial judge. Get a shareable, signed receipt.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:680px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  nav a.back{font-size:14px;color:#6B7280;text-decoration:none;font-weight:600;}
+  nav a.back:hover{color:#0A0A0A;}
+  h1{font-size:40px;line-height:1.05;letter-spacing:-.03em;margin:46px 0 14px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 26px;}
+  .card{border:1px solid #ECECEE;border-radius:16px;padding:22px;box-shadow:0 1px 2px rgba(10,10,10,.04);}
+  .lbl{font-size:13px;font-weight:700;margin-bottom:8px;}
+  .ex{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+  .exbtn{text-align:left;border:1px solid #E4E4E7;background:#FAFAFA;border-radius:10px;padding:11px 14px;cursor:pointer;font-family:inherit;font-size:14px;color:#374151;transition:background .12s;}
+  .exbtn:hover{background:#F3F4F6;}
+  .exbtn b{color:#0A0A0A;}
+  textarea,input{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid #D1D5DB;border-radius:10px;outline:none;}
+  textarea{resize:vertical;min-height:60px;margin-bottom:12px;}
+  textarea:focus,input:focus{border-color:#0A0A0A;}
+  .hint{font-size:12.5px;color:#6B7280;margin:-6px 0 12px;}
+  .row{display:flex;gap:10px;align-items:center;}
+  button.go{font-family:inherit;font-weight:700;font-size:15px;padding:11px 22px;border:0;border-radius:10px;background:#0A0A0A;color:#fff;cursor:pointer;white-space:nowrap;}
+  button.go:hover{opacity:.88;} button.go:disabled{opacity:.5;}
+  #out{margin-top:16px;display:none;}
+  .stamp{display:flex;align-items:center;gap:12px;border-radius:14px;padding:16px 18px;margin-bottom:14px;}
+  .stamp.sup{border:1px solid #A7F3D0;background:#ECFDF5;}
+  .stamp.ref{border:1px solid #FECDD3;background:#FFF1F2;}
+  .stamp .ic{width:38px;height:38px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;}
+  .stamp.sup .ic{background:#047857;} .stamp.ref .ic{background:#BE123C;}
+  .stamp .t{font-size:19px;font-weight:800;letter-spacing:-.01em;}
+  .stamp.sup .t{color:#065F46;} .stamp.ref .t{color:#9F1239;}
+  .stamp .r{font-size:13px;color:#4B5563;margin-top:2px;}
+  .gates{display:flex;flex-direction:column;gap:8px;}
+  .gate{display:flex;align-items:flex-start;gap:11px;border:1px solid #ECECEE;border-radius:11px;padding:11px 13px;}
+  .gate .chip{flex:none;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;margin-top:1px;}
+  .chip.pass{background:#DCFCE7;color:#047857;} .chip.fail{background:#FEE2E2;color:#BE123C;} .chip.na{background:#F3F4F6;color:#6B7280;}
+  .gate .gname{font-size:13.5px;font-weight:700;}
+  .gate .gd{font-size:12.5px;color:#4B5563;margin-top:2px;}
+  .share{margin-top:14px;border-top:1px solid #ECECEE;padding-top:14px;}
+  .share .u{display:flex;gap:8px;align-items:center;}
+  .share input{font-size:12.5px;background:#FAFAFA;color:#374151;}
+  .share button{font-family:inherit;font-weight:600;font-size:13px;padding:9px 14px;border:1px solid #E4E4E7;background:#fff;border-radius:9px;cursor:pointer;white-space:nowrap;}
+  .meta{font-size:12px;color:#6B7280;margin-top:10px;}
+  .meta code{background:#F3F4F6;padding:1px 5px;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+  .err{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:14px;color:#374151;font-size:14px;}
+  .why{margin:30px 0;padding:18px 20px;border-left:3px solid #0A0A0A;background:#FAFAFA;border-radius:0 10px 10px 0;font-size:15px;}
+  footer{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:36px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <a class="back" href="/">← back to demo</a>
+  </nav>
+
+  <main>
+  <h1>Does the source actually support the claim?</h1>
+  <p class="sub">Paste a claim and a source — text or a link. Merit runs three independent gates and tells you the truth: a deterministic numeric check, a factual-consistency (NLI) score, and an adversarial judge. You get a <strong>shareable, signed receipt</strong>.</p>
+
+  <div class="card">
+    <div class="lbl">Try one</div>
+    <div class="ex" id="examples">
+      <button class="exbtn" data-c="StableData reported $40 trillion in annualized settlement volume in 2026." data-s="The StableData index shows cross-border B2B stablecoin settlement reached $4.1 trillion in annualized volume in 2026.">❌ A <b>fabricated figure</b> — claim says $40T, source says $4.1T &nbsp;<span style="color:#6B7280">(numeric gate catches it, no LLM)</span></button>
+      <button class="exbtn" data-c="The Eiffel Tower is located in Paris." data-s="The Eiffel Tower is a wrought-iron lattice tower and landmark located in Paris, France.">✓ A <b>supported</b> claim &nbsp;<span style="color:#6B7280">(all gates confirm)</span></button>
+      <button class="exbtn" data-c="The Eiffel Tower is located in Berlin." data-s="The Eiffel Tower is a wrought-iron lattice tower and landmark located in Paris, France.">❌ A <b>contradiction</b> — cited source says the opposite &nbsp;<span style="color:#6B7280">(only the judge + NLI catch this)</span></button>
+    </div>
+
+    <div class="lbl">Or check your own</div>
+    <textarea id="claim" aria-label="The claim to verify" placeholder="The claim to check — e.g. a sentence an AI answer asserts."></textarea>
+    <textarea id="source" aria-label="The source text or a URL" placeholder="The source — paste the passage, or paste a URL (https://…) and Merit reads it."></textarea>
+    <div class="hint">Paste a passage, or a link — Merit fetches and reads the page.</div>
+    <div class="row"><button class="go" id="go">Verify the claim</button></div>
+    <div id="out" role="status" aria-live="polite"></div>
+  </div>
+
+  <div class="why"><b>Why this is different:</b> most "citation" tools pay or trust a source the moment it's <em>retrieved</em>. Merit refuses a citation that doesn't actually hold up — the numeric gate re-checks every figure, the NLI gate scores entailment, and the adversarial judge tries to break it. A claim only passes if the source really supports it.</div>
+
+  <div class="card" style="margin:30px 0;">
+    <div class="lbl">Turn verification into payment — Merit Links</div>
+    <p style="font-size:14px;color:#4B5563;margin:6px 0 15px;">Every creator on Merit has a <b>Merit Link</b>: a public citation toll you can share, embed, or show as a QR. Cite the creator there and Merit settles real USDC on Arc — but only for a citation that passes these same three gates.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <a class="exbtn" style="text-decoration:none;flex:0 0 auto;" href="/l/stabledata">StableData API →</a>
+      <a class="exbtn" style="text-decoration:none;flex:0 0 auto;" href="/l/ortiz">Dr. Lena Ortiz →</a>
+      <a class="exbtn" style="text-decoration:none;flex:0 0 auto;" href="/l/ledgerlens">Ledger Lens →</a>
+    </div>
+  </div>
+  </main>
+
+  <footer>Merit — proof-of-citation. Every check is signed and logged. Build on it: <a href="/api/verify" class="mono" style="text-decoration:underline">POST /api/verify</a></footer>
+</div>
+
+<script>
+(function(){
+  var claim=document.getElementById('claim'),source=document.getElementById('source'),go=document.getElementById('go'),out=document.getElementById('out');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function show(html){out.innerHTML=html;out.style.display='block';}
+  function gateRow(name,state,detail){
+    var chip = state==='pass' ? '<span class="chip pass">PASS</span>' : state==='fail' ? '<span class="chip fail">FAIL</span>' : '<span class="chip na">—</span>';
+    return '<div class="gate">'+chip+'<div><div class="gname">'+esc(name)+'</div><div class="gd">'+esc(detail)+'</div></div></div>';
+  }
+  function render(r){
+    var sup = r.verdict==='SUPPORTED';
+    var g = r.gates || {};
+    var rows='';
+    // numeric
+    if(g.numeric && g.numeric.ran) rows+=gateRow('Deterministic numeric verifier', g.numeric.pass?'pass':'fail', g.numeric.detail);
+    else rows+=gateRow('Deterministic numeric verifier','na','no numbers to check in this claim');
+    // nli
+    if(g.nli && g.nli.ran){ var st = g.nli.pass===true?'pass':g.nli.pass===false?'fail':'na'; rows+=gateRow('Factual-consistency (NLI) gate', st, g.nli.detail); }
+    else rows+=gateRow('Factual-consistency (NLI) gate','na','not run on this deployment');
+    // judge
+    if(g.judge && g.judge.ran) rows+=gateRow('Adversarial LLM judge', g.judge.verdict==='support'?'pass':'fail', g.judge.reason);
+    else rows+=gateRow('Adversarial LLM judge','na','not run (keyless) — a fabricated figure is still caught deterministically');
+    var permalink = r.url || '';
+    var share = permalink ? '<div class="share"><div class="lbl" style="margin-bottom:8px">Shareable, signed receipt</div><div class="u"><input class="mono" id="perma" readonly value="'+esc(permalink)+'"><button id="copy">Copy</button><a href="/v/'+esc(r.id)+'" style="text-decoration:none"><button>Open ↗</button></a></div></div>' : '';
+    var cachedNote = r.cached ? '<div class="meta">⚡ Served from the <b>verified-citation cache</b> — this exact claim + source was proven before, so the recompute was skipped (the signed verdict is unchanged; it re-verifies automatically if the source changes).</div>' : '';
+    var signer = r.card && r.card.signer ? '<div class="meta">Signed by <code>'+esc(r.card.signer)+'</code> · verifier <code>'+esc((r.card.modelTag)||'—')+'</code> · recover the signer offline from the receipt.</div>' : '';
+    show('<div class="stamp '+(sup?'sup':'ref')+'"><div class="ic">'+(sup?'✓':'✕')+'</div><div><div class="t">'+(sup?'SUPPORTED':'REFUSED')+'</div><div class="r">'+esc(r.card?r.card.reason:'')+'</div></div></div>'
+      + '<div class="gates">'+rows+'</div>' + share + cachedNote + signer);
+    var cp=document.getElementById('copy'); if(cp) cp.addEventListener('click',function(){ var p=document.getElementById('perma'); p.select(); try{document.execCommand('copy');}catch(e){} navigator.clipboard&&navigator.clipboard.writeText(p.value); cp.textContent='Copied'; setTimeout(function(){cp.textContent='Copy';},1400); });
+  }
+  async function verify(){
+    var c=claim.value.trim(), s=source.value.trim();
+    if(!c){ claim.focus(); claim.style.borderColor='#FB7185'; setTimeout(function(){claim.style.borderColor='';},1600); return; }
+    if(!s){ source.focus(); source.style.borderColor='#FB7185'; setTimeout(function(){source.style.borderColor='';},1600); return; }
+    go.disabled=true; go.textContent='Verifying…'; out.style.display='none';
+    var payload={claim:c}; if(/^https?:\/\//i.test(s)) payload.sourceUrl=s; else payload.source=s;
+    try{
+      var res=await fetch('/api/card',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+      var r=await res.json();
+      if(res.status===503){ show('<div class="err">The adversarial <b>LLM judge</b> is resting (this instance is keyless). The <b>deterministic numeric gate</b> never sleeps — try a claim with a fabricated <b>number</b> (like the first example) and watch it get caught.</div>'); return; }
+      if(!res.ok){ show('<div class="err">'+esc(r.error||('error '+res.status))+'</div>'); return; }
+      render(r);
+    }catch(e){ show('<div class="err">Could not reach the verifier.</div>'); }
+    finally{ go.disabled=false; go.textContent='Verify the claim'; }
+  }
+  document.getElementById('examples').addEventListener('click',function(e){ var b=e.target.closest('.exbtn'); if(!b)return; claim.value=b.dataset.c; source.value=b.dataset.s; verify(); });
+  go.addEventListener('click',verify);
+  source.addEventListener('keydown',function(e){ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)) verify(); });
+})();
+</script>
+</body>
+</html>

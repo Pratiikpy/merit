@@ -113,6 +113,14 @@ export function auditCount(): number {
   return load().entries.length;
 }
 
+/** The verified-vs-refused split across the whole log — the headline honesty stat for the public proof ledger. */
+export function auditStats(): { total: number; supported: number; refused: number } {
+  const e = load().entries;
+  let supported = 0;
+  for (const x of e) if (x.verdict === "SUPPORTED") supported++;
+  return { total: e.length, supported, refused: e.length - supported };
+}
+
 /** Re-derive every hash and check the chain links — proves the log is untampered. */
 export function verifyAuditChain(): { valid: boolean; length: number; brokenAt: number | null } {
   const entries = load().entries;

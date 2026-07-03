@@ -14,7 +14,7 @@ export async function GET() {
   // FIRST (hydrateDoc is a no-op once the local file exists, so warm instances pay nothing) — then every
   // /api/metrics response carries the real persisted totals, including the agent-labor market.
   if (ephemeralStore()) {
-    await Promise.all(["ledger", "history", "registry", "agentlabor"].map((n) => hydrateDoc(n).catch(() => false)));
+    await Promise.all(["ledger", "history", "registry", "agentlabor", "vcache", "guard"].map((n) => hydrateDoc(n).catch(() => false)));
   }
   return NextResponse.json(snapshotMetrics());
 }

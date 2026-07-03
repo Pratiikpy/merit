@@ -15,6 +15,7 @@ import { signReceipt } from "./receipt";
 import { round6, isStub, ARC } from "./arc";
 import { decideVerdict, releaseMerit, refundMerit, repScore, reasonFor, counterfactualFor, gradeSpecialist, withinBudget, crewMerit, summarizeRelease, gradedNano, type ReasonKind } from "./scoring";
 import { recordSettlement, learnedTrust } from "./history";
+import { recordSpend, refreshGuardFromMirror, releaseReservation, reserveSpend } from "./guard";
 import { calibratedConfidence, confidenceMultiplier } from "./learn";
 import { settleViaHook } from "./job";
 import { recordLedgerSettlement } from "./ledger";
@@ -26,7 +27,7 @@ import { sourceAllowed, releaseHold, type RunPolicy } from "./policy";
 import { resolveSourceContent } from "./providers";
 import { adaptersPass } from "./adapters";
 import { getSpecialists, pickSpecialist, recordJob, setSpecialistAgentId, specialistView, type Specialist } from "./specialists";
-import { createCtx, getCtx, patchCtx, deleteCtx } from "./runctx";
+import { createCtx, getCtx, patchCtx, persistCtx, rehydrateCtx, deleteCtx } from "./runctx";
 import { randomBytes } from "node:crypto";
 
 export type Emit = (event: string, data: unknown) => Promise<void> | void;
@@ -87,6 +88,9 @@ export async function runAgent(
   // not be predictable (no Math.random / timestamp guessing).
   const runId = "run_" + randomBytes(16).toString("hex");
   createCtx(runId, { question, budget, discover: !!opts?.discover });
+  // Mirror the fresh context (awaited) so the first specialist self-fetch — which on serverless lands on a
+  // DIFFERENT instance — can read it. No-op on a single-process server.
+  await persistCtx(runId);
   const ledger: Ledger = { escrowed: 0, released: 0, refunded: 0, nano: 0, labor: 0 };
   // Specialists the lead hires this run — graded + paid after verification.
   // `delivered` = the specialist's own work endpoint succeeded (else the lead did it
@@ -98,6 +102,9 @@ export async function runAgent(
   // Creator releases the budget guard held back (distinct from a settle that FAILED) — so the receipt
   // can give a deliberate budget hold its own reason instead of mislabeling it "settlement failed".
   const budgetHeld = new Set<string>();
+  // The specific reason a source was held (budget vs operator-guard freeze/cap vs policy) — so the run receipt
+  // states the true cause instead of collapsing every deliberate hold to "Budget reached".
+  const heldReason = new Map<string, string>();
 
   try {
     // ---- 1. DISCOVER — hire a search specialist to assemble the source pool ----
@@ -108,6 +115,7 @@ export async function runAgent(
       const delivered = await hireWork(base, runId, searcher);
       crew.push({ spec: searcher, ok: false, delivered });
     }
+    await rehydrateCtx(runId); // pick up the search specialist's write-back (it ran on another instance)
     let sources = getCtx(runId)?.sources ?? [];
     if (sources.length === 0) {
       // fallback so a specialist hiccup never breaks a run
@@ -131,6 +139,7 @@ export async function runAgent(
       }),
     );
     patchCtx(runId, { sources: ranked });
+    await persistCtx(runId); // so the write specialist (another instance) reads the ranked, live-fetched pool
     for (let i = 0; i < ranked.length; i++) {
       await emit("source", { index: i, status: "discovered", source: publicView(ranked[i]) });
       await sleep(220);
@@ -177,9 +186,11 @@ export async function runAgent(
       const delivered = await hireWork(base, runId, writer);
       crew.push({ spec: writer, ok: false, delivered });
     }
+    await rehydrateCtx(runId); // pick up the write specialist's answer (it ran on another instance)
     let answer = getCtx(runId)?.answer ?? "";
     if (!answer) answer = await writeAnswer(question, ranked, writer?.tier); // fallback (match the hired writer's tier)
     patchCtx(runId, { answer });
+    await persistCtx(runId); // so the verify specialist reads the final answer + ranked sources
     const segments = parseSegments(answer);
     await emit("answer", { segments });
     await sleep(450);
@@ -196,6 +207,7 @@ export async function runAgent(
     await sleep(350);
     await emit("phase", { phase: "verify", stepIndex: 4 });
 
+    await rehydrateCtx(runId); // pick up the verify specialist's proof-of-citation (it ran on another instance)
     let cite = getCtx(runId)?.cite ?? {};
     if (Object.keys(cite).length === 0) {
       // fallback: compute proof-of-citation inline (answer embedded once, scored in parallel)
@@ -394,21 +406,41 @@ export async function runAgent(
       let tx = "";
       let onchain = false;
       if (c.ok) {
-        if (!isStub()) await ensureDeposit(Math.max(0.5, budget), "1");
-        try {
-          const r = await payOnce(`${base}/api/agent/${c.spec.id}/pay`, c.spec.price);
-          if (r.transaction) {
-            paid = true;
-            tx = r.transaction;
-            onchain = r.onchain;
-            // Credit the amount that actually settled, not just the authorized price.
-            const credited = r.stub ? c.spec.price : r.amount || c.spec.price;
-            ledger.labor = round6(ledger.labor + credited);
-            // Quality-weighted reputation: the writer earns more for more released citations.
-            recordJob(c.spec.id, { ok: true, earned: credited, meritDelta: crewMerit(c.spec.role, releaseCount) });
+        // The operator guard is the second predicate on the LABOR leg too (Wave C #8 fix) — a freeze / daily cap
+        // / velocity breaker holds a specialist payment exactly like a creator settlement. Real spend only
+        // (stub moves no USDC, so it's not guarded). Reserve before the on-chain await to stay atomic.
+        let labRes: { ok: boolean; reason?: string; id?: string } = { ok: true };
+        if (!isStub()) {
+          await refreshGuardFromMirror().catch(() => {});
+          labRes = reserveSpend(c.spec.price, Date.now());
+        }
+        if (!labRes.ok) {
+          console.error(`[agent] specialist ${c.spec.id} payment held by guard: ${labRes.reason}`);
+        } else {
+          if (!isStub()) await ensureDeposit(Math.max(0.5, budget), "1");
+          try {
+            const r = await payOnce(`${base}/api/agent/${c.spec.id}/pay`, c.spec.price);
+            if (r.transaction) {
+              paid = true;
+              tx = r.transaction;
+              onchain = r.onchain;
+              // Credit the amount that actually settled, not just the authorized price.
+              const credited = r.stub ? c.spec.price : r.amount || c.spec.price;
+              ledger.labor = round6(ledger.labor + credited);
+              // Reconcile the guard reservation to the ACTUAL real spend (release the estimate, record the charge).
+              if (!isStub() && labRes.id) {
+                releaseReservation(labRes.id);
+                recordSpend(credited, Date.now());
+              }
+              // Quality-weighted reputation: the writer earns more for more released citations.
+              recordJob(c.spec.id, { ok: true, earned: credited, meritDelta: crewMerit(c.spec.role, releaseCount) });
+            } else if (labRes.id) {
+              releaseReservation(labRes.id); // no settlement landed → free the reservation
+            }
+          } catch (e) {
+            if (labRes.id) releaseReservation(labRes.id); // settle threw → free the reservation
+            console.error(`[agent] specialist pay failed for ${c.spec.id}:`, (e as Error).message);
           }
-        } catch (e) {
-          console.error(`[agent] specialist pay failed for ${c.spec.id}:`, (e as Error).message);
         }
       }
       c.paid = paid; // record the REAL payment result for the run receipt — not the grade (c.ok)
@@ -457,6 +489,7 @@ export async function runAgent(
     if (releases.length > 0 && !isStub()) {
       await ensureDeposit(Math.max(0.5, budget), "1");
     }
+    await refreshGuardFromMirror().catch(() => {}); // read-your-writes on the operator freeze / daily-cap before settling
 
     // Start the creator budget from what the crew already cost — so labor + creator
     // payouts together never exceed the user's budget (the whole-run invariant).
@@ -475,6 +508,7 @@ export async function runAgent(
         if (spent + cost > budget + 1e-9) {
           ledger.refunded = round6(ledger.refunded + cost);
           budgetHeld.add(s.id); // a deliberate budget hold, NOT a settlement failure (for the receipt)
+          heldReason.set(s.id, `Budget reached — payment held to stay within $${budget.toFixed(2)}.`);
           applyOutcome(s.id, { meritDelta: 0 });
           recordSettlement({ runId, sourceId: s.id, cited: true, released: false, amount: 0, confidence: v.confidence, reason: "budget hold", at: Date.now() });
           await emit("refund", {
@@ -491,6 +525,7 @@ export async function runAgent(
         if (hold) {
           ledger.refunded = round6(ledger.refunded + cost);
           budgetHeld.add(s.id);
+          heldReason.set(s.id, hold.reason);
           applyOutcome(s.id, { meritDelta: 0 });
           recordSettlement({ runId, sourceId: s.id, cited: true, released: false, amount: 0, confidence: v.confidence, reason: `policy:${hold.kind}`, at: Date.now() });
           if (hold.kind === "approval")
@@ -505,6 +540,30 @@ export async function runAgent(
             merit: getMerit(s.id),
             meritUp: 0,
             ledger: { ...ledger },
+          });
+          await sleep(620);
+          continue;
+        }
+        // Wave C #8: the operator guard is the second settlement predicate — a freeze (manual kill-switch or the
+        // spend-velocity auto-abort) or the daily hard cap HOLDS an otherwise-payable release. Applies to REAL,
+        // non-custodial spend only (a custody accrual moves no on-chain USDC; stub is simulated). Refresh per
+        // source so a cross-instance freeze halts the rest of an in-flight run; reserve before the settle await
+        // so a concurrent settle sees the reduced headroom (no TOCTOU).
+        let guardRes: { ok: boolean; reason?: string; id?: string } = { ok: true };
+        if (!s.custodial && !isStub()) {
+          await refreshGuardFromMirror().catch(() => {});
+          guardRes = reserveSpend(cost, Date.now());
+        }
+        if (!guardRes.ok) {
+          ledger.refunded = round6(ledger.refunded + cost);
+          budgetHeld.add(s.id);
+          heldReason.set(s.id, `Settlement paused — ${guardRes.reason}.`);
+          applyOutcome(s.id, { meritDelta: 0 });
+          recordSettlement({ runId, sourceId: s.id, cited: true, released: false, amount: 0, confidence: v.confidence, reason: "guard hold", at: Date.now() });
+          await emit("refund", {
+            index: v.index, id: s.id, name: s.name, amount: cost,
+            reason: `Settlement paused — ${guardRes.reason}.`,
+            merit: getMerit(s.id), meritUp: 0, ledger: { ...ledger },
           });
           await sleep(620);
           continue;
@@ -604,7 +663,15 @@ export async function runAgent(
         });
         // Only REAL settlements feed the monotonic traction counter (/api/metrics "on-chain settled"). A STUB
         // run is a simulation — recording it would inflate the real-money total forever, so it's excluded.
-        if (settled > 0 && !isStub()) recordLedgerSettlement({ runId, sourceId: s.id, amount: paid, at: Date.now() });
+        if (settled > 0 && !isStub()) {
+          recordLedgerSettlement({ runId, sourceId: s.id, amount: paid, at: Date.now() });
+        }
+        // Reconcile the guard reservation: release the up-front estimate on any outcome, and record the ACTUAL
+        // real spend if the settle landed (so the daily cap + velocity breaker track true outbound USDC).
+        if (guardRes.id) {
+          releaseReservation(guardRes.id);
+          if (settled > 0 && !isStub()) recordSpend(paid, Date.now());
+        }
         await sleep(620);
       } else {
         const refundAmt = round6(price);
@@ -723,7 +790,7 @@ export async function runAgent(
         reason: released
           ? v.auditReason || "cited + verified"
           : budgetHeld.has(v.src.id)
-            ? `Budget reached — payment held to stay within $${budget.toFixed(2)}.`
+            ? heldReason.get(v.src.id) || `Budget reached — payment held to stay within $${budget.toFixed(2)}.`
             : settlementFailed
               ? "release intended but settlement failed — refunded"
               : refusedReason,

@@ -15,7 +15,7 @@ describe("run context (the shared lead ↔ specialist store)", () => {
   it("patchCtx merges fields without clobbering the rest", () => {
     createCtx("r2", { question: "q2", budget: 1, discover: true });
     patchCtx("r2", { answer: "hello" });
-    patchCtx("r2", { cite: { s1: { cited: true, supported: true, score: 0.82, reason: "supported", count: 2 } } });
+    patchCtx("r2", { cite: { s1: { cited: true, supported: true, confidence: 0.82, score: 0.82, reason: "supported", count: 2 } } });
     const ctx = getCtx("r2")!;
     expect(ctx.answer).toBe("hello"); // preserved across the second patch
     expect(ctx.cite.s1.count).toBe(2);

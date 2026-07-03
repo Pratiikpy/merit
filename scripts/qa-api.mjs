@@ -63,7 +63,9 @@ const fabClaim = "StableData reported $40 trillion in annualized settlement volu
 const fabSource = "The StableData API index shows cross-border B2B stablecoin settlement reached $4.1 trillion in annualized volume in 2026.";
 const v1 = await post("/api/verify", { claim: fabClaim, source: fabSource });
 rec("verify", "fabricated figure → REFUSED (numeric, no LLM)", v1.status === 200 && v1.body?.verdict === "REFUSED" && v1.body?.methods?.includes("numeric"), `${v1.status} ${v1.body?.verdict} [${v1.body?.methods}]`);
-if (v1.body?.signer) { const s = await verifySig(v1.body, ["by", "reasoning", "settlement"]); rec("verify", "verdict signature recovers signer (offline)", s.ok, s.ok ? `signer ${s.signer}` : (s.why || `recovered ${s.recovered}`)); }
+if (v1.body?.signer) { const s = await verifySig(v1.body, ["by", "reasoning", "settlement", "cached", "depth", "signed"]); rec("verify", "verdict signature recovers signer (offline)", s.ok, s.ok ? `signer ${s.signer}` : (s.why || `recovered ${s.recovered}`)); }
+// Independently: the response's self-contained `signed` receipt must recover on its own (strip only signer/signature).
+if (v1.body?.signed) { const s = await verifySig(v1.body.signed); rec("verify", "response.signed is a self-verifiable receipt", s.ok, s.ok ? `signer ${s.signer}` : (s.why || `recovered ${s.recovered}`)); }
 // determinism: same input → same verdict + score
 const v1b = await post("/api/verify", { claim: fabClaim, source: fabSource });
 rec("verify", "determinism (same input → same verdict)", v1b.body?.verdict === v1.body?.verdict, `${v1.body?.verdict} == ${v1b.body?.verdict}`);
@@ -80,6 +82,11 @@ const vs = await post("/api/verify", { claim: "The Eiffel Tower is located in Pa
 rec("verify", "supported → SUPPORTED (both gates confirm)", vs.status === 200 && vs.body?.verdict === "SUPPORTED", `${vs.status} ${vs.body?.verdict} score=${vs.body?.score}`);
 
 // ---- D. Audit grew (reconciliation: the verifies were recorded) ----
+// Force a FRESH (uncached) verify so the audit MUST grow: repeating a claim is served from the verified-
+// citation cache and CORRECTLY does not re-append (only `if (!cached)` records audit), which would otherwise
+// look like a lost write on a second QA run. A unique nonce guarantees an uncached verdict + one audit append.
+const auditNonce = Date.now();
+await post("/api/verify", { claim: `The Eiffel Tower is located in Paris. (qa-audit ${auditNonce})`, source: `The Eiffel Tower is a landmark located in Paris, France. (qa-audit ${auditNonce})` });
 // NOTE: on serverless the audit write lands on the request's instance and the shared read lags until the
 // Supabase mirror flushes — so poll with backoff. Growth-eventually = PASS(slow); never = FAIL (lost writes).
 let a1 = null, grew = false, waited = 0;

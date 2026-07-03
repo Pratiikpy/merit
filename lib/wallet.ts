@@ -24,12 +24,24 @@ export function walletMode(): WalletMode {
   return process.env.MERIT_WALLET === "circle-dcw" ? "circle-dcw" : "eoa";
 }
 
+/** Deterministically derive a per-principal EOA private key from a master seed. Merit controls this key (to
+ *  sweep/withdraw a principal's per-principal deposit address); never exposed to the principal. On a real deploy
+ *  MERIT_WALLET_SEED MUST be a real secret — the dev default is public, so anything holding real value fails
+ *  closed elsewhere until it's set. */
+export function derivePrivateKey(principalId: string): `0x${string}` {
+  const seed = process.env.MERIT_WALLET_SEED || "merit-dev-seed-do-not-use-in-production";
+  return keccak256(toHex(`${seed}:${principalId}`));
+}
+
+/** True when a REAL (non-default) wallet seed is configured — required before per-principal addresses hold value. */
+export function walletSeedConfigured(): boolean {
+  return !!process.env.MERIT_WALLET_SEED;
+}
+
 /** Deterministically derive a per-principal EOA from a master seed — each principal gets its OWN isolated,
  *  reproducible address (no shared buyer EOA). The default, fully-local provider. */
 export function deriveWallet(principalId: string): ManagedWallet {
-  const seed = process.env.MERIT_WALLET_SEED || "merit-dev-seed-do-not-use-in-production";
-  const pk = keccak256(toHex(`${seed}:${principalId}`));
-  const account = privateKeyToAccount(pk);
+  const account = privateKeyToAccount(derivePrivateKey(principalId));
   return { id: principalId, address: account.address, mode: "eoa" };
 }
 

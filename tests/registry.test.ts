@@ -123,3 +123,32 @@ describe("registry persistence", () => {
     expect(reg.getSource("ledgerlens")!.balance).toBe(before); // earned:0 → no balance change
   });
 });
+
+describe("resolveSourceRef (Merit Link handle resolution)", () => {
+  it("resolves by exact id", () => {
+    expect(reg.resolveSourceRef("stabledata")?.id).toBe("stabledata");
+    expect(reg.resolveSourceRef("StableData")?.id).toBe("stabledata"); // id match is case-insensitive
+  });
+
+  it("resolves by a normalized @handle (strips the @)", () => {
+    expect(reg.resolveSourceRef("@chainletter")?.id).toBe("chainletter");
+    expect(reg.resolveSourceRef("chainletter")?.id).toBe("chainletter"); // id also matches here
+    expect(reg.resolveSourceRef("@northbridge")?.id).toBe("northbridge");
+  });
+
+  it("resolves by a domain handle and ignores any path", () => {
+    expect(reg.resolveSourceRef("stabledata.xyz")?.id).toBe("stabledata");
+    // the USDC reference handle carries a path — only the host segment is matched
+    expect(reg.resolveSourceRef("en.wikipedia.org/wiki/USD_Coin")?.id).toBe("wiki-usdc");
+    expect(reg.resolveSourceRef("en.wikipedia.org")?.id).toBe("wiki-usdc");
+  });
+
+  it("decodes a percent-encoded ref (so /l/%40chainletter works)", () => {
+    expect(reg.resolveSourceRef("%40chainletter")?.id).toBe("chainletter");
+  });
+
+  it("returns undefined for an unknown ref and empty input", () => {
+    expect(reg.resolveSourceRef("does-not-exist")).toBeUndefined();
+    expect(reg.resolveSourceRef("")).toBeUndefined();
+  });
+});

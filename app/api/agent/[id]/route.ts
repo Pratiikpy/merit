@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSpecialist } from "@/lib/specialists";
-import { getCtx, patchCtx, type CiteResult } from "@/lib/runctx";
+import { getCtx, patchCtx, persistCtx, rehydrateCtx, type CiteResult } from "@/lib/runctx";
 import { getSources } from "@/lib/registry";
 import { discoverSources } from "@/lib/discover";
 import { writeAnswer, citedNames, isCited, citationCount, verifyCitations } from "@/lib/llm";
@@ -19,6 +19,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const spec = getSpecialist(id);
   if (!spec) return NextResponse.json({ error: "unknown specialist" }, { status: 404 });
   const runId = req.nextUrl.searchParams.get("run") || "";
+  // On serverless the lead created the context on a DIFFERENT instance — pull the authoritative copy from the
+  // shared mirror before reading it (no-op on a single-process server, where the local Map already has it).
+  await rehydrateCtx(runId);
   const ctx = getCtx(runId);
   if (!ctx) return NextResponse.json({ error: "no run context" }, { status: 400 });
 
@@ -36,6 +39,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       let sources = ctx.discover ? await discoverSources(ctx.question, 6).catch(() => []) : [];
       if (!sources.length) sources = getSources().filter((s) => s.content && s.content.length > 0);
       patchCtx(runId, { sources });
+      await persistCtx(runId); // hand the work product back across instances so the lead can read it
       return NextResponse.json({ ok: true, role: "search", count: sources.length });
     }
 
@@ -43,6 +47,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       // The pro writer (Scribe) is thorough; the budget writer (Quill) is terser → cites fewer.
       const answer = await writeAnswer(ctx.question, ctx.sources, spec.tier);
       patchCtx(runId, { answer });
+      await persistCtx(runId);
       return NextResponse.json({ ok: true, role: "write", len: answer.length });
     }
 
@@ -72,6 +77,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       };
     }
     patchCtx(runId, { cite });
+    await persistCtx(runId);
     return NextResponse.json({ ok: true, role: "verify", checked: ctx.sources.length });
   } catch (e) {
     // Log details server-side; don't leak internal error strings to the caller.

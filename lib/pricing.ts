@@ -15,3 +15,44 @@ export function priceForMerit(base: number, merit: number): number {
 export function effectivePrice(base: number, merit: number, priceMode?: string): number {
   return priceMode === "merit-gated" ? priceForMerit(base, merit) : base;
 }
+
+// ---- Verification-DEPTH pricing (B6) ----
+// Price scales with verification depth: a cheap deterministic numeric screen < an NLI entailment check < the
+// full adversarial judge. An agent discovers the tiers at /api/pricing and picks depth-vs-cost per call. This
+// keeps pricing MOAT-native — you pay for how hard the verification tries, not for retrieval.
+export type VerifyDepth = "numeric" | "nli" | "full";
+
+/** Normalize an arbitrary input to a valid depth (default "full"). */
+export function asDepth(d: unknown): VerifyDepth {
+  return d === "numeric" || d === "nli" ? d : "full";
+}
+
+/** Which engine layers a depth tier runs. */
+export function depthLayers(depth: VerifyDepth): { useNLI: boolean; useJudge: boolean } {
+  if (depth === "numeric") return { useNLI: false, useJudge: false };
+  if (depth === "nli") return { useNLI: true, useJudge: false };
+  return { useNLI: true, useJudge: true }; // full
+}
+
+/** Per-verify price for a depth tier. Base (full) = MERIT_VERIFY_PRICE; shallower tiers cost proportionally less. */
+export function verifyDepthPrice(depth: VerifyDepth): number {
+  const full = Math.max(0.0001, Number(process.env.MERIT_VERIFY_PRICE) || 0.005);
+  const factor = depth === "numeric" ? 0.2 : depth === "nli" ? 0.5 : 1;
+  return Math.round(full * factor * 1e6) / 1e6;
+}
+
+/** The machine-readable verification price ladder — advertised at /api/pricing for agent-side discovery. */
+export function verifyTiers() {
+  const tiers: VerifyDepth[] = ["numeric", "nli", "full"];
+  return tiers.map((d) => ({
+    tier: d,
+    price: verifyDepthPrice(d),
+    gates: d === "numeric" ? ["numeric"] : d === "nli" ? ["numeric", "nli"] : ["numeric", "nli", "adversarial-judge"],
+    description:
+      d === "numeric"
+        ? "Deterministic figure screen — catches a fabricated $/%/number with no model. Cheapest; a non-numeric claim returns 'needs a model'."
+        : d === "nli"
+          ? "Numeric + factual-consistency (NLI) — a real SUPPORTED/REFUSED from an entailment score, without the adversarial judge."
+          : "Numeric + NLI + adversarial LLM judge — the full, injection-resistant gate.",
+  }));
+}

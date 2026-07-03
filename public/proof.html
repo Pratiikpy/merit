@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proof — the live ledger — Merit</title>
+<meta name="description" content="Merit's live traction ledger: every citation verified or REFUSED, real USDC settled on Arc, and re-verifications the cache avoided — each row a signed receipt you can open, most deep-linking a real Arc transaction. The refused count is the number a pay-on-retrieval tool can never show.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Proof — Merit's live ledger">
+<meta property="og:description" content="Verified vs REFUSED, real USDC settled on Arc, every row a signed receipt. Traction you can check, not asserted.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  nav a.back{font-size:14px;color:#6B7280;text-decoration:none;font-weight:600;}
+  nav a.back:hover{color:#0A0A0A;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 12px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 28px;max-width:70ch;}
+  .live{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#047857;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:999px;padding:3px 10px;vertical-align:middle;margin-left:10px;}
+  .live .dot{width:7px;height:7px;border-radius:50%;background:#10B981;animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:16px 18px;}
+  .stat .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  .stat .d{font-size:12.5px;color:#6B7280;margin-top:3px;}
+  .split{display:flex;align-items:center;gap:10px;margin-top:10px;}
+  .split .bar{flex:1;height:8px;border-radius:999px;background:#FEE2E2;overflow:hidden;}
+  .split .bar > i{display:block;height:100%;background:#10B981;}
+  .split .lg{font-size:12px;color:#4B5563;white-space:nowrap;}
+  .chainok{font-size:12px;color:#047857;font-weight:600;}
+  .chainbad{font-size:12px;color:#BE123C;font-weight:600;}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px;}
+  thead th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;padding:10px 10px;border-bottom:1px solid #ECECEE;}
+  tbody td{padding:11px 10px;border-bottom:1px solid #F3F4F6;vertical-align:top;}
+  tbody tr:hover{background:#FAFAFA;}
+  .chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;}
+  .chip.sup{background:#DCFCE7;color:#047857;} .chip.ref{background:#FEE2E2;color:#BE123C;}
+  .claim{font-weight:500;color:#0A0A0A;max-width:420px;}
+  .src{font-size:12px;color:#6B7280;margin-top:2px;}
+  .amt{font-weight:700;color:#065F46;white-space:nowrap;}
+  .lnk{font-size:12px;color:#0A0A0A;text-decoration:underline;text-underline-offset:2px;white-space:nowrap;}
+  .lnk.arc{color:#047857;}
+  .muted{color:#9CA3AF;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  .err{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:14px;color:#374151;font-size:14px;margin-top:16px;}
+  @media(max-width:640px){.hide-sm{display:none;}h1{font-size:30px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <a class="back" href="/">← back to demo</a>
+  </nav>
+
+  <main>
+  <h1>The live ledger<span class="live" id="live" hidden><span class="dot"></span>live</span></h1>
+  <p class="sub">Every citation Merit verified or <strong>refused</strong>, the real USDC settled on Arc, and the re-verifications the cache avoided — each row a <strong>signed receipt</strong> you can open, most deep-linking a real Arc transaction. The <strong>refused</strong> count is the one number a pay-on-retrieval tool can never show: it pays them all.</p>
+
+  <div class="stats" id="stats"></div>
+  <div id="ledgerwrap"></div>
+  <div id="err"></div>
+  </main>
+
+  <footer class="foot">Traction you can check, not asserted. The verified/refused split is the whole tamper-evident audit chain; settlements are the monotonic on-chain total; every receipt is offline-verifiable. <a href="/verify.html" style="text-decoration:underline">Verify a claim yourself →</a></footer>
+</div>
+
+<script>
+(function(){
+  var statsEl=document.getElementById('stats'),ledgerEl=document.getElementById('ledgerwrap'),errEl=document.getElementById('err'),liveEl=document.getElementById('live');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function usd(n){return '$'+Number(n||0).toFixed(4);}
+  function ago(iso){var t=Date.parse(iso);if(!t)return '';var s=Math.max(0,(Date.now()-t)/1000);if(s<60)return Math.floor(s)+'s ago';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
+  function stat(k,v,d){return '<div class="stat"><div class="k">'+esc(k)+'</div><div class="v">'+v+'</div>'+(d?'<div class="d">'+d+'</div>':'')+'</div>';}
+  function render(p){
+    errEl.innerHTML='';
+    var ver=p.verifications||{},set=p.settlements||{},cache=p.cache||{};
+    var total=ver.total||0, sup=ver.supported||0, ref=ver.refused||0;
+    var supPct = total? Math.round(sup/total*100):0;
+    var refRate = total? ((ref/total)*100).toFixed(1):'0.0';
+    var chain = ver.chainValid ? '<span class="chainok">✓ tamper-evident chain intact</span>' : '<span class="chainbad">✕ audit chain broken</span>';
+    var verStat = '<div class="stat"><div class="k">Citations verified vs refused</div>'
+      + '<div class="v">'+sup+' <span style="color:#9CA3AF;font-weight:600;">/</span> <span style="color:#BE123C;">'+ref+'</span></div>'
+      + '<div class="split"><div class="bar"><i style="width:'+supPct+'%"></i></div><div class="lg">'+refRate+'% refused</div></div>'
+      + '<div class="d" style="margin-top:8px">'+chain+'</div></div>';
+    statsEl.innerHTML = verStat
+      + stat('USDC settled on Arc', usd(set.totalUsdc), (set.count||0)+' settlements · '+(set.distinctPayees||0)+' payees · '+(set.runs||0)+' runs')
+      + stat('Re-verifications avoided', (cache.reverificationsAvoided||0).toLocaleString(), (cache.entries||0)+' cached proofs · ~'+usd(cache.estSavedUsd)+' compute saved (est.)');
+
+    var rows=(p.rows||[]);
+    if(!rows.length){ ledgerEl.innerHTML='<div class="err">No receipts yet — run the agent or verify a claim to write the first row.</div>'; return; }
+    var body=rows.map(function(r){
+      var sup=r.verdict==='SUPPORTED';
+      var chip='<span class="chip '+(sup?'sup':'ref')+'">'+(sup?'✓ verified':'✕ refused')+'</span>';
+      var amt = (r.paidUsdc!=null && r.paidUsdc>0)
+        ? '<span class="amt">'+usd(r.paidUsdc)+'</span>'+(r.custody?'<div class="src">custody accrual</div>':(r.onchain?'':'<div class="src">batched</div>'))
+        : '<span class="muted">—</span>';
+      var links='<a class="lnk" href="'+esc(r.receiptUrl)+'">receipt →</a>';
+      if(r.onchain && r.explorerUrl && r.explorerUrl.indexOf('https://')===0) links+=' &nbsp;<a class="lnk arc" href="'+esc(r.explorerUrl)+'" target="_blank" rel="noopener">Arc ↗</a>';
+      return '<tr>'
+        + '<td>'+chip+'</td>'
+        + '<td><div class="claim">'+esc(r.claim)+'</div>'+(r.sourceName?'<div class="src">'+esc(r.sourceName)+'</div>':'')+'</td>'
+        + '<td class="hide-sm">'+amt+'</td>'
+        + '<td>'+links+'</td>'
+        + '<td class="hide-sm mono" style="color:#9CA3AF;font-size:12px;white-space:nowrap;">'+esc(ago(r.createdAt))+'</td>'
+        + '</tr>';
+    }).join('');
+    ledgerEl.innerHTML = '<table><thead><tr><th>Verdict</th><th>Claim</th><th class="hide-sm">Settled</th><th>Proof</th><th class="hide-sm">When</th></tr></thead><tbody>'+body+'</tbody></table>';
+  }
+  async function load(){
+    try{
+      var res=await fetch('/api/proof?limit=50',{cache:'no-store'});
+      if(!res.ok){ throw new Error('status '+res.status); }
+      var p=await res.json();
+      render(p);
+      liveEl.hidden=false;
+    }catch(e){ if(!statsEl.innerHTML) errEl.innerHTML='<div class="err">Could not load the ledger. Retrying…</div>'; }
+  }
+  load();
+  setInterval(load, 15000);
+})();
+</script>
+</body>
+</html>
