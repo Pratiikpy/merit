@@ -12,6 +12,7 @@ import { laborTotals } from "./labor";
 import { cacheStats, type CacheStats } from "./vcache";
 import { guardStatus } from "./guard";
 import { juryStats } from "./jury";
+import { complianceStats } from "./compliance";
 
 export interface MetricsSnapshot {
   sources: number;
@@ -33,6 +34,8 @@ export interface MetricsSnapshot {
   // The premium consensus-jury tier (Phase 6): panels convened + graded per-claim outcomes. Kept distinct from
   // the single-judge verified totals — this is the high-assurance diverse-model tier, not the sub-cent default.
   jury: ReturnType<typeof juryStats>;
+  // The enterprise compliance pre-gate (Phase 7): payee screenings + approved/review/denied split.
+  compliance: ReturnType<typeof complianceStats>;
 }
 
 export function snapshotMetrics(): MetricsSnapshot {
@@ -62,5 +65,6 @@ export function snapshotMetrics(): MetricsSnapshot {
       return { frozen: g.frozen, spentToday: g.spentToday, dailyCap: g.dailyCap };
     })(),
     jury: juryStats(),
+    compliance: complianceStats(),
   };
 }

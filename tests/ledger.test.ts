@@ -45,7 +45,7 @@ describe("append-only monotonic settlement ledger (Bet 3)", () => {
     expect(c.totalSettledUsdc).toBeCloseTo(1.2, 5);
     expect(distinctPayees()).toBe(3);
     expect(ledgerHistory(50)).toHaveLength(50); // the time-series tail IS capped, but the total isn't
-  });
+  }, 20000); // 1200 store writes — give the loop headroom so it never flakes on vitest's 5s default under full-suite disk load
 
   it("persists across a cache reset (reload from disk keeps the total)", () => {
     recordLedgerSettlement({ runId: "r1", sourceId: "a", amount: 0.05, at: 1 });

@@ -13,6 +13,7 @@ import { createPublicClient, createWalletClient, encodeFunctionData, getAddress,
 import { privateKeyToAccount } from "viem/accounts";
 import { ARC, explorerTx, isStub, round6 } from "./arc";
 import { loadDocFresh, loadDocFromMirror, saveDoc } from "./store";
+import { assertPayeeCompliant } from "./compliance";
 
 export interface CustodyEntry {
   id: string;
@@ -94,14 +95,22 @@ export function custodyEntry(id: string): CustodyEntry | undefined {
 export async function claimCustody(id: string, toWallet: string): Promise<{ tx: string; amount: number; explorerUrl: string } | { error: string; status: number }> {
   const amount = custodyUnclaimed(id);
   if (amount <= 0) return { error: "no unclaimed balance for this creator", status: 400 };
-  const pk = custodyKey();
-  if (!pk || isStub()) return { error: "on-chain claim is unavailable on this deployment (keyless / stub mode)", status: 503 };
   let to: `0x${string}`;
   try {
     to = getAddress(toWallet);
   } catch {
     return { error: "invalid payout wallet address", status: 400 };
   }
+  // Compliance pre-gate (Phase 7): screen the payee BEFORE anything else — a sanctions/blocklisted recipient is
+  // refused so no USDC ever prepares to move to it, making a real disbursement "compliance-cleared AND
+  // work-verified". Degrades to the local screen when Circle's Compliance Engine isn't entitled; a DENIED from
+  // any source blocks, and the accrued balance is left untouched.
+  const gate = await assertPayeeCompliant(to);
+  if (!gate.allowed) {
+    return { error: `payout blocked by compliance screening — ${gate.screen.reason} (${gate.screen.source})`, status: 403 };
+  }
+  const pk = custodyKey();
+  if (!pk || isStub()) return { error: "on-chain claim is unavailable on this deployment (keyless / stub mode)", status: 503 };
   try {
     const account = privateKeyToAccount((pk.startsWith("0x") ? pk : `0x${pk}`) as `0x${string}`);
     const rpc = process.env.ARC_RPC_URL || ARC.rpcUrl;
