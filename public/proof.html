@@ -52,7 +52,7 @@
   .amt{font-weight:700;color:#065F46;white-space:nowrap;}
   .lnk{font-size:12px;color:#0A0A0A;text-decoration:underline;text-underline-offset:2px;white-space:nowrap;}
   .lnk.arc{color:#047857;}
-  .muted{color:#9CA3AF;}
+  .muted{color:#6B7280;}
   .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
   .err{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:14px;color:#374151;font-size:14px;margin-top:16px;}
   @media(max-width:640px){.hide-sm{display:none;}h1{font-size:30px;}}
@@ -92,7 +92,7 @@
     var refRate = total? ((ref/total)*100).toFixed(1):'0.0';
     var chain = ver.chainValid ? '<span class="chainok">✓ tamper-evident chain intact</span>' : '<span class="chainbad">✕ audit chain broken</span>';
     var verStat = '<div class="stat"><div class="k">Citations verified vs refused</div>'
-      + '<div class="v">'+sup+' <span style="color:#9CA3AF;font-weight:600;">/</span> <span style="color:#BE123C;">'+ref+'</span></div>'
+      + '<div class="v">'+sup+' <span style="color:#6B7280;font-weight:600;">/</span> <span style="color:#BE123C;">'+ref+'</span></div>'
       + '<div class="split"><div class="bar"><i style="width:'+supPct+'%"></i></div><div class="lg">'+refRate+'% refused</div></div>'
       + '<div class="d" style="margin-top:8px">'+chain+'</div></div>';
     statsEl.innerHTML = verStat
@@ -114,7 +114,7 @@
         + '<td><div class="claim">'+esc(r.claim)+'</div>'+(r.sourceName?'<div class="src">'+esc(r.sourceName)+'</div>':'')+'</td>'
         + '<td class="hide-sm">'+amt+'</td>'
         + '<td>'+links+'</td>'
-        + '<td class="hide-sm mono" style="color:#9CA3AF;font-size:12px;white-space:nowrap;">'+esc(ago(r.createdAt))+'</td>'
+        + '<td class="hide-sm mono" style="color:#6B7280;font-size:12px;white-space:nowrap;">'+esc(ago(r.createdAt))+'</td>'
         + '</tr>';
     }).join('');
     ledgerEl.innerHTML = '<table><thead><tr><th>Verdict</th><th>Claim</th><th class="hide-sm">Settled</th><th>Proof</th><th class="hide-sm">When</th></tr></thead><tbody>'+body+'</tbody></table>';
