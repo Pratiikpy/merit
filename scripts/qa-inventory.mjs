@@ -18,6 +18,7 @@ const PAGES = [
   { slug: "gigs", path: "/gigs.html" },
   { slug: "crosschain", path: "/crosschain.html" },
   { slug: "market", path: "/market.html" },
+  { slug: "media", path: "/media.html" },
   { slug: "break", path: "/break.html" },
   { slug: "honesty", path: "/honesty.html" },
   { slug: "benchmark", path: "/benchmark.html" },

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Media Licensing — Merit</title>
+<meta name="description" content="License a clip, image, or audio only if Merit verifies it actually matches your request — you never pay for media that isn't what it claims. Provenance-verified media licensing, settled in USDC.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Media Licensing — Merit">
+<meta property="og:description" content="A seller lists media with a description and transcript. Merit's real verifier checks the media's own provenance genuinely supports the buyer's request before any USDC moves.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:72ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  h2.lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;}
+  .card{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .field{flex:1;min-width:220px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+  input[type=text],input[type=number],textarea,select{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid #D4D4D8;border-radius:10px;color:#0A0A0A;outline:none;background:#fff;}
+  textarea{resize:vertical;min-height:76px;line-height:1.5;}
+  input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{border-color:#0A0A0A;}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#fff;background:#0A0A0A;border:none;border-radius:10px;padding:12px 20px;cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:#18181B;} .btn:disabled{opacity:.5;cursor:default;}
+  .btn.sm{font-size:13px;padding:10px 16px;border-radius:9px;}
+  .hint{font-size:12px;color:#6B7280;margin-top:8px;}
+  .note{font-size:13px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 13px;margin-top:12px;}
+  .err{border:1px solid #FECDD3;background:#FFF1F2;border-radius:10px;padding:12px 14px;color:#9F1239;font-size:13.5px;margin-top:12px;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  .typechip{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 10px;border-radius:999px;background:#F4F4F5;color:#52525B;white-space:nowrap;}
+  .mediacard{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .medhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+  .medtitle{font-size:18px;font-weight:800;letter-spacing:-.01em;}
+  .pricetag{font-size:15px;font-weight:800;color:#0A0A0A;}
+  .medmeta{font-size:12.5px;color:#6B7280;margin-bottom:10px;}
+  .meddesc{font-size:14.5px;color:#0A0A0A;margin-bottom:12px;padding:11px 13px;background:#FAFAFA;border-radius:10px;border:1px solid #F3F4F6;white-space:pre-wrap;}
+  .medurl{font-size:12.5px;margin-bottom:12px;word-break:break-all;}
+  .medurl a{text-decoration:underline;font-weight:600;color:#0A0A0A;}
+  .licform{margin-top:6px;padding-top:14px;border-top:1px solid #ECECEE;}
+  .lichead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+  .licwho{font-size:12.5px;color:#6B7280;margin-bottom:2px;}
+  .verdict{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap;}
+  .verdict.match{background:#DCFCE7;color:#047857;} .verdict.nomatch{background:#FEE2E2;color:#BE123C;}
+  .scoreline{font-size:12.5px;color:#6B7280;margin:6px 0 4px;}
+  .reasonline{font-size:13px;color:#4B5563;margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6;}
+  .settleline{font-size:13.5px;margin-top:10px;}
+  .settleline.ok{color:#047857;font-weight:700;}
+  .settleline a{text-decoration:underline;font-weight:600;color:#0A0A0A;}
+  .onchainline{font-size:12px;color:#6B7280;margin-top:4px;}
+  .vidchip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B7280;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:7px;padding:2px 8px;margin-top:8px;margin-right:6px;}
+  .licresult{margin-top:14px;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/proof.html">Ledger</a>
+      <a href="/jury.html">Jury</a>
+      <a href="/scorecard.html">Scorecard</a>
+      <a href="/gigs.html">Gigs</a>
+      <a href="/market.html">Market</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Media Licensing</h1>
+  <p class="sub">License a clip, image, or audio only if Merit verifies it actually matches your request — you never pay for media that isn't what it claims.</p>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">Media listed</div><div class="v" id="st-media">—</div></div>
+    <div class="stat"><div class="k">Licenses</div><div class="v" id="st-licenses">—</div></div>
+    <div class="stat"><div class="k">Verified matches</div><div class="v" id="st-verified">—</div></div>
+    <div class="stat"><div class="k">Released USDC</div><div class="v" id="st-usdc">—</div></div>
+  </div>
+
+  <h2 class="lbl">List media</h2>
+  <div class="card">
+    <div class="row">
+      <div class="field"><label for="in-title">Title</label><input type="text" id="in-title" placeholder="e.g. Night footage of a factory floor, EU plant" spellcheck="false"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-desc">Description</label><textarea id="in-desc" placeholder="What this media actually shows or contains."></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-transcript">Transcript (optional)</label><textarea id="in-transcript" placeholder="For video/audio; part of the verified provenance."></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-url">URL (optional)</label><input type="text" id="in-url" placeholder="https://…" spellcheck="false" autocomplete="off"></div>
+      <div class="field" style="flex:0 0 160px;min-width:160px"><label for="in-type">Media type</label>
+        <select id="in-type">
+          <option value="video">Video</option>
+          <option value="image">Image</option>
+          <option value="audio">Audio</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field" style="flex:0 0 160px;min-width:160px"><label for="in-price">Price (USDC)</label><input type="number" id="in-price" placeholder="0.50" min="0" max="5" step="0.01"></div>
+      <div class="field"><label for="in-addr">Owner payout address (optional)</label><input type="text" id="in-addr" placeholder="0x…" spellcheck="false" autocomplete="off"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-attest">Attestation (optional)</label><input type="text" id="in-attest" placeholder="Your ownership/rights claim for this media" spellcheck="false"></div>
+      <div style="align-self:flex-end"><button class="btn" id="post-go">List media</button></div>
+    </div>
+    <div class="hint">Demo safety ceiling: license prices are capped at 5 USDC.</div>
+    <div id="post-err"></div>
+  </div>
+
+  <h2 class="lbl">Media catalog</h2>
+  <div id="media-list"></div>
+
+  <h2 class="lbl">Recent licenses</h2>
+  <div id="licenses"></div>
+  </main>
+
+  <footer class="foot">The description/transcript is the provenance signal Merit checks against your request — the same faithfulness gate that verifies a citation. A vision/audio captioner is a drop-in upgrade to the same gate: swap the verified source from a stored transcript to a model-generated caption; the gate, receipt, and settlement don't change. <a href="/api/media" style="text-decoration:underline">Raw JSON →</a></footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function usd(n){return '$'+Number(n||0).toFixed(4);}
+  function usd2(n){return '$'+Number(n||0).toFixed(2);}
+  function fmtDate(s){try{return new Date(s).toLocaleString();}catch(e){return '';}}
+
+  // ---- license renderer (shared by the POST result and the recent-licenses list) ----
+  function renderSettlement(s, note){
+    var out = '';
+    if (note) out += '<div class="note">'+esc(note)+'</div>';
+    if (!s) return out; // no match — nothing was licensed, nothing paid
+    if (s.blocked) {
+      out += '<div class="note">'+esc(s.blocked)+'</div>';
+      return out;
+    }
+    out += '<div class="settleline ok">Licensed — '+usd(s.paidUsdc)+' USDC released to the owner (claimable)</div>';
+    if (s.onchain) {
+      out += '<div class="onchainline">on-chain: '+esc(s.onchain.outcome)+' · job #'+esc(s.onchain.jobId)+' · '+esc(String(s.onchain.steps))+' txs</div>';
+    }
+    if (typeof s.explorerUrl === 'string' && s.explorerUrl) {
+      out += '<div class="settleline"><a href="'+esc(s.explorerUrl)+'" target="_blank" rel="noopener noreferrer nofollow">on-chain →</a></div>';
+    } else if (typeof s.tx === 'string' && s.tx) {
+      out += '<div class="settleline mono" style="font-size:12px;color:#6B7280">tx '+esc(s.tx)+'</div>';
+    }
+    return out;
+  }
+
+  function renderLicense(license, opts){
+    opts = opts || {};
+    var verdictHtml = license.verified
+      ? '<span class="verdict match">✓ VERIFIED MATCH</span>'
+      : '<span class="verdict nomatch">✕ NOT A MATCH</span>';
+    var when = license.licensedAt ? fmtDate(license.licensedAt) : '';
+    var scoreHtml = license.score != null ? '<div class="scoreline">match score '+Math.round(license.score*100)+'%</div>' : '';
+    var vidHtml = license.verificationId ? '<span class="vidchip">verification '+esc(license.verificationId)+'</span>' : '';
+    var signerHtml = license.signer ? '<span class="vidchip">signer '+esc(String(license.signer).slice(0,14))+'…</span>' : '';
+
+    return '<div class="licresult">'
+      + '<div class="lichead">'+verdictHtml+'<span class="mono" style="font-size:11.5px;color:#6B7280">'+esc(when)+'</span></div>'
+      + '<div class="licwho">for <b>'+esc(license.mediaTitle||'')+'</b> · requested by '+esc(license.buyer||'anonymous')+'</div>'
+      + '<div class="meddesc">'+esc(license.request)+'</div>'
+      + scoreHtml
+      + (license.reason ? '<div class="reasonline">'+esc(license.reason)+'</div>' : '')
+      + renderSettlement(license.settlement, opts.note)
+      + vidHtml + signerHtml
+      + '</div>';
+  }
+
+  // ---- media card ----
+  function renderMediaCard(media){
+    var typeChip = '<span class="typechip">'+esc(media.mediaType||'other')+'</span>';
+    var price = '<span class="pricetag mono">'+usd2(media.priceUsdc)+' USDC</span>';
+    var when = media.createdAt ? fmtDate(media.createdAt) : '';
+    var body = '<div class="mediacard" data-media-id="'+esc(media.id)+'">'
+      + '<div class="medhead">'+typeChip+price+'</div>'
+      + '<div class="medtitle">'+esc(media.title)+'</div>'
+      + '<div class="medmeta">listed by '+esc(media.owner||'anonymous')+' · '+esc(when)+'</div>'
+      + '<div class="meddesc">'+esc(media.description)+'</div>';
+    if (media.attestation) body += '<div class="note">Owner attestation: '+esc(media.attestation)+'</div>';
+    if (media.url) body += '<div class="medurl"><a href="'+esc(media.url)+'" target="_blank" rel="noopener noreferrer nofollow">'+esc(media.url)+'</a></div>';
+    body += '<div class="licform">'
+      + '<div class="row"><div class="field"><label>What you need this media to be/show</label><textarea class="lic-request" placeholder="Describe exactly what you need the media to show."></textarea></div></div>'
+      + '<div class="row" style="margin-top:10px">'
+      + '<div class="field"><label>API key (optional — releases the license fee)</label><input type="text" class="lic-key" placeholder="merit_sk_… (sent as Authorization: Bearer)" spellcheck="false" autocomplete="off"></div>'
+      + '<div style="align-self:flex-end"><button class="btn sm lic-go">License for this request</button></div>'
+      + '</div>'
+      + '<div class="lic-err"></div>'
+      + '<div class="lic-result"></div>'
+      + '</div>';
+    body += '</div>';
+    return body;
+  }
+
+  function wireMediaCard(el, media){
+    var btn = el.querySelector('.lic-go');
+    if (!btn) return;
+    btn.addEventListener('click', async function(){
+      var reqEl = el.querySelector('.lic-request'), keyEl = el.querySelector('.lic-key');
+      var errEl = el.querySelector('.lic-err'), resEl = el.querySelector('.lic-result');
+      errEl.innerHTML = '';
+      var request = (reqEl.value||'').trim();
+      if (!request) { errEl.innerHTML = '<div class="err">Describe what you need the media to be/show.</div>'; return; }
+      var headers = { 'Content-Type': 'application/json' };
+      var key = (keyEl.value||'').trim();
+      if (key) headers['Authorization'] = 'Bearer ' + key;
+      btn.disabled = true; btn.textContent = 'Verifying provenance…';
+      try {
+        var res = await fetch('/api/media', { method: 'POST', headers: headers, body: JSON.stringify({ action: 'license', mediaId: media.id, request: request }) });
+        var d = await res.json();
+        if (!res.ok) { errEl.innerHTML = '<div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+        resEl.innerHTML = renderLicense(d.license, { note: d.settleNote }) + resEl.innerHTML;
+        reqEl.value = '';
+        loadHub();
+      } catch (e) {
+        errEl.innerHTML = '<div class="err">Request failed — verification may be slow or the server unreachable.</div>';
+      } finally {
+        btn.disabled = false; btn.textContent = 'License for this request';
+      }
+    });
+  }
+
+  function renderCatalog(list){
+    var el = document.getElementById('media-list');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No media listed yet — list the first above.</div>'; return; }
+    el.innerHTML = list.map(renderMediaCard).join('');
+    var cards = el.querySelectorAll('.mediacard');
+    for (var i=0;i<cards.length;i++){
+      var id = cards[i].getAttribute('data-media-id');
+      var media = list.find(function(m){return m.id === id;});
+      if (media) wireMediaCard(cards[i], media);
+    }
+  }
+
+  function renderLicenses(list){
+    var el = document.getElementById('licenses');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No licenses yet — license a match above.</div>'; return; }
+    el.innerHTML = list.map(function(l){ return renderLicense(l); }).join('');
+  }
+
+  function renderStats(stats){
+    stats = stats || {};
+    document.getElementById('st-media').textContent = stats.media != null ? stats.media : '—';
+    document.getElementById('st-licenses').textContent = stats.licenses != null ? stats.licenses : '—';
+    document.getElementById('st-verified').textContent = stats.verified != null ? stats.verified : '—';
+    document.getElementById('st-usdc').textContent = stats.releasedUsdc != null ? usd2(stats.releasedUsdc) : '—';
+  }
+
+  async function loadHub(){
+    try{
+      var res = await fetch('/api/media', {cache:'no-store'});
+      var d = await res.json();
+      renderStats(d.stats);
+      renderCatalog(d.media||[]);
+      renderLicenses(d.licenses||[]);
+    }catch(e){
+      document.getElementById('media-list').innerHTML = '<div class="err">Could not load the media catalog.</div>';
+      document.getElementById('licenses').innerHTML = '';
+    }
+  }
+
+  // ---- list-media form ----
+  var postGo = document.getElementById('post-go');
+  var titleEl = document.getElementById('in-title'), descEl = document.getElementById('in-desc'), transcriptEl = document.getElementById('in-transcript');
+  var urlEl = document.getElementById('in-url'), typeEl = document.getElementById('in-type'), priceEl = document.getElementById('in-price');
+  var addrEl = document.getElementById('in-addr'), attestEl = document.getElementById('in-attest'), postErrEl = document.getElementById('post-err');
+
+  postGo.addEventListener('click', async function(){
+    postErrEl.innerHTML = '';
+    var title = (titleEl.value||'').trim();
+    var description = (descEl.value||'').trim();
+    var transcript = (transcriptEl.value||'').trim();
+    var url = (urlEl.value||'').trim();
+    var mediaType = typeEl.value;
+    var priceUsdc = Number(priceEl.value);
+    var ownerAddress = (addrEl.value||'').trim();
+    var attestation = (attestEl.value||'').trim();
+    if (!title) { postErrEl.innerHTML = '<div class="err">Provide a title.</div>'; return; }
+    if (!description) { postErrEl.innerHTML = '<div class="err">Provide a description.</div>'; return; }
+    if (!(priceUsdc > 0)) { postErrEl.innerHTML = '<div class="err">Provide a positive price in USDC.</div>'; return; }
+
+    postGo.disabled = true; postGo.textContent = 'Listing…';
+    try {
+      var body = {
+        action: 'register', title: title, description: description,
+        transcript: transcript || undefined, url: url || undefined, mediaType: mediaType,
+        priceUsdc: priceUsdc, ownerAddress: ownerAddress || undefined, attestation: attestation || undefined
+      };
+      var res = await fetch('/api/media', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      var d = await res.json();
+      if (!res.ok) { postErrEl.innerHTML = '<div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+      titleEl.value = ''; descEl.value = ''; transcriptEl.value = ''; urlEl.value = ''; typeEl.value = 'video'; priceEl.value = ''; addrEl.value = ''; attestEl.value = '';
+      var mount = document.getElementById('media-list');
+      var empty = mount.querySelector('.empty');
+      if (empty) mount.innerHTML = '';
+      var fresh = document.createElement('div');
+      fresh.innerHTML = renderMediaCard(d.media);
+      var newCard = fresh.firstElementChild;
+      mount.insertBefore(newCard, mount.firstChild);
+      wireMediaCard(newCard, d.media);
+      loadHub();
+    } catch (e) {
+      postErrEl.innerHTML = '<div class="err">Request failed — the server may be unreachable.</div>';
+    } finally {
+      postGo.disabled = false; postGo.textContent = 'List media';
+    }
+  });
+
+  loadHub();
+})();
+</script>
+</body>
+</html>
