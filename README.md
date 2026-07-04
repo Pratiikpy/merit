@@ -15,7 +15,7 @@ recompute without trusting a Merit server.
 <a href="https://merit-ecru.vercel.app"><img src="https://img.shields.io/badge/live%20demo-merit--ecru.vercel.app-16A34A?style=flat-square" alt="Live demo" /></a>
 <a href="https://youtu.be/MuV-c3yaQwY"><img src="https://img.shields.io/badge/%E2%96%B6%20demo-2%20min%20video-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="2-minute demo video" /></a>
 <img src="https://img.shields.io/badge/Arc-testnet%205042002-0A0A0A?style=flat-square" alt="Arc testnet" />
-<img src="https://img.shields.io/badge/tests-480%20passing-3FB950?style=flat-square" alt="480 tests passing" />
+<img src="https://img.shields.io/badge/tests-486%20passing-3FB950?style=flat-square" alt="486 tests passing" />
 <img src="https://img.shields.io/badge/proof--of--citation-275--case%20adversarial%20benchmark-3FB950?style=flat-square" alt="275-case adversarial benchmark" />
 <img src="https://img.shields.io/badge/license-Apache--2.0-3178C6?style=flat-square" alt="Apache-2.0" />
 </p>
@@ -182,6 +182,13 @@ reputation, uptime, relevance, or the generator's own say-so, because none has a
 Merit does, so the same proof-of-citation gate becomes every capability the agentic economy needs. Each
 is live on the deployment and proven with a real on-chain outcome.
 
+- **Verified Inference — the flagship** (`POST /api/inference`, [inference.html](https://merit-ecru.vercel.app/inference.html)).
+  Don't sell AI tokens; sell AI proven to have run correctly (a 0G TEE hardware attestation) and proven to be
+  right (Merit's verifier, whose judge is itself an attested 0G model). Merit resells 0G's TEE-attested models
+  over x402 and staples proof to every answer; you pay per call in USDC on Arc, only if it verifies, and a wrong
+  answer costs $0. Live: an attested DeepSeek-V4 completion with a real 0G handle (provider `0xB01EBd79…`, TDX /
+  TeeTLS), and a verified answer where both the generation and the verification are TDX-attested → SUPPORTED,
+  charged $0.004. Attested compute + verified output + on-chain settlement, fused.
 - **Score any x402 endpoint** (`POST /api/score`, [scorecard.html](https://merit-ecru.vercel.app/scorecard.html)).
   Point Merit at any agent's paid endpoint with a claim it should back; Merit pays the toll, runs the
   delivered content through the verifier, and publishes a verified-quality-per-dollar leaderboard — the one
@@ -333,7 +340,7 @@ Every claim Merit makes is recomputable from Arc with no Merit server.
 
 | Command | What it does |
 |---|---|
-| `npm test` | 480 unit tests (vitest) over the pure logic: the agency decision table, crew grading and the whole-run budget guard, the receipt settlement-integrity rule, proof-of-citation matching and the deterministic numeric verifier, RSS/Atom parsing, registry persistence, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
+| `npm test` | 486 unit tests (vitest) over the pure logic: the agency decision table, crew grading and the whole-run budget guard, the receipt settlement-integrity rule, proof-of-citation matching and the deterministic numeric verifier, RSS/Atom parsing, registry persistence, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
 | `npm run smoke` | end-to-end, 57 checks: sources, a full run, ledger consistency, the summary receipt, no private-key leak, the agent-labor market, a zero-budget pays-nothing invariant, off-topic pays no creators, onboarding, on-chain reputation, the MCP handshake, `verify-all`, `leaderboard`, and the `challenge` re-audit |
 | `npm run prove-moat` | one command: a verified run releases the ERC-8183 escrow; an off-topic run reverts `complete()` via the hook, then refunds |
 | `npm run audit-demo` | feeds the Auditor a genuine citation, two contradictions, and a prompt injection; pays the real one, refuses the rest |
