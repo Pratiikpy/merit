@@ -138,7 +138,7 @@ const ROSTER_META_TTL = 30 * 60_000;
 /** Fetch the 0G model roster once (cached) to annotate ballots with each model's TEE type honestly. Never
  *  throws and never blocks a verdict: on any failure the attestation's teeType/verifiability stay null (we
  *  simply don't claim what we couldn't confirm), while the per-response provider/request/res-key refs still stand. */
-async function modelTee(model: string, now: number): Promise<{ teeType: string | null; verifiability: string | null }> {
+export async function modelTee(model: string, now: number): Promise<{ teeType: string | null; verifiability: string | null }> {
   if (!rosterMeta || now - rosterMetaAt > ROSTER_META_TTL) {
     const c = llmConfig();
     try {

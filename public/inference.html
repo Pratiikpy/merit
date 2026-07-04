@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verified Inference — Merit</title>
+<meta name="description" content="Buy AI proven to have run correctly (a 0G TEE hardware attestation) and proven to be right (Merit's verifier) — pay per call in USDC on Arc, only if it verifies.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Verified Inference — Merit">
+<meta property="og:description" content="A 0G TEE-attested model answers, Merit verifies it, and you pay per call in USDC on Arc — only if it verifies.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:72ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:22px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  h2.lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;}
+  .tabs{display:inline-flex;gap:4px;background:#F4F4F5;border-radius:12px;padding:4px;margin-bottom:16px;}
+  .tab{font-family:inherit;font-size:13.5px;font-weight:700;padding:10px 16px;border:none;border-radius:9px;background:transparent;color:#6B7280;cursor:pointer;display:inline-flex;align-items:center;gap:9px;}
+  .tab.active{background:#fff;color:#0A0A0A;box-shadow:0 1px 3px rgba(10,10,10,.1);}
+  .tab .tabprice{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;color:#52525B;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:999px;padding:2px 8px;}
+  .tab.active .tabprice{background:#F4F4F5;}
+  .card{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .field{flex:1;min-width:220px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+  input[type=text],input[type=number],textarea,select{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid #D4D4D8;border-radius:10px;color:#0A0A0A;outline:none;background:#fff;}
+  textarea{resize:vertical;min-height:76px;line-height:1.5;}
+  input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{border-color:#0A0A0A;}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#fff;background:#0A0A0A;border:none;border-radius:10px;padding:12px 20px;cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:#18181B;} .btn:disabled{opacity:.5;cursor:default;}
+  .pricehint{font-size:12.5px;font-weight:700;color:#52525B;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:999px;padding:7px 13px;white-space:nowrap;}
+  .hint{font-size:12px;color:#6B7280;margin-top:8px;}
+  .note{font-size:13px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 13px;margin-top:12px;}
+  .err{border:1px solid #FECDD3;background:#FFF1F2;border-radius:10px;padding:12px 14px;color:#9F1239;font-size:13.5px;margin-top:12px;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  .vidchip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#52525B;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:7px;padding:2px 8px;margin-top:8px;margin-right:6px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;user-select:all;}
+  .verdict{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap;}
+  .verdict.VERIFIED{background:#DCFCE7;color:#047857;} .verdict.REFUSED{background:#FEE2E2;color:#BE123C;}
+  .rcard{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .rhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .tierchip{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 10px;border-radius:999px;white-space:nowrap;}
+  .tierchip.attested{background:#F4F4F5;color:#52525B;}
+  .tierchip.verified{background:#F5F3FF;color:#7C3AED;}
+  .modelname{font-size:12.5px;font-weight:700;}
+  .muted{color:#6B7280;font-size:11.5px;}
+  .latline{font-size:12px;color:#6B7280;margin-bottom:10px;}
+  .answer{font-size:14.5px;color:#0A0A0A;margin-bottom:4px;padding:12px 14px;background:#FAFAFA;border-radius:10px;border:1px solid #F3F4F6;white-space:pre-wrap;word-break:break-word;}
+  .attbox{border:1px solid #DDD6FE;background:#F5F3FF;border-radius:14px;padding:15px 17px;margin-top:14px;}
+  .attbox-head{display:flex;align-items:center;margin-bottom:2px;}
+  .attchip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#7C3AED;background:#fff;border:1px solid #DDD6FE;border-radius:999px;padding:4px 12px;}
+  .attgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:11px 16px;margin-top:12px;}
+  .attr{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .al{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;}
+  .av{font-size:13px;font-weight:600;color:#0A0A0A;word-break:break-word;}
+  .av.mono{display:inline-block;max-width:100%;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:#52525B;background:#fff;border:1px solid #E4E4E7;border-radius:6px;padding:3px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;user-select:all;}
+  .noatt{font-size:13px;color:#4B5563;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:11px 14px;margin-top:14px;}
+  .vblock{margin-top:14px;padding-top:14px;border-top:1px solid #F3F4F6;}
+  .methods{font-size:12px;color:#4B5563;margin:9px 0;}
+  .mchip2{display:inline-block;font-size:11px;font-weight:700;color:#52525B;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:999px;padding:2px 9px;margin-right:6px;}
+  .reasonline{font-size:13px;color:#4B5563;margin-top:8px;}
+  .chargeline{font-size:13.5px;font-weight:700;margin-top:11px;padding:8px 13px;border-radius:9px;display:inline-block;}
+  .chargeline.paid{background:#DCFCE7;color:#047857;}
+  .chargeline.free{background:#FEE2E2;color:#BE123C;}
+  .chargeline.unsettled{background:#F4F4F5;color:#52525B;font-weight:600;}
+  .priceline{font-size:12px;color:#52525B;font-family:'IBM Plex Mono',monospace;margin-top:12px;}
+  .chiprow{margin-top:12px;display:flex;flex-wrap:wrap;gap:2px;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}.tab{padding:9px 12px;font-size:12.5px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/proof.html">Ledger</a>
+      <a href="/jury.html">Jury</a>
+      <a href="/scorecard.html">Scorecard</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Verified Inference</h1>
+  <p class="sub">Buy AI that is proven to have run correctly and proven to be right. A 0G TEE-attested model answers, Merit verifies it, and you pay per call in USDC on Arc — only if it verifies.</p>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">Calls</div><div class="v" id="st-calls">—</div></div>
+    <div class="stat"><div class="k">Verified</div><div class="v" id="st-verified">—</div></div>
+    <div class="stat"><div class="k">Refused</div><div class="v" id="st-refused">—</div></div>
+    <div class="stat"><div class="k">Charged</div><div class="v" id="st-charged">—</div></div>
+    <div class="stat"><div class="k">Saved (would-be)</div><div class="v" id="st-saved">—</div></div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" id="tab-attested" role="tab" aria-selected="true" type="button">Attested inference <span class="tabprice mono" id="tab-at-price">$0.0020</span></button>
+    <button class="tab" id="tab-verified" role="tab" aria-selected="false" type="button">Verified answer <span class="tabprice mono" id="tab-vf-price">$0.0040</span></button>
+  </div>
+
+  <div class="card" id="panel-attested" role="tabpanel">
+    <div class="row">
+      <div class="field"><label for="at-model">Model</label><select id="at-model"></select></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="at-prompt">Prompt</label><textarea id="at-prompt" style="min-height:100px" placeholder="Ask anything."></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="at-system">System prompt (optional)</label><textarea id="at-system" placeholder="Optional system instructions."></textarea></div>
+    </div>
+    <div class="row" style="margin-top:12px;align-items:center;justify-content:space-between">
+      <div class="pricehint mono" id="at-pricehint">$0.0020 / call</div>
+      <button class="btn" id="at-go" type="button">Run (attested)</button>
+    </div>
+    <div class="hint">Answered by a 0G TEE-attested model. The hardware attestation handle is stapled to the receipt.</div>
+    <div id="at-note"></div>
+    <div id="at-err"></div>
+  </div>
+  <div id="at-result"></div>
+
+  <div class="card" id="panel-verified" role="tabpanel" hidden>
+    <div class="row">
+      <div class="field"><label for="vf-model">Model</label><select id="vf-model"></select></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="vf-question">Question</label><input type="text" id="vf-question" placeholder="e.g. What was Q3 revenue growth?" spellcheck="false"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="vf-source">Source — the material the answer must be grounded in</label><textarea id="vf-source" style="min-height:110px" placeholder="Paste the source text the answer must be grounded in."></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="vf-key">API key (optional — to actually settle)</label><input type="text" id="vf-key" placeholder="merit_sk_… (sent as Authorization: Bearer)" spellcheck="false" autocomplete="off"></div>
+    </div>
+    <div class="row" style="margin-top:12px;align-items:center;justify-content:space-between">
+      <div class="pricehint mono" id="vf-pricehint">$0.0040 / call</div>
+      <button class="btn" id="vf-go" type="button">Run (verified)</button>
+    </div>
+    <div class="hint">Generated by an attested 0G model, then verified by a deterministic numeric gate plus an attested 0G judge. You pay only if it verifies — a wrong answer is $0. Without an API key the verdict is still real, just not settled.</div>
+    <div id="vf-note"></div>
+    <div id="vf-err"></div>
+  </div>
+  <div id="vf-result"></div>
+
+  <h2 class="lbl">Recent calls</h2>
+  <div id="recent"></div>
+  </main>
+
+  <footer class="foot">Attested inference runs over the 0G router Merit already operates today — the full 0G Compute SDK broker (on-chain ledger settlement and the raw TDX quote) is the roadmap upgrade. Every verdict is either hardware-attested or publicly recomputable; nothing here trusts Merit's server. <a href="/api/inference" style="text-decoration:underline">Raw JSON →</a></footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function usd(n){return '$'+Number(n||0).toFixed(4);}
+  function numf(n){return n==null?'—':Math.round(Number(n)).toLocaleString();}
+  function fmtDate(s){try{return new Date(s).toLocaleString();}catch(e){return '';}}
+
+  // ---- attestation block — the star of the page. Never rendered unless the handle is a real non-null object. ----
+  function attRow(label, value, isMono){
+    var v = value==null || value==='' ? '—' : String(value);
+    return '<div class="attr"><span class="al">'+esc(label)+'</span><span class="av'+(isMono?' mono':'')+'" title="'+esc(v)+'">'+esc(v)+'</span></div>';
+  }
+  function renderAtt(att, chipLabel){
+    if (!att) return '<div class="noatt">'+esc(chipLabel)+': no 0G attestation on this response.</div>';
+    var rows = attRow('provider', att.provider) + attRow('request id', att.requestId, true) + attRow('res-key', att.resKey, true);
+    if (att.teeType) rows += attRow('TEE type', att.teeType);
+    if (att.verifiability) rows += attRow('verifiability', att.verifiability);
+    return '<div class="attbox"><div class="attbox-head"><span class="attchip">🛡 '+esc(chipLabel)+'</span></div><div class="attgrid">'+rows+'</div></div>';
+  }
+
+  // ---- verified-tier verdict, methods, reason, charge ----
+  function renderVerifiedBlock(r){
+    var verdictHtml = r.verified
+      ? '<span class="verdict VERIFIED">✓ VERIFIED</span>'
+      : '<span class="verdict REFUSED">✕ REFUSED</span>';
+    var methodsHtml = (r.methods && r.methods.length)
+      ? '<div class="methods">methods: '+r.methods.map(function(m){return '<span class="mchip2">'+esc(m)+'</span>';}).join('')+'</div>'
+      : '';
+    var chargeHtml;
+    if (r.charged > 0) {
+      chargeHtml = '<div class="chargeline paid">charged '+usd(r.charged)+' USDC</div>';
+    } else if (r.verified === false) {
+      chargeHtml = '<div class="chargeline free">$0 — you don\'t pay for a wrong answer.</div>';
+    } else {
+      chargeHtml = '<div class="chargeline unsettled">$0 — not settled (connect an API key to pay the toll on a verified answer)</div>';
+    }
+    return '<div class="vblock">'+verdictHtml+methodsHtml+(r.reason?'<div class="reasonline">'+esc(r.reason)+'</div>':'')+chargeHtml+'</div>';
+  }
+
+  // ---- shared receipt renderer for a fresh POST result and every item in the recent list ----
+  function renderReceipt(r, opts){
+    opts = opts || {};
+    var when = r.createdAt ? fmtDate(r.createdAt) : '';
+    var content = r.content != null ? r.content : (r.contentPreview || '');
+    var tierLabel = r.tier === 'verified' ? 'Verified answer' : 'Attested inference';
+    var head = '<div class="rhead"><span class="tierchip '+esc(r.tier)+'">'+esc(tierLabel)+'</span>'
+      + '<span class="mono modelname">'+esc(r.model)+'</span>'
+      + '<span class="mono muted">'+esc(when)+'</span></div>';
+    var latency = '<div class="latline">latency '+numf(r.latencyMs)+' ms</div>';
+    var answerHtml = '<div class="answer">'+esc(content)+'</div>';
+    var attHtml = renderAtt(r.attestation, '0G TEE-attested');
+    var judgeHtml = r.tier === 'verified' ? renderAtt(r.judgeAttestation, 'verification attested by') : '';
+    var tail = r.tier === 'verified'
+      ? renderVerifiedBlock(r)
+      : '<div class="priceline">charged '+usd(r.charged)+' USDC</div>';
+    var chips = '';
+    if (r.verificationId) chips += '<span class="vidchip" title="'+esc(r.verificationId)+'">verification '+esc(r.verificationId)+'</span>';
+    if (r.signer) chips += '<span class="vidchip" title="'+esc(r.signer)+'">signer '+esc(r.signer)+'</span>';
+    var notes = '';
+    if (opts.note) notes += '<div class="note">'+esc(opts.note)+'</div>';
+    if (opts.settleNote) notes += '<div class="note">'+esc(opts.settleNote)+'</div>';
+    return '<div class="rcard">'+head+latency+answerHtml+attHtml+judgeHtml+tail+(chips?'<div class="chiprow">'+chips+'</div>':'')+notes+'</div>';
+  }
+
+  function renderRecent(list){
+    var el = document.getElementById('recent');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No calls yet — run an attested or verified call above.</div>'; return; }
+    el.innerHTML = list.map(function(r){ return renderReceipt(r); }).join('');
+  }
+
+  function renderStats(s){
+    s = s || {};
+    document.getElementById('st-calls').textContent = s.calls != null ? s.calls : '—';
+    document.getElementById('st-verified').textContent = s.verified != null ? s.verified : '—';
+    document.getElementById('st-refused').textContent = s.refused != null ? s.refused : '—';
+    document.getElementById('st-charged').textContent = s.chargedUsdc != null ? usd(s.chargedUsdc) : '—';
+    document.getElementById('st-saved').textContent = s.savedUsdc != null ? usd(s.savedUsdc) : '—';
+  }
+
+  function fillModels(models, def, sel){
+    if (!sel) return;
+    sel.innerHTML = (models || []).map(function(m){ return '<option value="'+esc(m)+'"'+(m === def ? ' selected' : '')+'>'+esc(m)+'</option>'; }).join('');
+  }
+
+  var atModelEl = document.getElementById('at-model'), atPromptEl = document.getElementById('at-prompt'), atSystemEl = document.getElementById('at-system');
+  var atGo = document.getElementById('at-go'), atNoteEl = document.getElementById('at-note'), atErrEl = document.getElementById('at-err'), atResultEl = document.getElementById('at-result');
+  var vfModelEl = document.getElementById('vf-model'), vfQuestionEl = document.getElementById('vf-question'), vfSourceEl = document.getElementById('vf-source'), vfKeyEl = document.getElementById('vf-key');
+  var vfGo = document.getElementById('vf-go'), vfNoteEl = document.getElementById('vf-note'), vfErrEl = document.getElementById('vf-err'), vfResultEl = document.getElementById('vf-result');
+
+  async function init(){
+    try {
+      var res = await fetch('/api/inference', { cache: 'no-store' });
+      var d = await res.json();
+      fillModels(d.models, d.defaultModel, atModelEl);
+      fillModels(d.models, d.defaultModel, vfModelEl);
+      var atPrice = usd((d.prices || {}).attested);
+      var vfPrice = usd((d.prices || {}).verified);
+      document.getElementById('at-pricehint').textContent = atPrice + ' / call';
+      document.getElementById('vf-pricehint').textContent = vfPrice + ' / call';
+      document.getElementById('tab-at-price').textContent = atPrice;
+      document.getElementById('tab-vf-price').textContent = vfPrice;
+      renderStats(d.stats);
+      renderRecent(d.recent || []);
+    } catch (e) {
+      document.getElementById('recent').innerHTML = '<div class="err">Could not load Verified Inference data.</div>';
+    }
+  }
+  async function refreshBoard(){
+    try {
+      var res = await fetch('/api/inference', { cache: 'no-store' });
+      var d = await res.json();
+      renderStats(d.stats);
+      renderRecent(d.recent || []);
+    } catch (e) { /* the just-run result is still shown above; a stale board is non-fatal */ }
+  }
+
+  // ---- tabs ----
+  var tabAt = document.getElementById('tab-attested'), tabVf = document.getElementById('tab-verified');
+  var panelAt = document.getElementById('panel-attested'), panelVf = document.getElementById('panel-verified');
+  function showTab(which){
+    var isAt = which === 'attested';
+    tabAt.classList.toggle('active', isAt);
+    tabVf.classList.toggle('active', !isAt);
+    tabAt.setAttribute('aria-selected', isAt ? 'true' : 'false');
+    tabVf.setAttribute('aria-selected', !isAt ? 'true' : 'false');
+    panelAt.hidden = !isAt;
+    panelVf.hidden = isAt;
+  }
+  tabAt.addEventListener('click', function(){ showTab('attested'); });
+  tabVf.addEventListener('click', function(){ showTab('verified'); });
+
+  // ---- attested run ----
+  atGo.addEventListener('click', async function(){
+    atErrEl.innerHTML = ''; atNoteEl.innerHTML = '';
+    var prompt = (atPromptEl.value || '').trim();
+    if (!prompt) { atErrEl.innerHTML = '<div class="err">Provide a prompt.</div>'; return; }
+    var body = { tier: 'attested', prompt: prompt, model: atModelEl.value };
+    var system = (atSystemEl.value || '').trim();
+    if (system) body.system = system;
+    atGo.disabled = true; atGo.textContent = 'Calling 0G… ~10-30s';
+    try {
+      var res = await fetch('/api/inference', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      var d = await res.json();
+      if (!res.ok) { atErrEl.innerHTML = '<div class="err">'+esc(d.error || ('error ' + res.status))+'</div>'; return; }
+      if (d.note) atNoteEl.innerHTML = '<div class="note">'+esc(d.note)+'</div>';
+      atResultEl.innerHTML = renderReceipt(d.receipt) + atResultEl.innerHTML;
+      refreshBoard();
+    } catch (e) {
+      atErrEl.innerHTML = '<div class="err">Request failed — the model endpoint may be slow or unreachable.</div>';
+    } finally {
+      atGo.disabled = false; atGo.textContent = 'Run (attested)';
+    }
+  });
+
+  // ---- verified run ----
+  vfGo.addEventListener('click', async function(){
+    vfErrEl.innerHTML = ''; vfNoteEl.innerHTML = '';
+    var question = (vfQuestionEl.value || '').trim();
+    var source = (vfSourceEl.value || '').trim();
+    if (!question || !source) { vfErrEl.innerHTML = '<div class="err">Provide both a question and the source it must be grounded in.</div>'; return; }
+    var body = { tier: 'verified', question: question, source: source, model: vfModelEl.value };
+    var headers = { 'Content-Type': 'application/json' };
+    var key = (vfKeyEl.value || '').trim();
+    if (key) headers['Authorization'] = 'Bearer ' + key;
+    vfGo.disabled = true; vfGo.textContent = 'Calling 0G… ~10-30s';
+    try {
+      var res = await fetch('/api/inference', { method: 'POST', headers: headers, body: JSON.stringify(body) });
+      var d = await res.json();
+      if (!res.ok) { vfErrEl.innerHTML = '<div class="err">'+esc(d.error || ('error ' + res.status))+'</div>'; return; }
+      if (d.note) vfNoteEl.innerHTML = '<div class="note">'+esc(d.note)+'</div>';
+      vfResultEl.innerHTML = renderReceipt(d.receipt, { settleNote: d.settleNote }) + vfResultEl.innerHTML;
+      refreshBoard();
+    } catch (e) {
+      vfErrEl.innerHTML = '<div class="err">Request failed — the model endpoint may be slow or unreachable.</div>';
+    } finally {
+      vfGo.disabled = false; vfGo.textContent = 'Run (verified)';
+    }
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>
