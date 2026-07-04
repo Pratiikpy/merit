@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ground-Truth Markets — Merit</title>
+<meta name="description" content="A prediction market on 'will this claim verify?', settled by ground truth — Merit's own three-gate verifier acting as the on-chain oracle, not a human vote.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Ground-Truth Markets — Merit">
+<meta property="og:description" content="The only prediction market resolved by ground truth — settled by Merit's real verifier as the oracle, not a human committee.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:72ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  h2.lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;}
+  .card{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .field{flex:1;min-width:220px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+  input[type=text],input[type=number],textarea,select{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid #D4D4D8;border-radius:10px;color:#0A0A0A;outline:none;background:#fff;}
+  textarea{resize:vertical;min-height:76px;line-height:1.5;}
+  input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{border-color:#0A0A0A;}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#fff;background:#0A0A0A;border:none;border-radius:10px;padding:12px 20px;cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:#18181B;} .btn:disabled{opacity:.5;cursor:default;}
+  .btn.sm{font-size:13px;padding:10px 16px;border-radius:9px;}
+  .hint{font-size:12px;color:#6B7280;margin-top:8px;}
+  .note{font-size:13px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 13px;margin-top:12px;}
+  .err{border:1px solid #FECDD3;background:#FFF1F2;border-radius:10px;padding:12px 14px;color:#9F1239;font-size:13.5px;margin-top:12px;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;}
+  .pill.open{background:#F4F4F5;color:#52525B;}
+  .pill.resolved{background:#E4E4E7;color:#3F3F46;}
+  .marketcard{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .markethead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .claim{font-size:18px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px;}
+  .srcprev{font-size:12.5px;color:#4B5563;margin-bottom:12px;padding:10px 12px;background:#FAFAFA;border-radius:10px;border:1px solid #F3F4F6;white-space:pre-wrap;max-height:110px;overflow:auto;}
+  .seedline{font-size:12.5px;color:#6B7280;margin-bottom:10px;}
+  .probrow{display:flex;align-items:center;gap:10px;margin:12px 0;}
+  .probbar{flex:1;height:10px;border-radius:999px;background:#FEE2E2;overflow:hidden;min-width:80px;}
+  .probbar>i{display:block;height:100%;background:#047857;}
+  .probpct{font-weight:800;font-size:13.5px;white-space:nowrap;}
+  .outcome{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:800;padding:7px 15px;border-radius:999px;white-space:nowrap;margin-bottom:10px;}
+  .outcome.yes{background:#DCFCE7;color:#047857;}
+  .outcome.no{background:#FEE2E2;color:#BE123C;}
+  .reasonline{font-size:13px;color:#4B5563;margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6;}
+  .vidchip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B7280;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:7px;padding:2px 8px;margin-top:10px;}
+  .txtrail{margin-top:10px;display:flex;flex-direction:column;gap:4px;}
+  .txline{font-size:12.5px;color:#4B5563;}
+  .txline a{text-decoration:underline;font-weight:600;color:#0A0A0A;}
+  .meta{font-size:12.5px;color:#6B7280;margin-bottom:10px;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/proof.html">Ledger</a>
+      <a href="/jury.html">Jury</a>
+      <a href="/scorecard.html">Scorecard</a>
+      <a href="/gigs.html">Gigs</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Ground-Truth Markets</h1>
+  <p class="sub">The only prediction market resolved by ground truth — a market on "will this claim verify?", settled by Merit's own verifier as the oracle, not a human vote.</p>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">Markets opened</div><div class="v" id="st-total">—</div></div>
+    <div class="stat"><div class="k">Open now</div><div class="v" id="st-open">—</div></div>
+    <div class="stat"><div class="k">Resolved</div><div class="v" id="st-resolved">—</div></div>
+    <div class="stat"><div class="k">Verified YES</div><div class="v" id="st-yes">—</div></div>
+  </div>
+
+  <div id="featured"></div>
+
+  <h2 class="lbl">Open a market</h2>
+  <div class="card">
+    <div class="row">
+      <div class="field"><label for="in-claim">Claim</label><textarea id="in-claim" placeholder="e.g. Cross-border B2B stablecoin settlement crossed $4T in 2026." spellcheck="false"></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-source">Source — the text the claim will be checked against</label><textarea id="in-source" style="min-height:110px" placeholder="Paste the source text the verifier will check the claim against." spellcheck="false"></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field" style="flex:0 0 170px;min-width:170px"><label for="in-side">Seed a real stake</label><select id="in-side"><option value="">— (off-chain only)</option><option value="yes">YES</option><option value="no">NO</option></select></div>
+      <div class="field" style="flex:0 0 140px;min-width:140px"><label for="in-usdc">Seed amount (USDC)</label><input type="number" id="in-usdc" placeholder="0.05" min="0" max="0.1" step="0.001"></div>
+      <div class="field"><label for="in-key">API key (optional — required to seed on-chain)</label><input type="text" id="in-key" placeholder="merit_sk_… (sent as Authorization: Bearer)" spellcheck="false" autocomplete="off"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div style="align-self:flex-end"><button class="btn" id="go">Open market</button></div>
+    </div>
+    <div class="hint">Leave the seed side blank to open the market off-chain instantly — it starts at 50/50 and is still resolvable by ground truth. Supply an API key with a seed side + amount (capped at 0.1 USDC) to stake a real on-chain position and start the pool with a live crowd probability.</div>
+    <div id="form-note"></div>
+    <div id="form-err"></div>
+  </div>
+
+  <h2 class="lbl">Markets</h2>
+  <div id="markets"></div>
+  </main>
+
+  <footer class="foot" id="foot-note">Markets resolve by Merit's real three-gate proof-of-citation verifier — the same oracle used everywhere else in Merit, not a human vote. <a href="/api/market" style="text-decoration:underline">Raw JSON →</a></footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function fmtDate(s){try{return new Date(s).toLocaleString();}catch(e){return '';}}
+  function yesPct(bps){ bps = bps==null ? 5000 : Number(bps); return Math.round(bps/100); }
+
+  function renderProb(market){
+    var pct = yesPct(market.yesBps);
+    return '<div class="probrow"><div class="probbar"><i style="width:'+pct+'%"></i></div><span class="probpct mono">YES '+pct+'%</span></div>';
+  }
+
+  function renderOutcome(market){
+    if (market.status !== 'resolved') return '';
+    var isYes = market.outcome === 'YES';
+    var badge = isYes
+      ? '<span class="outcome yes">✓ VERIFIED (YES)</span>'
+      : '<span class="outcome no">✕ DID NOT VERIFY (NO)</span>';
+    var reason = market.reason ? '<div class="reasonline">'+esc(market.reason)+'</div>' : '';
+    var vid = market.verificationId ? '<div class="vidchip">verification '+esc(market.verificationId)+'</div>' : '';
+    var txs = (market.txs||[]).filter(function(t){ return typeof t.explorerUrl === 'string' && t.explorerUrl; });
+    var txHtml = txs.length
+      ? '<div class="txtrail">'+txs.map(function(t){
+          return '<div class="txline">'+esc(t.step)+' → <a href="'+esc(t.explorerUrl)+'" target="_blank" rel="noopener noreferrer nofollow">on-chain →</a></div>';
+        }).join('')+'</div>'
+      : '';
+    return '<div>'+badge+'</div>'+reason+vid+txHtml;
+  }
+
+  function seedLine(market){
+    if (!market.seedSide || !market.seedUsdc) return '';
+    return '<div class="seedline">Merit seeded <b>'+Number(market.seedUsdc).toFixed(4)+'</b> USDC on <b>'+esc(market.seedSide.toUpperCase())+'</b> — a real on-chain stake.</div>';
+  }
+
+  function renderMarketCard(market){
+    var pill = '<span class="pill '+esc(market.status)+'">'+esc(market.status)+'</span>';
+    var when = market.createdAt ? fmtDate(market.createdAt) : '';
+    var body = '<div class="marketcard" data-market-id="'+esc(market.id)+'">'
+      + '<div class="markethead">'+pill+'<span class="mono" style="font-size:11.5px;color:#6B7280">'+esc(when)+'</span></div>'
+      + '<div class="claim">'+esc(market.claim)+'</div>'
+      + '<div class="srcprev mono">'+esc(market.sourcePreview)+'</div>'
+      + seedLine(market);
+
+    if (market.status === 'resolved') {
+      body += renderOutcome(market);
+    } else {
+      body += renderProb(market)
+        + '<div class="row"><button class="btn sm resolve-btn">Resolve by ground truth</button></div>';
+    }
+    body += '<div class="meta" style="margin-top:10px;margin-bottom:0">market id <span class="mono">'+esc(market.id)+'</span></div>';
+    body += '</div>';
+    return body;
+  }
+
+  function wireMarketCard(el, market){
+    var btn = el.querySelector('.resolve-btn');
+    if (!btn) return;
+    btn.addEventListener('click', async function(){
+      btn.disabled = true; btn.textContent = 'Resolving… the verifier is deciding';
+      try {
+        var res = await fetch('/api/market', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'resolve', id: market.id }) });
+        var d = await res.json();
+        if (!res.ok) {
+          var errEl = document.createElement('div');
+          errEl.className = 'err';
+          errEl.textContent = d.error || ('error ' + res.status);
+          el.appendChild(errEl);
+          return;
+        }
+        var fresh = document.createElement('div');
+        fresh.innerHTML = renderMarketCard(d.market);
+        var newCard = fresh.firstElementChild;
+        if (d.note) {
+          var noteEl = document.createElement('div');
+          noteEl.className = 'note';
+          noteEl.textContent = d.note;
+          newCard.appendChild(noteEl);
+        }
+        el.replaceWith(newCard);
+        wireMarketCard(newCard, d.market);
+        loadBoard();
+      } catch (e) {
+        var errEl2 = document.createElement('div');
+        errEl2.className = 'err';
+        errEl2.textContent = 'Request failed — the verifier may be slow or the server unreachable.';
+        el.appendChild(errEl2);
+      } finally {
+        if (btn.isConnected) { btn.disabled = false; btn.textContent = 'Resolve by ground truth'; }
+      }
+    });
+  }
+
+  function renderMarkets(list){
+    var el = document.getElementById('markets');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No markets yet — open the first one above.</div>'; return; }
+    el.innerHTML = list.map(renderMarketCard).join('');
+    var cards = el.querySelectorAll('.marketcard');
+    for (var i=0;i<cards.length;i++){
+      var id = cards[i].getAttribute('data-market-id');
+      var market = list.find(function(m){return m.id === id;});
+      if (market) wireMarketCard(cards[i], market);
+    }
+  }
+
+  function renderStats(stats, onchain){
+    stats = stats || {};
+    document.getElementById('st-total').textContent = stats.total != null ? stats.total : '—';
+    document.getElementById('st-open').textContent = stats.open != null ? stats.open : '—';
+    document.getElementById('st-resolved').textContent = stats.resolved != null ? stats.resolved : '—';
+    document.getElementById('st-yes').textContent = stats.verifiedYes != null ? stats.verifiedYes : '—';
+    var footEl = document.getElementById('foot-note');
+    var onchainNote = onchain
+      ? ' The on-chain oracle is enabled — the pari-mutuel pool settles on-chain.'
+      : ' The on-chain oracle is not enabled on this deployment — markets resolve at the application level by the same verdict.';
+    footEl.innerHTML = 'Markets resolve by Merit\'s real three-gate proof-of-citation verifier — the same oracle used everywhere else in Merit, not a human vote.'+onchainNote+' <a href="/api/market" style="text-decoration:underline">Raw JSON →</a>';
+  }
+
+  async function loadBoard(){
+    try{
+      var res = await fetch('/api/market', {cache:'no-store'});
+      var d = await res.json();
+      renderStats(d.stats, d.onchain);
+      renderMarkets(d.markets||[]);
+    }catch(e){
+      document.getElementById('markets').innerHTML = '<div class="err">Could not load the markets.</div>';
+    }
+  }
+
+  async function loadFeatured(id){
+    var el = document.getElementById('featured');
+    try{
+      var res = await fetch('/api/market?id='+encodeURIComponent(id), {cache:'no-store'});
+      var d = await res.json();
+      if (!res.ok) { el.innerHTML = '<h2 class="lbl">Featured market</h2><div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+      el.innerHTML = '<h2 class="lbl">Featured market</h2>'+renderMarketCard(d.market);
+      var card = el.querySelector('.marketcard');
+      if (card) wireMarketCard(card, d.market);
+    }catch(e){ el.innerHTML = '<h2 class="lbl">Featured market</h2><div class="err">Could not load this market.</div>'; }
+  }
+
+  // ---- open-a-market form ----
+  var go = document.getElementById('go');
+  var claimEl = document.getElementById('in-claim'), sourceEl = document.getElementById('in-source'), sideEl = document.getElementById('in-side'), usdcEl = document.getElementById('in-usdc'), keyEl = document.getElementById('in-key');
+  var noteEl = document.getElementById('form-note'), errEl = document.getElementById('form-err');
+
+  go.addEventListener('click', async function(){
+    noteEl.innerHTML = ''; errEl.innerHTML = '';
+    var claim = (claimEl.value||'').trim();
+    var source = (sourceEl.value||'').trim();
+    var seedSide = sideEl.value || undefined;
+    var seedUsdc = (usdcEl.value||'').trim();
+    var key = (keyEl.value||'').trim();
+    if (!claim) { errEl.innerHTML = '<div class="err">Provide the claim to open a market on.</div>'; return; }
+    if (!source) { errEl.innerHTML = '<div class="err">Provide the source the claim will be checked against.</div>'; return; }
+
+    go.disabled = true; go.textContent = 'Opening…';
+    try {
+      var body = { action: 'create', claim: claim, source: source };
+      if (seedSide) body.seedSide = seedSide;
+      if (seedUsdc) body.seedUsdc = Number(seedUsdc);
+      var headers = { 'Content-Type': 'application/json' };
+      if (key) headers['Authorization'] = 'Bearer ' + key;
+      var res = await fetch('/api/market', { method: 'POST', headers: headers, body: JSON.stringify(body) });
+      var d = await res.json();
+      if (!res.ok) { errEl.innerHTML = '<div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+      if (d.seedNote) noteEl.innerHTML = '<div class="note">'+esc(d.seedNote)+'</div>';
+      claimEl.value = ''; sourceEl.value = ''; sideEl.value = ''; usdcEl.value = ''; keyEl.value = '';
+      var mount = document.getElementById('markets');
+      var empty = mount.querySelector('.empty');
+      if (empty) mount.innerHTML = '';
+      var fresh = document.createElement('div');
+      fresh.innerHTML = renderMarketCard(d.market);
+      var newCard = fresh.firstElementChild;
+      mount.insertBefore(newCard, mount.firstChild);
+      wireMarketCard(newCard, d.market);
+      loadBoard();
+    } catch (e) {
+      errEl.innerHTML = '<div class="err">Request failed — the server may be unreachable.</div>';
+    } finally {
+      go.disabled = false; go.textContent = 'Open market';
+    }
+  });
+
+  var params = new URLSearchParams(window.location.search);
+  var featuredId = params.get('id');
+  if (featuredId) loadFeatured(featuredId);
+  loadBoard();
+})();
+</script>
+</body>
+</html>

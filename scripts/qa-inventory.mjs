@@ -17,6 +17,7 @@ const PAGES = [
   { slug: "scorecard", path: "/scorecard.html" },
   { slug: "gigs", path: "/gigs.html" },
   { slug: "crosschain", path: "/crosschain.html" },
+  { slug: "market", path: "/market.html" },
   { slug: "break", path: "/break.html" },
   { slug: "honesty", path: "/honesty.html" },
   { slug: "benchmark", path: "/benchmark.html" },
