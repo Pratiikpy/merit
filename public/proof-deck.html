@@ -84,6 +84,13 @@
   .tx .label{color:var(--muted);font-weight:600;min-width:118px;}
   .tx a{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--arc);text-decoration:underline;text-underline-offset:2px;word-break:break-all;}
   .tx .addr{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--slate);}
+  /* agent-facing surface cards */
+  .apigrid{display:grid;gap:14px;margin-top:26px;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));}
+  .apicard{border:1px solid var(--line2);border-radius:13px;padding:17px 18px;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+  .apicard .at{font-size:15px;font-weight:700;margin-bottom:5px;}
+  .apicard p{font-size:13px;line-height:1.5;color:var(--muted);margin:0 0 11px;}
+  .apicard code{display:block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.55;color:var(--slate);background:var(--wash);border:1px solid var(--line);border-radius:8px;padding:9px 11px;word-break:break-word;}
+  .apicard code .ok{color:var(--release);font-weight:600;} .apicard code .no{color:var(--refuse);font-weight:600;} .apicard code .mut{color:var(--muted);}
   /* lightbox */
   .lightbox{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(10,10,10,.9);padding:32px;}
   .lightbox.open{display:flex;}
@@ -148,6 +155,9 @@
       <figure class="shot"><img src="/proof-images/verify-refused.png" alt="A fabricated $40T figure returns a REFUSED verdict" loading="lazy"><figcaption><span class="chain ref">Refused</span> Claim says <b>$40 trillion</b>, source says $4.1T → <b>REFUSED</b> by the deterministic numeric check, with a signed receipt.</figcaption></figure>
       <figure class="shot"><img src="/proof-images/verify-supported.png" alt="A genuinely supported claim returns a SUPPORTED verdict" loading="lazy"><figcaption><span class="chain sup">Supported</span> A claim the source genuinely backs → <b>SUPPORTED</b>, all gates confirm, signed and settleable.</figcaption></figure>
     </div>
+    <div class="grid g1" style="margin-top:18px;">
+      <figure class="shot"><img src="/proof-images/receipt.png" alt="A shareable, signed proof-of-citation receipt" loading="lazy"><figcaption><span class="chain arc">Signed receipt</span> Every verdict is a shareable receipt: the claim, source, the three gates that decided it, and a signer you <b>recover offline</b> — no need to trust Merit's server.</figcaption></figure>
+    </div>
   </section>
 
   <section class="sec" id="jury">
@@ -202,8 +212,45 @@
     </div>
   </section>
 
+  <section class="sec" id="creator">
+    <div class="num">09 · The creator side</div>
+    <h2>Creators get paid — instantly, in USDC, only for verified citations.</h2>
+    <p class="lede">Every creator has a Merit Link: a public citation toll. Onboard by pasting an RSS feed or proving a domain — no wallet, no key — and <span class="out">earn USDC every time an agent's citation of your work passes verification</span>, with a "Cited by AI — Verified by Merit" badge no self-report agent can forge.</p>
+    <div class="grid g2">
+      <figure class="shot"><img src="/proof-images/link-toll.png" alt="A creator's public Merit Link citation toll" loading="lazy"><figcaption><span class="chain arc">Merit Link</span> A creator's public citation toll — cite them here and Merit settles real USDC on Arc, gated by the same verification. Shareable, embeddable, QR-ready.</figcaption></figure>
+      <figure class="shot"><img src="/proof-images/passport.png" alt="Domain passport and the Cited-by-AI badge" loading="lazy"><figcaption><span class="chain arc">Passport</span> Prove your domain → an owner-verified identity, the unforgeable <b>"Cited by AI — Verified by Merit"</b> badge, and withdraw earnings held in custody.</figcaption></figure>
+    </div>
+    <div class="grid g1" style="margin-top:18px;">
+      <figure class="shot"><img src="/proof-images/onboard.png" alt="Onboard a creator from an RSS feed" loading="lazy"><figcaption><span class="chain arc">Onboard</span> Paste an RSS feed → become a citable, payable creator with an on-chain <b>ERC-8004 identity</b> in under a minute. No account, no key.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="surface">
+    <div class="num">10 · The full agent-facing surface</div>
+    <h2>Every capability, one real outcome each.</h2>
+    <p class="lede">Beyond the flagship flows, Merit exposes the whole agentic payment stack over clean APIs — each shown here producing a <span class="out">real result on the live deployment</span>. This is the breadth a verify-nothing tool can't match; the verifier sits under all of it.</p>
+    <div class="apigrid">
+      <div class="apicard"><div class="at">Buy agent — verified-quality-per-$</div><p>Ranks buyable sources by verified quality per dollar and pays only the first whose delivered content actually verifies.</p><code>POST /api/buy → bought StableData <span class="ok">$0.00531 · SUPPORTED</span> · <span class="mut">$0 wasted on a pay-on-delivery rail</span></code></div>
+      <div class="apicard"><div class="at">AP2 signed-mandate chain</div><p>A human-signed Intent→Payment mandate is a precondition of the gate: clears only when authorized AND verified.</p><code>POST /api/mandate/settle → <span class="ok">authorized ✓ · verified SUPPORTED · cleared</span> · <span class="no">bad signature → 403</span></code></div>
+      <div class="apicard"><div class="at">Tx-simulation pre-flight</div><p>Dry-runs the transfer against Arc before broadcast, so a doomed payout is caught before it spends gas.</p><code>POST /api/simulate → <span class="no">wouldSucceed:false</span> · "insufficient USDC: 16.85 &lt; 999999"</code></div>
+      <div class="apicard"><div class="at">Verified net settlement</div><p>Authorize a basket of N cited lines; settle only the verified subset, quarantine the rest.</p><code>POST /api/settle/batch → verified subset <span class="ok">settled</span>, unverified <span class="no">quarantined</span></code></div>
+      <div class="apicard"><div class="at">ERC-8004 two-sided reputation</div><p>A portable, on-chain track record from release-vs-refund history; stronger records price higher.</p><code>GET /api/reputation/stabledata → <span class="ok">merit 95</span> · portable release-rate</code></div>
+      <div class="apicard"><div class="at">Machine-readable discovery</div><p>A public directory + x402 manifest so an agent shortlists by a signal a price/latency listing can't emit.</p><code>GET /api/directory → <span class="ok">21 sources ranked</span> by verified-quality-per-$</code></div>
+      <div class="apicard"><div class="at">Verified streaming</div><p>Pay-per-tick with numeric-tier checkpoints — the stream auto-halts and refunds on quality drift.</p><code>POST /api/stream → per-tick settle · <span class="no">auto-halt + refund</span> on drift</code></div>
+      <div class="apicard"><div class="at">Prepaid balance + 402 metering</div><p>Fund once; burn down only on verified citations — refused ones are free — over gasless x402.</p><code>POST /api/verify/balance → burn-down <span class="ok">only on verified</span> · refused = $0</code></div>
+      <div class="apicard"><div class="at">Session-key delegation</div><p>A short-lived verify-only key spends the parent's balance up to a cap, and can be used nowhere else.</p><code>POST /api/session → scoped key · <span class="no">403 at any other endpoint</span></code></div>
+      <div class="apicard"><div class="at">AP2 fulfillment credential</div><p>On a verified settlement, mints a signed, offline-recoverable proof-of-satisfaction a downstream rail can gate on.</p><code>POST /api/fulfillment → <span class="ok">signed merit.fulfillment/v1</span>, recovers offline</code></div>
+      <div class="apicard"><div class="at">Procurement + seller firewall</div><p>Verify an external seller's delivered content vs the claim; firewall hosts below the verified-delivery bar.</p><code>/api/procure + /api/sellers → verify delivery · <span class="no">firewall low-rep hosts</span></code></div>
+      <div class="apicard"><div class="at">Operator safety guard</div><p>A second settlement predicate: kill-switch, daily hard cap, and velocity auto-freeze on the settlement path.</p><code>/api/admin/freeze → <span class="no">one-call freeze</span> · daily cap · velocity auto-halt</code></div>
+      <div class="apicard"><div class="at">Verdict-carrying webhooks</div><p>Signed events on settle/refund whose payload carries the settlement reason — settled-because-verified vs refunded.</p><code>/api/webhooks → signed events + the <span class="ok">settlement reason</span></code></div>
+      <div class="apicard"><div class="at">Verified-citation cache</div><p>A proven (claim+source) is never re-verified or re-paid; re-verifies automatically when the source changes.</p><code>reuse the signed verdict · <span class="mut">re-verify on source change</span> — the margin engine</code></div>
+      <div class="apicard"><div class="at">Self-improving Auditor</div><p>Learns its payout threshold from appeals while the decision stays gold-set-safe.</p><code>/api/learn → calibrates payout from appeals · decision untouched</code></div>
+      <div class="apicard"><div class="at">MCP tool — one-line install</div><p>The verifier as an MCP tool (verify_citation) any agent installs via npx — pay only if the citation verifies.</p><code>verify_citation over MCP → <span class="ok">signed verdict inline</span></code></div>
+    </div>
+  </section>
+
   <section class="sec" id="evidence">
-    <div class="num">09 · Falsifiable + the live ledger</div>
+    <div class="num">11 · Falsifiable + the live ledger</div>
     <h2>Scored on a public gold set. Every settlement on a live ledger.</h2>
     <p class="lede">The verifier is measured on a fixed, hand-labeled gold set — <span class="out">reproducible from a fresh checkout, not a self-reported number</span> — and co-evolves with live adversarial traffic. Every real settlement lands on a public ledger where each row is a signed receipt, most deep-linking a real Arc transaction.</p>
     <div class="grid g2">
@@ -217,7 +264,7 @@
   </section>
 
   <section class="sec" id="txs">
-    <div class="num">10 · On-chain transaction index</div>
+    <div class="num">12 · On-chain transaction index</div>
     <h2>Open any transaction and verify it yourself.</h2>
     <p class="lede">The proof-of-citation hook lifecycle, twice — a verified job that <span class="out">released</span> and a failed job that <span class="out">reverted then refunded</span>. Every hash has a successful receipt on Arc testnet 5042002. Click through to ArcScan.</p>
     <div class="txwrap">
