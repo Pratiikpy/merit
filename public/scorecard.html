@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Endpoint Scorecards — Merit</title>
+<meta name="description" content="Score any x402 endpoint on the one axis a payment rail can't see: does what it sells actually verify? Merit pays the toll, runs the three-gate proof-of-citation verifier on what's delivered, and publishes a signed, shareable scorecard plus a verified-quality-per-dollar leaderboard.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Endpoint Scorecards — Merit">
+<meta property="og:description" content="Score any x402 endpoint on the one axis a payment rail can't see — does what it sells actually verify? Signed, shareable scorecards + a verified-quality-per-dollar leaderboard.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:72ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  h2.lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;}
+  .card{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .field{flex:1;min-width:220px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+  input[type=text],input[type=number]{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid #D4D4D8;border-radius:10px;color:#0A0A0A;outline:none;}
+  input[type=text]:focus,input[type=number]:focus{border-color:#0A0A0A;}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#fff;background:#0A0A0A;border:none;border-radius:10px;padding:12px 20px;cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:#18181B;} .btn:disabled{opacity:.5;cursor:default;}
+  .hint{font-size:12px;color:#6B7280;margin-top:8px;}
+  .note{font-size:13px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 13px;margin-top:12px;}
+  .err{border:1px solid #FECDD3;background:#FFF1F2;border-radius:10px;padding:12px 14px;color:#9F1239;font-size:13.5px;margin-top:12px;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{text-align:left;color:#6B7280;font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:8px;border-bottom:1px solid #ECECEE;white-space:nowrap;}
+  td{padding:10px 8px;border-bottom:1px solid #F3F4F6;vertical-align:middle;}
+  td.host{font-weight:700;}
+  .tblwrap{overflow-x:auto;border:1px solid #E4E4E7;border-radius:16px;padding:6px 14px;margin-bottom:16px;}
+  .qcell{display:flex;align-items:center;gap:10px;min-width:140px;}
+  .qbar{flex:1;height:9px;border-radius:999px;background:#F1F5F9;overflow:hidden;min-width:60px;}
+  .qbar>i{display:block;height:100%;background:#10B981;}
+  .qpct{font-weight:700;font-size:12.5px;white-space:nowrap;}
+  .verdict{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap;}
+  .verdict.SUPPORTED{background:#DCFCE7;color:#047857;} .verdict.REFUSED{background:#FEE2E2;color:#BE123C;}
+  .verdict.NEUTRAL{background:#F4F4F5;color:#52525B;}
+  .sccard{border:1px solid #ECECEE;border-radius:16px;padding:18px 20px;margin-bottom:14px;}
+  .schead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .schost{font-weight:700;font-size:15px;}
+  .scurl{font-size:12.5px;color:#6B7280;word-break:break-all;margin-bottom:8px;}
+  .scclaim{font-size:14.5px;color:#0A0A0A;margin-bottom:10px;padding:10px 12px;background:#FAFAFA;border-radius:10px;border:1px solid #F3F4F6;}
+  .scline{font-size:13px;color:#4B5563;margin-bottom:6px;}
+  .scline b{color:#0A0A0A;}
+  .scline a{text-decoration:underline;font-weight:600;color:#0A0A0A;}
+  .metrics{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0;}
+  .metric{font-size:13px;color:#4B5563;}
+  .metric b{font-size:16px;font-weight:800;color:#0A0A0A;display:block;}
+  .gates{display:flex;flex-direction:column;gap:7px;margin:12px 0;}
+  .gate{display:flex;align-items:flex-start;gap:10px;border:1px solid #ECECEE;border-radius:10px;padding:9px 12px;}
+  .gate .chip{flex:none;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:1px;}
+  .chip.pass{background:#DCFCE7;color:#047857;} .chip.fail{background:#FEE2E2;color:#BE123C;} .chip.na{background:#F3F4F6;color:#6B7280;}
+  .gate .gname{font-size:13px;font-weight:700;}
+  .gate .gd{font-size:12px;color:#4B5563;margin-top:2px;}
+  .screason{font-size:13px;color:#4B5563;margin-top:10px;padding-top:10px;border-top:1px solid #F3F4F6;}
+  .vidchip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B7280;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:7px;padding:2px 8px;margin-top:8px;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}.metrics{gap:10px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/proof.html">Ledger</a>
+      <a href="/jury.html">Jury</a>
+      <a href="/statement.html">Statement</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Endpoint Scorecards</h1>
+  <p class="sub">Score any x402 endpoint on the one axis a payment rail can't see — does what it sells actually verify? Merit reaches it, pays the toll if there is one, and runs the delivered content through the real three-gate proof-of-citation verifier.</p>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">Endpoints scored</div><div class="v" id="st-count">—</div></div>
+    <div class="stat"><div class="k">Hosts on the board</div><div class="v" id="st-hosts">—</div></div>
+    <div class="stat"><div class="k">Came back verified</div><div class="v" id="st-verified">—</div></div>
+  </div>
+
+  <div id="featured"></div>
+
+  <h2 class="lbl">Score an endpoint</h2>
+  <div class="card">
+    <div class="row">
+      <div class="field"><label for="in-url">Endpoint URL</label><input type="text" id="in-url" placeholder="https://some-agent.vercel.app/api/answer" spellcheck="false" autocomplete="off"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field" style="flex:2 1 320px"><label for="in-claim">Claim its output should back</label><input type="text" id="in-claim" placeholder="e.g. Cross-border B2B stablecoin settlement crossed $4T in 2026." spellcheck="false"></div>
+      <div class="field" style="flex:0 0 130px;min-width:130px"><label for="in-price">Max price (USDC)</label><input type="number" id="in-price" placeholder="0.00" min="0" max="0.5" step="0.001"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-key">API key (optional — to pay a toll)</label><input type="text" id="in-key" placeholder="merit_sk_… (sent as Authorization: Bearer)" spellcheck="false" autocomplete="off"></div>
+      <div style="align-self:flex-end"><button class="btn" id="go">Score endpoint</button></div>
+    </div>
+    <div class="hint">Leave the max price blank to probe only — Merit reaches the endpoint and scores any free/preview content without paying. Supply an API key + max price to pay the toll and score the paid content.</div>
+    <div id="form-note"></div>
+    <div id="form-err"></div>
+  </div>
+  <div id="form-result"></div>
+
+  <h2 class="lbl">Leaderboard — verified-quality-per-dollar</h2>
+  <div id="board"></div>
+
+  <h2 class="lbl">Recent scorecards</h2>
+  <div id="recent"></div>
+  </main>
+
+  <footer class="foot">Merit ranks endpoints by verified-quality-per-dollar — whether what they sell actually supports the claim, not price, latency, or uptime. A host with quality 0 shows 0, not a hidden row. <a href="/api/score" style="text-decoration:underline">Raw JSON →</a></footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function usd(n){return '$'+Number(n||0).toFixed(4);}
+  function pct(n){return n==null?'—':Math.round(n*100)+'%';}
+  function numf(n,d){return n==null?'—':Number(n).toLocaleString(undefined,{maximumFractionDigits:d==null?3:d});}
+
+  function gateRow(name,state,detail){
+    var chip = state==='pass' ? '<span class="chip pass">PASS</span>' : state==='fail' ? '<span class="chip fail">FAIL</span>' : '<span class="chip na">—</span>';
+    return '<div class="gate">'+chip+'<div><div class="gname">'+esc(name)+'</div><div class="gd">'+esc(detail)+'</div></div></div>';
+  }
+  function renderGates(g){
+    g = g || {};
+    var rows = '';
+    if (g.numeric && g.numeric.ran) rows += gateRow('Deterministic numeric verifier', g.numeric.pass?'pass':'fail', g.numeric.detail);
+    else rows += gateRow('Deterministic numeric verifier','na','no numbers to check in this claim');
+    if (g.nli && g.nli.ran) { var st = g.nli.pass===true?'pass':g.nli.pass===false?'fail':'na'; rows += gateRow('Factual-consistency (NLI) gate', st, g.nli.detail); }
+    else rows += gateRow('Factual-consistency (NLI) gate','na','not run on this deployment');
+    if (g.judge && g.judge.ran) rows += gateRow('Adversarial LLM judge', g.judge.verdict==='support'?'pass':'fail', g.judge.reason);
+    else rows += gateRow('Adversarial LLM judge','na','not run (keyless) — a fabricated figure is still caught deterministically');
+    return '<div class="gates">'+rows+'</div>';
+  }
+
+  // Renders one scorecard, honestly: no verdict when unverifiable, no tx link unless explorerUrl is real.
+  function renderScorecard(sc){
+    var verdictHtml;
+    if (!sc.verifiable) verdictHtml = '<span class="verdict NEUTRAL">TERMS-ONLY · NOT VERIFIABLE</span>';
+    else if (sc.verdict === 'SUPPORTED') verdictHtml = '<span class="verdict SUPPORTED">✓ SUPPORTED</span>';
+    else if (sc.verdict === 'REFUSED') verdictHtml = '<span class="verdict REFUSED">✕ REFUSED</span>';
+    else verdictHtml = '<span class="verdict NEUTRAL">NOT VERIFIABLE</span>';
+
+    var tollLine;
+    if (sc.tollPresent) {
+      tollLine = 'Toll: <b>'+usd(sc.priceUsdc)+'</b>'+(sc.network?' on '+esc(sc.network):'');
+      if (sc.paid) {
+        tollLine += ' · Paid <b>'+usd(sc.paidUsdc)+'</b>';
+        if (sc.explorerUrl) tollLine += ' · <a href="'+esc(sc.explorerUrl)+'" target="_blank" rel="noopener noreferrer nofollow">on-chain →</a>';
+      } else {
+        tollLine += ' · not paid';
+      }
+    } else {
+      tollLine = 'No toll — free endpoint';
+    }
+
+    var metrics = '';
+    if (sc.verifiable && sc.quality != null) {
+      metrics += '<div class="metric"><b>'+pct(sc.quality)+'</b>verified quality</div>';
+      if (sc.paid && sc.valuePerDollar != null) metrics += '<div class="metric"><b>'+numf(sc.valuePerDollar,3)+'</b>verified-quality per $</div>';
+    }
+
+    var gatesHtml = sc.gates ? renderGates(sc.gates) : '';
+    var vidHtml = sc.verificationId ? '<div class="vidchip">verification '+esc(sc.verificationId)+'</div>' : '';
+    var when = sc.createdAt ? new Date(sc.createdAt).toLocaleString() : '';
+
+    return '<div class="sccard">'
+      + '<div class="schead">'+verdictHtml+'<span class="mono" style="font-size:11.5px;color:#6B7280">'+esc(when)+'</span></div>'
+      + '<div class="schost">'+esc(sc.host||'—')+'</div>'
+      + '<div class="scurl"><a href="'+esc(sc.url)+'" target="_blank" rel="noopener noreferrer nofollow">'+esc(sc.url)+'</a></div>'
+      + '<div class="scclaim">'+esc(sc.claim)+'</div>'
+      + '<div class="scline">'+tollLine+'</div>'
+      + (metrics ? '<div class="metrics">'+metrics+'</div>' : '')
+      + gatesHtml
+      + '<div class="screason">'+esc(sc.reason)+'</div>'
+      + vidHtml
+      + '</div>';
+  }
+
+  function renderLeaderboard(rows){
+    var boardEl = document.getElementById('board');
+    if (!rows || !rows.length) {
+      boardEl.innerHTML = '<div class="empty">No endpoints scored yet — score the first one above.</div>';
+      return;
+    }
+    var body = rows.map(function(r){
+      var qp = Math.round((r.avgQuality||0)*100);
+      return '<tr>'
+        + '<td class="host">'+esc(r.host)+'</td>'
+        + '<td><div class="qcell"><div class="qbar"><i style="width:'+qp+'%"></i></div><span class="qpct">'+qp+'%</span></div></td>'
+        + '<td>'+r.verified+' / '+r.scored+'</td>'
+        + '<td>'+(r.bestValuePerDollar==null?'—':numf(r.bestValuePerDollar,3))+'</td>'
+        + '<td>'+r.paidScorecards+'</td>'
+        + '</tr>';
+    }).join('');
+    boardEl.innerHTML = '<div class="tblwrap"><table>'
+      + '<thead><tr><th>Host</th><th>Verified quality</th><th>Verified / scored</th><th>Best value / $</th><th># paid</th></tr></thead>'
+      + '<tbody>'+body+'</tbody></table></div>';
+  }
+
+  function renderRecent(list){
+    var el = document.getElementById('recent');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No endpoints scored yet — score the first one above.</div>'; return; }
+    el.innerHTML = list.map(renderScorecard).join('');
+  }
+
+  function renderStats(d){
+    document.getElementById('st-count').textContent = d.count != null ? d.count : (d.recent||[]).length;
+    document.getElementById('st-hosts').textContent = (d.leaderboard||[]).length;
+    var verified = (d.leaderboard||[]).reduce(function(a,r){ return a + (r.verified||0); }, 0);
+    document.getElementById('st-verified').textContent = verified;
+  }
+
+  async function loadBoard(){
+    try{
+      var res = await fetch('/api/score', {cache:'no-store'});
+      var d = await res.json();
+      renderStats(d);
+      renderLeaderboard(d.leaderboard||[]);
+      renderRecent(d.recent||[]);
+    }catch(e){
+      document.getElementById('board').innerHTML = '<div class="err">Could not load the leaderboard.</div>';
+      document.getElementById('recent').innerHTML = '';
+    }
+  }
+
+  async function loadFeatured(id){
+    var el = document.getElementById('featured');
+    try{
+      var res = await fetch('/api/score?id='+encodeURIComponent(id), {cache:'no-store'});
+      var d = await res.json();
+      if (!res.ok) { el.innerHTML = '<h2 class="lbl">Featured scorecard</h2><div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+      el.innerHTML = '<h2 class="lbl">Featured scorecard</h2>'+renderScorecard(d.scorecard);
+    }catch(e){ el.innerHTML = '<h2 class="lbl">Featured scorecard</h2><div class="err">Could not load this scorecard.</div>'; }
+  }
+
+  var go = document.getElementById('go');
+  var urlEl = document.getElementById('in-url'), claimEl = document.getElementById('in-claim'), priceEl = document.getElementById('in-price'), keyEl = document.getElementById('in-key');
+  var noteEl = document.getElementById('form-note'), errEl = document.getElementById('form-err'), resultEl = document.getElementById('form-result');
+
+  go.addEventListener('click', async function(){
+    noteEl.innerHTML = ''; errEl.innerHTML = '';
+    var url = (urlEl.value||'').trim();
+    var claim = (claimEl.value||'').trim();
+    var maxPrice = (priceEl.value||'').trim();
+    var key = (keyEl.value||'').trim();
+    if (!url || !/^https?:\/\//i.test(url)) { errEl.innerHTML = '<div class="err">Provide an absolute http(s) URL to score.</div>'; return; }
+    if (!claim) { errEl.innerHTML = '<div class="err">Provide the claim the endpoint\'s output should back.</div>'; return; }
+
+    go.disabled = true; go.textContent = 'Scoring… (may take up to 30s)';
+    try {
+      var body = { url: url, claim: claim };
+      if (maxPrice) body.maxPrice = Number(maxPrice);
+      var headers = { 'Content-Type': 'application/json' };
+      if (key) headers['Authorization'] = 'Bearer ' + key;
+      var res = await fetch('/api/score', { method: 'POST', headers: headers, body: JSON.stringify(body) });
+      var d = await res.json();
+      if (!res.ok) { errEl.innerHTML = '<div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+      if (d.paidNote) noteEl.innerHTML = '<div class="note">'+esc(d.paidNote)+'</div>';
+      resultEl.innerHTML = renderScorecard(d.scorecard) + resultEl.innerHTML;
+      loadBoard();
+    } catch (e) {
+      errEl.innerHTML = '<div class="err">Request failed — the endpoint may be slow or unreachable.</div>';
+    } finally {
+      go.disabled = false; go.textContent = 'Score endpoint';
+    }
+  });
+
+  var params = new URLSearchParams(window.location.search);
+  var featuredId = params.get('id');
+  if (featuredId) loadFeatured(featuredId);
+  loadBoard();
+})();
+</script>
+</body>
+</html>
