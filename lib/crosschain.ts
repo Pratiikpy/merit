@@ -131,7 +131,17 @@ export async function crossChainPayout(input: { amount: number; chain: string; r
     recordPayout({ id: r.mintTxHash, amount: settled, chain, recipient, hash: r.mintTxHash, explorerUrl, at: new Date().toISOString() });
     return { ok: true, hash: r.mintTxHash, chain, label: PAYOUT_CHAINS[chain].label, amount: settled, recipient, explorerUrl };
   } catch (e) {
-    // Surface the honest reason (e.g. insufficient Gateway balance) — never a fake success.
-    return { ok: false, error: (e as Error).message.slice(0, 200), status: 502 };
+    // Surface the honest reason — never a fake success. Circle Gateway mints the USDC on the DESTINATION chain
+    // from the caller's wallet, so a cross-chain payout needs native gas on that chain; map that revert to an
+    // actionable message (a same-chain Arc payout needs only Arc gas, which is why arcTestnet settles here).
+    const msg = (e as Error).message || "";
+    if (/gas required exceeds allowance|insufficient funds for gas|exceeds allowance \(0\)/i.test(msg) && chain !== "arcTestnet") {
+      return {
+        ok: false,
+        status: 502,
+        error: `cross-chain mint needs native gas on ${PAYOUT_CHAINS[chain].label} — Merit's payout wallet holds none there yet. The full path settles the moment that wallet is topped up with a little ${PAYOUT_CHAINS[chain].label} gas (a faucet drip); a same-chain Arc payout works today.`,
+      };
+    }
+    return { ok: false, error: msg.slice(0, 220), status: 502 };
   }
 }
