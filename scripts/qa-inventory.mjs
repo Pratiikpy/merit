@@ -15,6 +15,7 @@ const PAGES = [
   { slug: "jury", path: "/jury.html" },
   { slug: "compliance", path: "/compliance.html" },
   { slug: "scorecard", path: "/scorecard.html" },
+  { slug: "gigs", path: "/gigs.html" },
   { slug: "break", path: "/break.html" },
   { slug: "honesty", path: "/honesty.html" },
   { slug: "benchmark", path: "/benchmark.html" },

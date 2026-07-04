@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verified Escrow Board — Merit</title>
+<meta name="description" content="Post a bounty. A worker delivers. Merit's real adversarial grader scores the deliverable against the requirements and releases the escrow only if the work actually meets them — the evaluator everyone else fakes.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Verified Escrow Board — Merit">
+<meta property="og:description" content="Post a bounty. A worker delivers. Merit's real grader releases the escrow only if the work meets the requirements — for humans and agents.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:72ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  h2.lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;}
+  .card{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .field{flex:1;min-width:220px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+  input[type=text],input[type=number],textarea{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid #D4D4D8;border-radius:10px;color:#0A0A0A;outline:none;background:#fff;}
+  textarea{resize:vertical;min-height:76px;line-height:1.5;}
+  input[type=text]:focus,input[type=number]:focus,textarea:focus{border-color:#0A0A0A;}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#fff;background:#0A0A0A;border:none;border-radius:10px;padding:12px 20px;cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:#18181B;} .btn:disabled{opacity:.5;cursor:default;}
+  .btn.sm{font-size:13px;padding:10px 16px;border-radius:9px;}
+  .hint{font-size:12px;color:#6B7280;margin-top:8px;}
+  .note{font-size:13px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 13px;margin-top:12px;}
+  .err{border:1px solid #FECDD3;background:#FFF1F2;border-radius:10px;padding:12px 14px;color:#9F1239;font-size:13.5px;margin-top:12px;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;}
+  .pill.open{background:#F4F4F5;color:#52525B;}
+  .pill.released{background:#DCFCE7;color:#047857;}
+  .pill.cancelled{background:#FEE2E2;color:#BE123C;}
+  .gigcard{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .gighead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+  .gigtitle{font-size:18px;font-weight:800;letter-spacing:-.01em;}
+  .bounty{font-size:15px;font-weight:800;color:#0A0A0A;}
+  .meta{font-size:12.5px;color:#6B7280;margin-bottom:10px;}
+  .brief{font-size:14.5px;color:#0A0A0A;margin-bottom:12px;padding:11px 13px;background:#FAFAFA;border-radius:10px;border:1px solid #F3F4F6;white-space:pre-wrap;}
+  .reqlist{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:6px;}
+  .reqlist li{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;color:#4B5563;}
+  .reqlist li .box{flex:none;width:15px;height:15px;border:1.5px solid #D4D4D8;border-radius:4px;margin-top:2px;}
+  .relinfo{font-size:13.5px;color:#4B5563;margin-bottom:6px;}
+  .relinfo b{color:#047857;}
+  details.submitbox{border:1px solid #ECECEE;border-radius:12px;padding:0;margin-top:6px;}
+  details.submitbox summary{cursor:pointer;font-size:13.5px;font-weight:700;padding:12px 14px;list-style:none;display:flex;align-items:center;gap:8px;}
+  details.submitbox summary::-webkit-details-marker{display:none;}
+  details.submitbox summary::before{content:"→";color:#6B7280;}
+  details.submitbox[open] summary::before{content:"↓";}
+  details.submitbox .inner{padding:0 14px 16px;border-top:1px solid #F3F4F6;}
+  .subresult{margin-top:14px;}
+  .rubric{display:flex;flex-direction:column;gap:7px;margin:12px 0;}
+  .rubricrow{display:flex;align-items:flex-start;gap:10px;border:1px solid #ECECEE;border-radius:10px;padding:9px 12px;}
+  .rubricrow .chip{flex:none;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:1px;}
+  .chip.met{background:#DCFCE7;color:#047857;} .chip.unmet{background:#FEE2E2;color:#BE123C;}
+  .rubricrow .rtext{font-size:13px;font-weight:700;}
+  .rubricrow .rreason{font-size:12px;color:#4B5563;margin-top:2px;}
+  .verdict{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap;}
+  .verdict.accepted{background:#DCFCE7;color:#047857;} .verdict.rejected{background:#FEE2E2;color:#BE123C;}
+  .scoreline{font-size:12.5px;color:#6B7280;margin:6px 0 4px;}
+  .reasonline{font-size:13px;color:#4B5563;margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6;}
+  .settleline{font-size:13.5px;margin-top:10px;}
+  .settleline.ok{color:#047857;font-weight:700;}
+  .settleline a{text-decoration:underline;font-weight:600;color:#0A0A0A;}
+  .onchainline{font-size:12px;color:#6B7280;margin-top:4px;}
+  .vidchip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B7280;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:7px;padding:2px 8px;margin-top:8px;margin-right:6px;}
+  .subhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
+  .subwho{font-size:12.5px;color:#6B7280;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/proof.html">Ledger</a>
+      <a href="/jury.html">Jury</a>
+      <a href="/scorecard.html">Scorecard</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Verified Escrow Board</h1>
+  <p class="sub">Post a bounty. A worker delivers. Merit's real adversarial grader scores it against the requirements and releases the escrow only if the work actually meets them — the evaluator everyone else fakes.</p>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">Open gigs</div><div class="v" id="st-open">—</div></div>
+    <div class="stat"><div class="k">Released</div><div class="v" id="st-released">—</div></div>
+    <div class="stat"><div class="k">Total released</div><div class="v" id="st-usdc">—</div></div>
+    <div class="stat"><div class="k">Submissions graded</div><div class="v" id="st-subs">—</div></div>
+  </div>
+
+  <div id="featured"></div>
+
+  <h2 class="lbl">Post a gig</h2>
+  <div class="card">
+    <div class="row">
+      <div class="field"><label for="in-title">Title</label><input type="text" id="in-title" placeholder="e.g. Write a 400-word explainer on Arc settlement" spellcheck="false"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-brief">Brief</label><textarea id="in-brief" placeholder="What the worker needs to deliver, and why."></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-reqs">Requirements — one per line</label><textarea id="in-reqs" placeholder="Cites at least 2 real sources&#10;Under 500 words&#10;Explains sub-second finality"></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field" style="flex:0 0 160px;min-width:160px"><label for="in-bounty">Bounty (USDC)</label><input type="number" id="in-bounty" placeholder="1.00" min="0" max="5" step="0.01"></div>
+      <div class="field"><label for="in-poster">Poster (optional)</label><input type="text" id="in-poster" placeholder="anonymous" spellcheck="false"></div>
+      <div style="align-self:flex-end"><button class="btn" id="post-go">Post gig</button></div>
+    </div>
+    <div class="hint">Demo safety ceiling: bounties are capped at 5 USDC.</div>
+    <div id="post-err"></div>
+  </div>
+
+  <h2 class="lbl">Gigs</h2>
+  <div id="gigs"></div>
+  </main>
+
+  <footer class="foot">Grading is real and public — anyone can see the true accept/reject decision. The actual USDC release only fires for an authenticated principal, compliance-screened, and (when the on-chain hook is enabled) proven by the same ERC-8183 gate that settles citations. In this demo Merit custodies the escrow (a release is a real claimable payout + an on-chain gate proof); the ERC-8183 MeritJob path lets a real poster fund their own escrow. <a href="/api/gigs" style="text-decoration:underline">Raw JSON →</a></footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function usd(n){return '$'+Number(n||0).toFixed(4);}
+  function usd2(n){return '$'+Number(n||0).toFixed(2);}
+  function fmtDate(s){try{return new Date(s).toLocaleString();}catch(e){return '';}}
+
+  // ---- rubric + submission renderer (shared by the POST result and each gig's submissions[]) ----
+  function renderRubricRow(r){
+    var chip = r.met ? '<span class="chip met">✓ MET</span>' : '<span class="chip unmet">✕ UNMET</span>';
+    return '<div class="rubricrow">'+chip+'<div><div class="rtext">'+esc(r.requirement)+'</div><div class="rreason">'+esc(r.reason)+'</div></div></div>';
+  }
+
+  function renderSettlement(s, settleNote){
+    var out = '';
+    if (settleNote) out += '<div class="note">'+esc(settleNote)+'</div>';
+    if (!s) return out; // rejected deliverable — nothing to show
+    if (s.blocked) {
+      out += '<div class="note">'+esc(s.blocked)+'</div>';
+      return out;
+    }
+    out += '<div class="settleline ok">Released '+usd(s.paidUsdc)+' USDC to the worker (claimable)</div>';
+    if (s.onchain) {
+      out += '<div class="onchainline">on-chain: '+esc(s.onchain.outcome)+' · job #'+esc(s.onchain.jobId)+' · '+esc(String(s.onchain.steps))+' txs</div>';
+    }
+    if (typeof s.explorerUrl === 'string' && s.explorerUrl) {
+      out += '<div class="settleline"><a href="'+esc(s.explorerUrl)+'" target="_blank" rel="noopener noreferrer nofollow">on-chain →</a></div>';
+    } else if (typeof s.tx === 'string' && s.tx) {
+      out += '<div class="settleline mono" style="font-size:12px;color:#6B7280">tx '+esc(s.tx)+'</div>';
+    }
+    return out;
+  }
+
+  function renderSubmission(sub, opts){
+    opts = opts || {};
+    var verdictHtml = sub.accepted
+      ? '<span class="verdict accepted">✓ ACCEPTED</span>'
+      : '<span class="verdict rejected">✕ REJECTED</span>';
+    var met = (sub.rubric||[]).filter(function(r){return r.met;}).length;
+    var total = (sub.rubric||[]).length;
+    var pct = total ? Math.round((met/total)*100) : 0;
+    var rubricHtml = (sub.rubric||[]).map(renderRubricRow).join('');
+    var vidHtml = sub.verificationId ? '<span class="vidchip">verification '+esc(sub.verificationId)+'</span>' : '';
+    var signerHtml = sub.signer ? '<span class="vidchip">signer '+esc(String(sub.signer).slice(0,14))+'…</span>' : '';
+    var when = sub.gradedAt ? fmtDate(sub.gradedAt) : '';
+
+    return '<div class="subresult">'
+      + '<div class="subhead">'+verdictHtml+'<span class="mono" style="font-size:11.5px;color:#6B7280">'+esc(when)+'</span></div>'
+      + '<div class="subwho">worker: '+esc(sub.worker||'anonymous')+(sub.workerAddress?' · <span class="mono">'+esc(sub.workerAddress)+'</span>':'')+'</div>'
+      + '<div class="scoreline">'+met+' / '+total+' requirements met · '+pct+'%</div>'
+      + (rubricHtml ? '<div class="rubric">'+rubricHtml+'</div>' : '')
+      + (sub.reason ? '<div class="reasonline">'+esc(sub.reason)+'</div>' : '')
+      + renderSettlement(sub.settlement, opts.settleNote)
+      + vidHtml + signerHtml
+      + '</div>';
+  }
+
+  // ---- gig card ----
+  function reqChecklist(reqs){
+    if (!reqs || !reqs.length) return '';
+    return '<ul class="reqlist">'+reqs.map(function(r){return '<li><span class="box"></span>'+esc(r)+'</li>';}).join('')+'</ul>';
+  }
+
+  function renderGigCard(gig){
+    var pill = '<span class="pill '+esc(gig.status)+'">'+esc(gig.status)+'</span>';
+    var when = gig.createdAt ? fmtDate(gig.createdAt) : '';
+    var body = '<div class="gigcard" data-gig-id="'+esc(gig.id)+'">'
+      + '<div class="gighead">'+pill+'<span class="bounty mono">'+usd2(gig.bountyUsdc)+' USDC</span></div>'
+      + '<div class="gigtitle">'+esc(gig.title)+'</div>'
+      + '<div class="meta">posted by '+esc(gig.poster||'anonymous')+' · '+esc(when)+'</div>'
+      + '<div class="brief">'+esc(gig.brief)+'</div>'
+      + reqChecklist(gig.requirements);
+
+    if (gig.status === 'released') {
+      body += '<div class="relinfo">Released to <b>'+esc(gig.releasedTo||'—')+'</b></div>';
+    } else if (gig.status === 'cancelled') {
+      body += '<div class="relinfo" style="color:#BE123C">This gig was cancelled by the poster.</div>';
+    } else if (gig.status === 'open') {
+      body += '<details class="submitbox"><summary>Submit a deliverable</summary><div class="inner">'
+        + '<div class="row" style="margin-top:12px">'
+        + '<div class="field"><label>Worker name (optional)</label><input type="text" class="w-name" spellcheck="false"></div>'
+        + '<div class="field"><label>Worker payout address (optional)</label><input type="text" class="w-addr" placeholder="0x…" spellcheck="false"></div>'
+        + '</div>'
+        + '<div class="row" style="margin-top:10px"><div class="field"><label>Deliverable</label><textarea class="w-deliverable" style="min-height:110px" placeholder="Paste the finished work here."></textarea></div></div>'
+        + '<div class="row" style="margin-top:10px">'
+        + '<div class="field"><label>API key (optional — releases the escrow)</label><input type="text" class="w-key" placeholder="merit_sk_… (sent as Authorization: Bearer)" spellcheck="false"></div>'
+        + '<div style="align-self:flex-end"><button class="btn sm w-submit">Submit deliverable</button></div>'
+        + '</div>'
+        + '<div class="hint">Grading typically takes 10–40s; releasing on-chain can take longer.</div>'
+        + '<div class="w-err"></div>'
+        + '<div class="w-result"></div>'
+        + '</div></details>';
+    }
+
+    var subs = (gig.submissions||[]).slice().reverse();
+    if (subs.length) {
+      body += '<div class="subs-mount">'+subs.map(function(s){return renderSubmission(s);}).join('')+'</div>';
+    }
+    body += '</div>';
+    return body;
+  }
+
+  function wireGigCard(el, gig){
+    var btn = el.querySelector('.w-submit');
+    if (!btn) return;
+    btn.addEventListener('click', async function(){
+      var nameEl = el.querySelector('.w-name'), addrEl = el.querySelector('.w-addr'), delEl = el.querySelector('.w-deliverable'), keyEl = el.querySelector('.w-key');
+      var errEl = el.querySelector('.w-err'), resEl = el.querySelector('.w-result');
+      errEl.innerHTML = '';
+      var deliverable = (delEl.value||'').trim();
+      if (!deliverable) { errEl.innerHTML = '<div class="err">Provide the deliverable to grade.</div>'; return; }
+      var body = { action: 'submit', gigId: gig.id, worker: (nameEl.value||'').trim(), workerAddress: (addrEl.value||'').trim() || undefined, deliverable: deliverable };
+      var headers = { 'Content-Type': 'application/json' };
+      var key = (keyEl.value||'').trim();
+      if (key) headers['Authorization'] = 'Bearer ' + key;
+      btn.disabled = true; btn.textContent = 'Grading… (can take 10–40s)';
+      try {
+        var res = await fetch('/api/gigs', { method: 'POST', headers: headers, body: JSON.stringify(body) });
+        var d = await res.json();
+        if (!res.ok) { errEl.innerHTML = '<div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+        resEl.innerHTML = renderSubmission(d.submission, { settleNote: d.settleNote }) + resEl.innerHTML;
+        // Reflect the updated gig (status/pill/released-to) without a full page reload.
+        var fresh = document.createElement('div');
+        fresh.innerHTML = renderGigCard(d.gig);
+        var newCard = fresh.firstElementChild;
+        el.replaceWith(newCard);
+        wireGigCard(newCard, d.gig);
+        loadBoard();
+      } catch (e) {
+        errEl.innerHTML = '<div class="err">Request failed — grading may be slow or the server unreachable.</div>';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Submit deliverable';
+      }
+    });
+  }
+
+  function renderGigs(list){
+    var el = document.getElementById('gigs');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No gigs yet — post the first bounty above.</div>'; return; }
+    el.innerHTML = list.map(renderGigCard).join('');
+    var cards = el.querySelectorAll('.gigcard');
+    for (var i=0;i<cards.length;i++){
+      var id = cards[i].getAttribute('data-gig-id');
+      var gig = list.find(function(g){return g.id === id;});
+      if (gig) wireGigCard(cards[i], gig);
+    }
+  }
+
+  function renderStats(stats){
+    stats = stats || {};
+    document.getElementById('st-open').textContent = stats.open != null ? stats.open : '—';
+    document.getElementById('st-released').textContent = stats.released != null ? stats.released : '—';
+    document.getElementById('st-usdc').textContent = stats.totalReleasedUsdc != null ? usd2(stats.totalReleasedUsdc) : '—';
+    document.getElementById('st-subs').textContent = stats.submissions != null ? stats.submissions : '—';
+  }
+
+  async function loadBoard(){
+    try{
+      var res = await fetch('/api/gigs', {cache:'no-store'});
+      var d = await res.json();
+      renderStats(d.stats);
+      renderGigs(d.gigs||[]);
+    }catch(e){
+      document.getElementById('gigs').innerHTML = '<div class="err">Could not load the gigs board.</div>';
+    }
+  }
+
+  async function loadFeatured(id){
+    var el = document.getElementById('featured');
+    try{
+      var res = await fetch('/api/gigs?id='+encodeURIComponent(id), {cache:'no-store'});
+      var d = await res.json();
+      if (!res.ok) { el.innerHTML = '<h2 class="lbl">Featured gig</h2><div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+      el.innerHTML = '<h2 class="lbl">Featured gig</h2>'+renderGigCard(d.gig);
+      var card = el.querySelector('.gigcard');
+      if (card) wireGigCard(card, d.gig);
+    }catch(e){ el.innerHTML = '<h2 class="lbl">Featured gig</h2><div class="err">Could not load this gig.</div>'; }
+  }
+
+  // ---- post-a-gig form ----
+  var postGo = document.getElementById('post-go');
+  var titleEl = document.getElementById('in-title'), briefEl = document.getElementById('in-brief'), reqsEl = document.getElementById('in-reqs'), bountyEl = document.getElementById('in-bounty'), posterEl = document.getElementById('in-poster');
+  var postErrEl = document.getElementById('post-err');
+
+  postGo.addEventListener('click', async function(){
+    postErrEl.innerHTML = '';
+    var title = (titleEl.value||'').trim();
+    var brief = (briefEl.value||'').trim();
+    var requirements = (reqsEl.value||'').split('\n').map(function(s){return s.trim();}).filter(Boolean);
+    var bountyUsdc = Number(bountyEl.value);
+    var poster = (posterEl.value||'').trim();
+    if (!title) { postErrEl.innerHTML = '<div class="err">Provide a title.</div>'; return; }
+    if (!brief) { postErrEl.innerHTML = '<div class="err">Provide a brief.</div>'; return; }
+    if (!(bountyUsdc > 0)) { postErrEl.innerHTML = '<div class="err">Provide a positive bounty in USDC.</div>'; return; }
+
+    postGo.disabled = true; postGo.textContent = 'Posting…';
+    try {
+      var body = { action: 'post', title: title, brief: brief, requirements: requirements, bountyUsdc: bountyUsdc, poster: poster || undefined };
+      var res = await fetch('/api/gigs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      var d = await res.json();
+      if (!res.ok) { postErrEl.innerHTML = '<div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+      titleEl.value = ''; briefEl.value = ''; reqsEl.value = ''; bountyEl.value = ''; posterEl.value = '';
+      loadBoard();
+    } catch (e) {
+      postErrEl.innerHTML = '<div class="err">Request failed — the server may be unreachable.</div>';
+    } finally {
+      postGo.disabled = false; postGo.textContent = 'Post gig';
+    }
+  });
+
+  var params = new URLSearchParams(window.location.search);
+  var featuredId = params.get('id');
+  if (featuredId) loadFeatured(featuredId);
+  loadBoard();
+})();
+</script>
+</body>
+</html>
