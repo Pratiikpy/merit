@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Merit · proof deck</title>
+<meta name="theme-color" content="#FFFFFF">
+<meta name="description" content="Merit gates settlement on whether the cited work is correct. Every feature shown working end-to-end with its real outcome — verdicts, settlements, and on-chain transactions you can verify.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Merit · proof deck">
+<meta property="og:description" content="Every feature, working end-to-end, with its real outcome — verdicts, settled USDC, and on-chain proof-of-citation transactions on Arc.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://merit-ecru.vercel.app/proof-deck.html">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Merit · proof deck">
+<meta name="twitter:description" content="Every feature, working end-to-end, with its real outcome — verdicts, settled USDC, and on-chain proof on Arc.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A0A0A; --slate:#3F3F46; --muted:#6B7280; --line:#ECECEE; --line2:#E4E4E7;
+    --paper:#FFFFFF; --wash:#FAFAFA; --release:#047857; --release-bg:#ECFDF5; --release-br:#A7F3D0;
+    --refuse:#BE123C; --refuse-bg:#FEE2E2; --arc:#7C3AED;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+  /* header */
+  header.top{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);}
+  header.top .in{display:flex;align-items:center;justify-content:space-between;padding:14px 0;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:28px;height:28px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.35);}
+  header.top .links{display:flex;gap:4px;}
+  header.top .links a{font-size:13.5px;font-weight:600;color:var(--muted);text-decoration:none;padding:7px 10px;border-radius:8px;}
+  header.top .links a:hover{color:var(--ink);background:#F5F5F5;}
+  /* hero */
+  .hero{padding:72px 0 40px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+  h1{font-size:clamp(38px,6vw,62px);line-height:1.03;letter-spacing:-.035em;font-weight:800;margin:0 0 18px;}
+  h1 .g{background:linear-gradient(100deg,#0A0A0A,#3F3F46 55%,#0A0A0A);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p{font-size:19px;line-height:1.6;color:var(--slate);max-width:64ch;margin:0 0 22px;}
+  .hero .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;border-radius:999px;padding:5px 12px;border:1px solid var(--line2);background:var(--wash);color:var(--slate);}
+  .pill .dot{width:7px;height:7px;border-radius:50%;background:#10B981;}
+  .pill.arc{color:var(--arc);background:#F5F3FF;border-color:#DDD6FE;}
+  .cta{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:#fff;background:#0A0A0A;border-radius:10px;padding:9px 16px;text-decoration:none;}
+  .cta:hover{background:#18181B;}
+  /* sections */
+  section.sec{padding:64px 0;border-bottom:1px solid var(--line);}
+  .sec .num{font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--arc);margin-bottom:10px;}
+  .sec h2{font-size:clamp(26px,3.4vw,36px);line-height:1.08;letter-spacing:-.03em;font-weight:800;margin:0 0 12px;}
+  .sec .lede{font-size:17px;line-height:1.6;color:var(--slate);max-width:70ch;margin:0 0 12px;}
+  .sec .lede .out{color:var(--ink);font-weight:600;}
+  .sec .lede a{color:var(--arc);font-weight:600;text-underline-offset:2px;}
+  /* screenshot grid */
+  .grid{display:grid;gap:18px;margin-top:28px;}
+  .g1{grid-template-columns:1fr;} .g2{grid-template-columns:repeat(2,1fr);}
+  figure.shot{margin:0;border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+  figure.shot img{display:block;width:100%;height:auto;cursor:zoom-in;background:#fff;border-bottom:1px solid var(--line);}
+  figure.shot figcaption{padding:11px 15px;font-size:13.5px;color:var(--slate);display:flex;align-items:center;gap:9px;}
+  .chain{font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:2px 8px;border-radius:999px;white-space:nowrap;}
+  .chain.arc{color:var(--arc);background:#F5F3FF;border:1px solid #DDD6FE;}
+  .chain.sup{color:var(--release);background:var(--release-bg);border:1px solid var(--release-br);}
+  .chain.ref{color:var(--refuse);background:var(--refuse-bg);border:1px solid #FECACA;}
+  figcaption b{color:var(--ink);font-weight:700;}
+  /* outcome callout */
+  .outcome{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+  .oc{flex:1;min-width:200px;border:1px solid var(--line2);border-radius:12px;padding:14px 16px;background:var(--wash);}
+  .oc .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+  .oc .v{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:3px;}
+  .oc .v.green{color:var(--release);} .oc .v.red{color:var(--refuse);}
+  .oc .d{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  /* on-chain tx index */
+  .txwrap{display:grid;gap:14px;margin-top:24px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));}
+  .tx{border:1px solid var(--line2);border-radius:14px;padding:18px 20px;background:#fff;}
+  .tx h3{font-size:14.5px;font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:9px;}
+  .tx ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .tx li{font-size:13px;display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;}
+  .tx .label{color:var(--muted);font-weight:600;min-width:118px;}
+  .tx a{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--arc);text-decoration:underline;text-underline-offset:2px;word-break:break-all;}
+  .tx .addr{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--slate);}
+  /* lightbox */
+  .lightbox{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;background:rgba(10,10,10,.9);padding:32px;}
+  .lightbox.open{display:flex;}
+  .lightbox-dialog{position:relative;max-width:min(1400px,calc(100vw - 56px));max-height:calc(100vh - 56px);display:flex;flex-direction:column;gap:10px;}
+  .lightbox img{max-width:100%;max-height:calc(100vh - 96px);width:auto;height:auto;object-fit:contain;background:#fff;border-radius:8px;}
+  .lightbox-caption{color:#fff;font-size:13.5px;font-weight:500;}
+  .lightbox-close{position:absolute;right:-12px;top:-12px;width:38px;height:38px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:#0a0a0a;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  body.lb-active{overflow:hidden;}
+  footer.foot{padding:40px 0 60px;font-size:13.5px;color:var(--muted);}
+  footer.foot a{color:var(--arc);}
+  @media(max-width:760px){.g2{grid-template-columns:1fr;}header.top .links a:not(.home){display:none;}.lightbox{padding:12px;}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap in">
+    <a class="logo" href="/"><span class="mk"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="links"><a class="home" href="/">Home</a><a href="/proof.html">Ledger</a><a href="/jury.html">Jury</a><a href="/statement.html">Statement</a><a href="#onchain">On-chain</a></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Proof deck · Arc testnet 5042002</div>
+    <h1><span class="g">Every feature — working, with its real&nbsp;outcome.</span></h1>
+    <p>No slideware. Each capability below is driven live and shown producing a real result: a signed verdict, USDC released to the sources that verified and refused to the ones that didn't, and on-chain transactions you can open on ArcScan and check yourself. Merit's one rule holds throughout — <span style="color:var(--ink);font-weight:600;">money moves only if the cited work is correct.</span></p>
+    <div class="row">
+      <span class="pill"><span class="dot"></span>Live · merit-ecru.vercel.app</span>
+      <span class="pill arc">Proof-of-citation gates on-chain settlement</span>
+      <a class="cta" href="#onchain">Jump to the on-chain proof ↓</a>
+    </div>
+  </section>
+
+  <section class="sec" id="idea">
+    <div class="num">01 · The one idea</div>
+    <h2>Anyone can send money. Merit decides who earned it.</h2>
+    <p class="lede">Agents read creators' work and pay flat fees with no proof it was used or correct. Merit escrows USDC, verifies every citation with a deterministic numeric check, an NLI factual-consistency gate, and an adversarial judge — and <span class="out">releases payment only for citations that actually hold up, refunding the rest</span>. The verifier is the settlement layer under a dozen capabilities; the rest of this deck shows each one working.</p>
+    <div class="grid g1">
+      <figure class="shot"><img src="/proof-images/landing-platform.png" alt="The full Merit platform — a card grid of every capability" loading="lazy"><figcaption><span class="chain arc">Surface</span> The full platform, one verifier underneath — proof-of-citation gates settlement, the consensus jury, compliance, the statement, the verifier, AP2 mandates, metering/streaming/buy, and the benchmark. <b>Every card is a live page.</b></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="loop">
+    <div class="num">02 · The signature journey</div>
+    <h2>The autonomous agent loop settles real money — and refuses.</h2>
+    <p class="lede">Give it a question and a USDC budget. The lead agent hires search / write / verify specialists, escrows against each candidate source, writes a cited answer, then <span class="out">releases sub-cent USDC to the sources whose citation verified, refunds the ones it didn't use, and slashes the stake behind a citation that fails</span>. Every settlement is a signed receipt.</p>
+    <div class="outcome">
+      <div class="oc"><div class="k">Escrowed</div><div class="v">$0.298</div><div class="d">held against 8 candidate sources</div></div>
+      <div class="oc"><div class="k">Released</div><div class="v green">to verified</div><div class="d">cited + verified sources, per-nanopayment</div></div>
+      <div class="oc"><div class="k">Refused</div><div class="v red">paid $0</div><div class="d">uncited / unsupported — refunded, with the reason</div></div>
+    </div>
+    <div class="grid g1">
+      <figure class="shot"><img src="/proof-images/agent-run.png" alt="The live agent run: settlement ledger, receipts, per-source release/refuse decisions, and the cited answer" loading="lazy"><figcaption><span class="chain arc">Live run</span> One run on the homepage: the live settlement ledger, receipts (<b>✓ RELEASE StableData +$0.0053</b>, Chainletter +$0.018), every source marked <span style="color:var(--release);font-weight:700;">Released</span> or <span style="color:var(--refuse);font-weight:700;">Refunded</span> with an audit reason, the paid crew, and the cited answer.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="verify">
+    <div class="num">03 · The verifier</div>
+    <h2>Three gates. A claim passes only if the source really supports it.</h2>
+    <p class="lede">The Citation Verification Oracle runs a deterministic numeric check, a factual-consistency (NLI) score, and an adversarial LLM judge. <span class="out">A fabricated figure is REFUSED with no model at all; a genuinely supported claim is SUPPORTED</span> — and every check returns a shareable, offline-verifiable signed receipt.</p>
+    <div class="grid g2">
+      <figure class="shot"><img src="/proof-images/verify-refused.png" alt="A fabricated $40T figure returns a REFUSED verdict" loading="lazy"><figcaption><span class="chain ref">Refused</span> Claim says <b>$40 trillion</b>, source says $4.1T → <b>REFUSED</b> by the deterministic numeric check, with a signed receipt.</figcaption></figure>
+      <figure class="shot"><img src="/proof-images/verify-supported.png" alt="A genuinely supported claim returns a SUPPORTED verdict" loading="lazy"><figcaption><span class="chain sup">Supported</span> A claim the source genuinely backs → <b>SUPPORTED</b>, all gates confirm, signed and settleable.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="jury">
+    <div class="num">04 · The consensus jury</div>
+    <h2>A diverse, TEE-attested panel grades truth vs lie, per claim.</h2>
+    <p class="lede">The premium high-assurance tier decomposes an answer into atomic claims and escalates the borderline ones to a panel of models from <span class="out">different families (DeepSeek / GLM / Qwen / MiniMax / Kimi), each TEE-attested</span>. A reputation-weighted supermajority decides, settlement is graded per claim, and the whole panel is committed under a Merkle root in a signed merit.cvo/v3 certificate.</p>
+    <div class="grid g1">
+      <figure class="shot"><img src="/proof-images/jury-verdict.png" alt="Five diverse models vote per claim: a true claim supported, a false claim refuted" loading="lazy"><figcaption><span class="chain arc">Consensus</span> Two atomic claims, five models each. The true claim → <b>100% → ✓ SUPPORTED</b>; "solar flares drove adoption" → <b>0% → ✕ REFUSED</b>. Every ballot <b>TDX attested</b>; 10 ballots, Merkle-committed, signed.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="compliance">
+    <div class="num">05 · Compliance pre-gate</div>
+    <h2>Compliance-cleared AND work-verified before any USDC moves.</h2>
+    <p class="lede">Before Merit settles to a payee, the recipient is screened against Circle's Compliance Engine, with an operator denylist as an authoritative hard floor. <span class="out">A denylisted address is blocked; a clean address is answered live by Circle</span> — and the honesty is exact: a local approval is never presented as a sanctions clearance.</p>
+    <div class="grid g2">
+      <figure class="shot"><img src="/proof-images/compliance-denied.png" alt="A denylisted payee returns DENIED" loading="lazy"><figcaption><span class="chain ref">Denied</span> An operator-denylisted address → <b>DENIED</b> — the authoritative hard floor blocks the payout.</figcaption></figure>
+      <figure class="shot"><img src="/proof-images/compliance-approved.png" alt="A clean address is approved live by Circle" loading="lazy"><figcaption><span class="chain sup">Circle</span> A clean address answered live by <b>Circle Compliance Engine</b> — <span class="mono">source: circle</span>, vendor-cleared.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="statement">
+    <div class="num">06 · The verified-spend statement</div>
+    <h2>One signed number no pay-on-retrieval tool can show.</h2>
+    <p class="lede">A single offline-verifiable statement composes the verification chain, the on-chain settlement total, compliance, and the jury. <span class="out">The headline is the refusal rate — money moved only for citations that verified; the refused ones were paid $0</span>. The signer recovers offline; the audit chain is tamper-evident.</p>
+    <div class="grid g1">
+      <figure class="shot"><img src="/proof-images/statement.png" alt="The verified-spend statement: the refusal-rate headline and composed metrics" loading="lazy"><figcaption><span class="chain arc">Statement</span> <b>~76% of citations refused → paid $0.</b> Real cumulative USDC settled on Arc, jury panels, compliance screenings, cache savings — signed, downloadable, and independently checkable.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="break">
+    <div class="num">07 · Break Arena</div>
+    <h2>The only market that dares you to get a lie paid.</h2>
+    <p class="lede">Mis-cite a source and watch the verifier refuse it before a cent moves. <span class="out">A fabricated figure is caught by the deterministic numeric verifier with no LLM call, and the on-chain settlement reverts</span> — every failed attempt is harvested into the public gold set, so the verifier gets harder to fool as you attack it.</p>
+    <div class="grid g1">
+      <figure class="shot"><img src="/proof-images/break-refused.png" alt="An attack on the verifier is HELD — the lie was refused" loading="lazy"><figcaption><span class="chain ref">Held</span> A fabricated citation → <b>HELD — the lie was refused</b> before any USDC moved. A lie is the one thing that cannot get paid here.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="onchain">
+    <div class="num">08 · On-chain settlement — the flagship</div>
+    <h2>Proof-of-citation gates the escrow release, on-chain.</h2>
+    <p class="lede">The MeritVerificationHook (an ERC-8183 IACPHook) binds the on-chain escrow release to the verdict. <span class="out">A verified citation lets <span class="mono">complete()</span> release the escrow; a failed one makes <span class="mono">complete()</span> revert and refunds</span> — proven with two real job lifecycles below. Nobody else gates settlement on whether the WORK is correct.</p>
+    <div class="outcome">
+      <div class="oc"><div class="k">Job #50 · verified</div><div class="v green">RELEASED</div><div class="d"><span class="mono">complete()</span> released 0.01 USDC escrow</div></div>
+      <div class="oc"><div class="k">Job #51 · failed</div><div class="v red">REVERTED → REFUND</div><div class="d">hook blocked <span class="mono">complete()</span>, then refunded</div></div>
+      <div class="oc"><div class="k">Finality</div><div class="v">&lt; 0.6s</div><div class="d">Success on Arc testnet 5042002</div></div>
+    </div>
+    <div class="grid g2">
+      <figure class="shot"><img src="/proof-images/arcscan-release.png" alt="ArcScan: complete() released 0.01 USDC from the MeritJob escrow, status Success" loading="lazy"><figcaption><span class="chain arc">Arc · Success</span> The operator called <b>complete</b> on MeritJob → <b>✓ Success</b>, escrow <b>0.01 USDC released</b> <span class="mono">0xdF…6A05 → 0x41…2333</span>. Confirmed in 0.51s.</figcaption></figure>
+      <figure class="shot"><img src="/proof-images/arcscan-hook-contract.png" alt="ArcScan: the deployed MeritJob contract" loading="lazy"><figcaption><span class="chain arc">Arc</span> The deployed <b>MeritJob</b> escrow contract that the hook gates — <span class="mono">0xdF81…6A05</span>, live on Arc testnet.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="evidence">
+    <div class="num">09 · Falsifiable + the live ledger</div>
+    <h2>Scored on a public gold set. Every settlement on a live ledger.</h2>
+    <p class="lede">The verifier is measured on a fixed, hand-labeled gold set — <span class="out">reproducible from a fresh checkout, not a self-reported number</span> — and co-evolves with live adversarial traffic. Every real settlement lands on a public ledger where each row is a signed receipt, most deep-linking a real Arc transaction.</p>
+    <div class="grid g2">
+      <figure class="shot"><img src="/proof-images/benchmark.png" alt="The proof-of-citation benchmark on a fixed gold set" loading="lazy"><figcaption><span class="chain arc">Benchmark</span> Precision/recall on a fixed public gold set — reproduce with <span class="mono">npm run judge-eval</span>.</figcaption></figure>
+      <figure class="shot"><img src="/proof-images/proof-ledger.png" alt="The live traction ledger: verified vs refused, USDC settled, signed receipts" loading="lazy"><figcaption><span class="chain arc">Ledger</span> The live ledger — verified vs <span style="color:var(--refuse);font-weight:700;">refused</span>, real USDC settled on Arc, every row a signed receipt.</figcaption></figure>
+    </div>
+    <div class="grid g2" style="margin-top:18px;">
+      <figure class="shot"><img src="/proof-images/honesty.png" alt="The Citation Honesty Index" loading="lazy"><figcaption><span class="chain arc">Honesty</span> The Citation Honesty Index — a grounding rate you earn only by routing citations through the verifier.</figcaption></figure>
+      <figure class="shot"><img src="/proof-images/landing-hero.png" alt="The Merit landing page" loading="lazy"><figcaption><span class="chain arc">Home</span> The landing page — <span class="mono">merit-ecru.vercel.app</span>, live on Arc, settled in USDC.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="sec" id="txs">
+    <div class="num">10 · On-chain transaction index</div>
+    <h2>Open any transaction and verify it yourself.</h2>
+    <p class="lede">The proof-of-citation hook lifecycle, twice — a verified job that <span class="out">released</span> and a failed job that <span class="out">reverted then refunded</span>. Every hash has a successful receipt on Arc testnet 5042002. Click through to ArcScan.</p>
+    <div class="txwrap">
+      <div class="tx">
+        <h3><span class="chain sup">Verified → RELEASED</span> MeritJob #50</h3>
+        <ul>
+          <li><span class="label">createJob:</span><a href="https://testnet.arcscan.app/tx/0x4e927267c0807281c7d6109651e08558a76deb09602ada940d71a90a4f6b5dda" target="_blank" rel="noopener">0x4e927267…</a></li>
+          <li><span class="label">setBudget:</span><a href="https://testnet.arcscan.app/tx/0xe40245ba3851f39775195ee430a32b0c02a81b7fb01212d43f3d93087f76bdf5" target="_blank" rel="noopener">0xe40245ba…</a></li>
+          <li><span class="label">approve USDC:</span><a href="https://testnet.arcscan.app/tx/0xb6b230a947ee0a0e45e019861fcd82267d68ecc4216c00f3d72009b67f0f4a9e" target="_blank" rel="noopener">0xb6b230a9…</a></li>
+          <li><span class="label">fund escrow:</span><a href="https://testnet.arcscan.app/tx/0xb41a210a8231397fca725f5d70d13f3fe6d23ca21a0363f2972d3a6cc70b52d4" target="_blank" rel="noopener">0xb41a210a…</a></li>
+          <li><span class="label">submit:</span><a href="https://testnet.arcscan.app/tx/0x8145553fba0e1609f50323927b5ebefe0b746cb7542576ebaff1d7c357e8781c" target="_blank" rel="noopener">0x8145553f…</a></li>
+          <li><span class="label">recordVerdict(✓):</span><a href="https://testnet.arcscan.app/tx/0xf79015a819624f57cca173f0dcad209fa888b4f515141b04ed3e8779ee398a77" target="_blank" rel="noopener">0xf79015a8…</a></li>
+          <li><span class="label">complete → release:</span><a href="https://testnet.arcscan.app/tx/0x6eda6b571d076e4553cce66edfe071e026ca4d3b720435d5af06435e28f42e4f" target="_blank" rel="noopener">0x6eda6b57…</a></li>
+        </ul>
+      </div>
+      <div class="tx">
+        <h3><span class="chain ref">Failed → REVERTED → REFUND</span> MeritJob #51</h3>
+        <ul>
+          <li><span class="label">createJob:</span><a href="https://testnet.arcscan.app/tx/0x504a7e2a83e7d34d8b672444206fa62519328f671e3168b46b5afac282087ffb" target="_blank" rel="noopener">0x504a7e2a…</a></li>
+          <li><span class="label">fund escrow:</span><a href="https://testnet.arcscan.app/tx/0x595fdcc6eca1c4706b6a51c4a0e5136cbfa52b9963c99b645a41c85ca52db3d3" target="_blank" rel="noopener">0x595fdcc6…</a></li>
+          <li><span class="label">recordVerdict(✕):</span><a href="https://testnet.arcscan.app/tx/0x1f7ee7990731af0cbbe55ae70edeebfad050b8ce29c3a074d7fd37488b34c9c0" target="_blank" rel="noopener">0x1f7ee799…</a></li>
+          <li><span class="label">complete():</span><span class="addr">reverts — hook NotVerified gate</span></li>
+          <li><span class="label">reject → refund:</span><a href="https://testnet.arcscan.app/tx/0x629db6f79af08c45e1c82536fb9838c9cdceccae03390f2c19431c62081e272c" target="_blank" rel="noopener">0x629db6f7…</a></li>
+        </ul>
+      </div>
+      <div class="tx">
+        <h3><span class="chain arc">Deployed contracts</span> Arc testnet 5042002</h3>
+        <ul>
+          <li><span class="label">MeritJob (ERC-8183):</span><a href="https://testnet.arcscan.app/address/0xdF81dCCFf8c8ea9e1fB6B5b2B790fAfF1Ebe6A05" target="_blank" rel="noopener">0xdF81…6A05</a></li>
+          <li><span class="label">VerificationHook:</span><a href="https://testnet.arcscan.app/address/0xA30f58f60725a978Ac09034F4FDd32efc29e9ab1" target="_blank" rel="noopener">0xA30f…9ab1</a></li>
+          <li><span class="label">Escrow:</span><a href="https://testnet.arcscan.app/address/0xbCaEA25F7D3E64B337BeB4342945544970B03Cd8" target="_blank" rel="noopener">0xbCaE…03Cd8</a></li>
+          <li><span class="label">USDC:</span><span class="addr">0x3600…0000</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    Merit — proof-of-citation for the agentic web. Every screenshot above is a live capture; every transaction has a successful receipt on Arc testnet 5042002, independently verifiable on <a href="https://testnet.arcscan.app" target="_blank" rel="noopener">ArcScan</a>. Explore it yourself at <a href="https://merit-ecru.vercel.app">merit-ecru.vercel.app</a> — verify a claim, run a jury panel, or try to get a lie paid.
+  </footer>
+</div>
+
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <div class="lightbox-dialog">
+    <button class="lightbox-close" aria-label="Close">×</button>
+    <img src="" alt="">
+    <div class="lightbox-caption"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var lb=document.getElementById("lightbox"),img=lb.querySelector("img"),cap=lb.querySelector(".lightbox-caption"),close=lb.querySelector(".lightbox-close");
+  function open(src,alt){img.src=src;img.alt=alt||"";cap.textContent=alt||"";lb.classList.add("open");lb.setAttribute("aria-hidden","false");document.body.classList.add("lb-active");}
+  function shut(){lb.classList.remove("open");lb.setAttribute("aria-hidden","true");document.body.classList.remove("lb-active");img.src="";}
+  document.querySelectorAll("figure.shot img").forEach(function(el){el.addEventListener("click",function(){open(el.getAttribute("src"),el.getAttribute("alt"));});});
+  close.addEventListener("click",shut);
+  lb.addEventListener("click",function(e){if(e.target===lb)shut();});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")shut();});
+})();
+</script>
+</body>
+</html>
