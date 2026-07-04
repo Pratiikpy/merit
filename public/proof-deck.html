@@ -68,6 +68,7 @@
   .chain.sup{color:var(--release);background:var(--release-bg);border:1px solid var(--release-br);}
   .chain.ref{color:var(--refuse);background:var(--refuse-bg);border:1px solid #FECACA;}
   figcaption b{color:var(--ink);font-weight:700;}
+  figcaption .ok{color:var(--release);font-weight:700;} figcaption .no{color:var(--refuse);font-weight:700;}
   /* outcome callout */
   .outcome{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
   .oc{flex:1;min-width:200px;border:1px solid var(--line2);border-radius:12px;padding:14px 16px;background:var(--wash);}
@@ -225,8 +226,25 @@
     </div>
   </section>
 
+  <section class="sec" id="hub">
+    <div class="num">10 · The agentic-economy hub — one oracle, every hat</div>
+    <h2>Everything an agent — or a human — needs, gated by the same verification.</h2>
+    <p class="lede">Every competing project built a payment and skipped the reason to release it — they gate on identity, reputation, uptime, relevance, or the generator's own say-so, because none has a ground-truth verifier. Merit does. So the <span class="out">same proof-of-citation gate becomes the score on any endpoint, the release on any escrowed job, the resolver of any market, and the match-check on any clip</span> — with Circle rails carrying value in and out. Each of the five below is <b>live on the deployment and proven with a real on-chain outcome</b>.</p>
+    <div class="grid g2">
+      <figure class="shot"><img src="/proof-images/hub-scorecard.png" alt="Endpoint scorecards leaderboard" loading="lazy"><figcaption><span class="chain arc">Scorecards</span> Score <b>any x402 endpoint</b> on the one axis a rail can't see — Merit pays the toll, verifies the answer, and publishes a verified-quality-per-dollar leaderboard. Live: a full three-gate <span class="ok">SUPPORTED at 0.933</span> and a numeric <span class="no">REFUSE at 0</span>. Turns every other agent into a data point.</figcaption></figure>
+      <figure class="shot"><img src="/proof-images/hub-gigs.png" alt="Verified escrow board" loading="lazy"><figcaption><span class="chain arc">Escrow board</span> Post a bounty; a worker — human or agent — delivers; Merit's real grader releases escrow <b>only if every requirement is met</b>. Live: on-brief → <span class="ok">ACCEPTED 3/3 → hook job #56 released on-chain</span>; off-brief → <span class="no">REJECTED, $0</span>. The evaluator three competitors shipped fake.</figcaption></figure>
+    </div>
+    <div class="grid g2" style="margin-top:18px;">
+      <figure class="shot"><img src="/proof-images/hub-market.png" alt="Ground-truth prediction market" loading="lazy"><figcaption><span class="chain arc">Ground-truth markets</span> A market on <b>"will this claim verify?"</b>, settled by Merit's own verifier as the on-chain oracle — no human committee. Live: the Eiffel market resolved <span class="ok">YES → stake→resolve→redeem on-chain</span>; the strict gate settled the other <span class="no">NO</span>.</figcaption></figure>
+      <figure class="shot"><img src="/proof-images/hub-media.png" alt="Provenance-verified media licensing" loading="lazy"><figcaption><span class="chain arc">Media licensing</span> License a clip, image, or audio <b>only if its provenance verifiably matches</b> your request — the citation gate on a new modality. Live: a match at <span class="ok">0.973 → hook job #57 released the fee on-chain</span>; a non-match → <span class="no">REFUSED, $0</span>. You never pay for media that isn't what it claims.</figcaption></figure>
+    </div>
+    <div class="grid g1" style="margin-top:18px;">
+      <figure class="shot"><img src="/proof-images/hub-crosschain.png" alt="Cross-chain payout via Circle Gateway" loading="lazy"><figcaption><span class="chain arc">Cross-chain payout</span> Withdraw verified earnings from Arc to <b>Base, Arbitrum, Optimism, or Avalanche</b> via Circle Gateway — the last mile of getting paid where you want it. Live: a <span class="ok">real Arc Gateway settlement tx</span>; the cross-chain leg settles the moment the payout wallet holds a little destination-chain gas.</figcaption></figure>
+    </div>
+  </section>
+
   <section class="sec" id="surface">
-    <div class="num">10 · The full agent-facing surface</div>
+    <div class="num">11 · The full agent-facing surface</div>
     <h2>Every capability, one real outcome each.</h2>
     <p class="lede">Beyond the flagship flows, Merit exposes the whole agentic payment stack over clean APIs — each shown here producing a <span class="out">real result on the live deployment</span>. This is the breadth a verify-nothing tool can't match; the verifier sits under all of it.</p>
     <div class="apigrid">
@@ -250,7 +268,7 @@
   </section>
 
   <section class="sec" id="evidence">
-    <div class="num">11 · Falsifiable + the live ledger</div>
+    <div class="num">12 · Falsifiable + the live ledger</div>
     <h2>Scored on a public gold set. Every settlement on a live ledger.</h2>
     <p class="lede">The verifier is measured on a fixed, hand-labeled gold set — <span class="out">reproducible from a fresh checkout, not a self-reported number</span> — and co-evolves with live adversarial traffic. Every real settlement lands on a public ledger where each row is a signed receipt, most deep-linking a real Arc transaction.</p>
     <div class="grid g2">
@@ -264,7 +282,7 @@
   </section>
 
   <section class="sec" id="txs">
-    <div class="num">12 · On-chain transaction index</div>
+    <div class="num">13 · On-chain transaction index</div>
     <h2>Open any transaction and verify it yourself.</h2>
     <p class="lede">The proof-of-citation hook lifecycle, twice — a verified job that <span class="out">released</span> and a failed job that <span class="out">reverted then refunded</span>. Every hash has a successful receipt on Arc testnet 5042002. Click through to ArcScan.</p>
     <div class="txwrap">

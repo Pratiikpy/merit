@@ -14,7 +14,7 @@ recompute without trusting a Merit server.
 <p>
 <a href="https://merit-ecru.vercel.app"><img src="https://img.shields.io/badge/live%20demo-merit--ecru.vercel.app-16A34A?style=flat-square" alt="Live demo" /></a>
 <img src="https://img.shields.io/badge/Arc-testnet%205042002-0A0A0A?style=flat-square" alt="Arc testnet" />
-<img src="https://img.shields.io/badge/tests-441%20passing-3FB950?style=flat-square" alt="441 tests passing" />
+<img src="https://img.shields.io/badge/tests-480%20passing-3FB950?style=flat-square" alt="480 tests passing" />
 <img src="https://img.shields.io/badge/proof--of--citation-275--case%20adversarial%20benchmark-3FB950?style=flat-square" alt="275-case adversarial benchmark" />
 <img src="https://img.shields.io/badge/license-Apache--2.0-3178C6?style=flat-square" alt="Apache-2.0" />
 </p>
@@ -174,8 +174,36 @@ each one is resolved against ground truth rather than an opinion.
   rate falls from 43% to 0%. No agent is programmed to be honest; the economics make it the only way to
   survive. Writeup: [`docs/scalable-oversight.md`](docs/scalable-oversight.md).
 
+### The hub — one oracle, every hat (for agents and humans)
+
+Every competing project built a payment and skipped the reason to release it — they gate on identity,
+reputation, uptime, relevance, or the generator's own say-so, because none has a ground-truth verifier.
+Merit does, so the same proof-of-citation gate becomes every capability the agentic economy needs. Each
+is live on the deployment and proven with a real on-chain outcome.
+
+- **Score any x402 endpoint** (`POST /api/score`, [scorecard.html](https://merit-ecru.vercel.app/scorecard.html)).
+  Point Merit at any agent's paid endpoint with a claim it should back; Merit pays the toll, runs the
+  delivered content through the verifier, and publishes a verified-quality-per-dollar leaderboard — the one
+  axis a price/latency/uptime directory can't produce. Live: a three-gate SUPPORTED at 0.933 and a numeric REFUSE at 0.
+- **Verified escrow board** (`POST /api/gigs`, [gigs.html](https://merit-ecru.vercel.app/gigs.html)).
+  A bounty board for humans and agents: post a brief + requirements + a USDC bounty; a worker delivers;
+  Merit's real adversarial grader releases the escrow only when every requirement is met — the evaluator
+  Receipt/Arco/BugBountyAI shipped fake. Live: on-brief → ACCEPTED → ERC-8183 hook job released on-chain; off-brief → REJECTED, $0.
+- **Ground-truth prediction market** (`POST /api/market`, [market.html](https://merit-ecru.vercel.app/market.html)).
+  A pari-mutuel market on "will this claim verify?", settled by Merit's own verifier as the on-chain oracle —
+  no human committee, no dispute window. Live: full stake → resolve → redeem on-chain against the deployed
+  `PredictionMarket`.
+- **Provenance-verified media licensing** (`POST /api/media`, [media.html](https://merit-ecru.vercel.app/media.html)).
+  License a clip, image, or audio only if Merit verifies its own description + transcript genuinely support the
+  request — the citation gate on a new modality. You never license media that isn't what it claims. Live:
+  a match at 0.973 released the fee on-chain; a non-match → REFUSED, $0.
+- **Cross-chain payout** (`POST /api/crosschain`, [crosschain.html](https://merit-ecru.vercel.app/crosschain.html)).
+  Withdraw verified earnings from Arc to Base, Arbitrum, Optimism, or Avalanche via Circle Gateway. Live: a real
+  Arc Gateway settlement tx; the cross-chain leg settles the moment the payout wallet holds destination-chain gas.
+
 Each of these depends on the oracle. Without a ground-truth settlement layer, there is nothing to
-settle a bet, grow a benchmark, or price an equilibrium against.
+settle a bet, grow a benchmark, price an equilibrium, score an endpoint, release an escrow, resolve a
+market, or license a clip against.
 
 ## Quickstart
 
@@ -304,7 +332,7 @@ Every claim Merit makes is recomputable from Arc with no Merit server.
 
 | Command | What it does |
 |---|---|
-| `npm test` | 441 unit tests (vitest) over the pure logic: the agency decision table, crew grading and the whole-run budget guard, the receipt settlement-integrity rule, proof-of-citation matching and the deterministic numeric verifier, RSS/Atom parsing, registry persistence, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
+| `npm test` | 480 unit tests (vitest) over the pure logic: the agency decision table, crew grading and the whole-run budget guard, the receipt settlement-integrity rule, proof-of-citation matching and the deterministic numeric verifier, RSS/Atom parsing, registry persistence, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
 | `npm run smoke` | end-to-end, 57 checks: sources, a full run, ledger consistency, the summary receipt, no private-key leak, the agent-labor market, a zero-budget pays-nothing invariant, off-topic pays no creators, onboarding, on-chain reputation, the MCP handshake, `verify-all`, `leaderboard`, and the `challenge` re-audit |
 | `npm run prove-moat` | one command: a verified run releases the ERC-8183 escrow; an off-topic run reverts `complete()` via the hook, then refunds |
 | `npm run audit-demo` | feeds the Auditor a genuine citation, two contradictions, and a prompt injection; pays the real one, refuses the rest |
