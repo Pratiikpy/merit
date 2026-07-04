@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cross-chain Payout — Merit</title>
+<meta name="description" content="Withdraw verified earnings from Arc to Base, Arbitrum, Optimism, or Avalanche in one real Circle Gateway transfer — compliance-screened, and honest on failure, never a fabricated success.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Cross-chain Payout — Merit">
+<meta property="og:description" content="Withdraw verified earnings from Arc to Base, Arbitrum, Optimism or Avalanche in one Circle Gateway transfer — compliance-screened, honest on failure.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:72ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:22px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  h2.lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;}
+  .card{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .field{flex:1;min-width:220px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+  input[type=text],input[type=number],select{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid #D4D4D8;border-radius:10px;color:#0A0A0A;outline:none;background:#fff;}
+  input[type=text]:focus,input[type=number]:focus,select:focus{border-color:#0A0A0A;}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#fff;background:#0A0A0A;border:none;border-radius:10px;padding:12px 20px;cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:#18181B;} .btn:disabled{opacity:.5;cursor:default;}
+  .hint{font-size:12px;color:#6B7280;margin-top:8px;}
+  .note{font-size:13px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 13px;margin-top:12px;}
+  .err{border:1px solid #FECDD3;background:#FFF1F2;border-radius:10px;padding:12px 14px;color:#9F1239;font-size:13.5px;margin-top:12px;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  .pocard{border:1px solid #ECECEE;border-radius:16px;padding:18px 20px;margin-bottom:14px;}
+  .pohead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap;}
+  .chip.ok{background:#DCFCE7;color:#047857;}
+  .podest{font-size:12px;font-weight:700;padding:3px 11px;border-radius:999px;background:#F4F4F5;color:#3F3F46;white-space:nowrap;}
+  .podate{font-size:11.5px;color:#6B7280;margin-left:auto;}
+  .poamt{font-size:21px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;}
+  .porecipient{font-size:12.5px;color:#4B5563;word-break:break-all;margin-bottom:6px;}
+  .potx{margin-top:6px;}
+  .potx a{text-decoration:underline;font-weight:700;font-size:13px;color:#0A0A0A;}
+  .potxid{font-size:11px;color:#6B7280;margin-top:4px;word-break:break-all;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/proof.html">Ledger</a>
+      <a href="/jury.html">Jury</a>
+      <a href="/compliance.html">Compliance</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Cross-chain Payout</h1>
+  <p class="sub">Withdraw verified earnings from Arc to the chain you actually use — Base, Arbitrum, Optimism, Avalanche — in one Circle Gateway transfer.</p>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">Gateway balance — available</div><div class="v mono" id="st-available">—</div></div>
+    <div class="stat"><div class="k">Gateway balance — withdrawable</div><div class="v mono" id="st-withdrawable">—</div></div>
+  </div>
+
+  <h2 class="lbl">Withdraw</h2>
+  <div class="card">
+    <div class="row">
+      <div class="field"><label for="in-amount">Amount (USDC)</label><input type="number" id="in-amount" placeholder="0.00" min="0" step="0.000001"></div>
+      <div class="field"><label for="in-chain">Destination chain</label><select id="in-chain" aria-label="Destination chain"><option value="">loading chains…</option></select></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-recipient">Recipient address</label><input type="text" id="in-recipient" placeholder="0x… recipient on the destination chain" spellcheck="false" autocomplete="off"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-key">API key</label><input type="text" id="in-key" placeholder="merit_sk_… (sent as Authorization: Bearer)" spellcheck="false" autocomplete="off"></div>
+      <div style="align-self:flex-end"><button class="btn" id="go">Withdraw</button></div>
+    </div>
+    <div class="hint">This settles a real Circle Gateway cross-chain transfer — burned from Merit's unified USDC balance on Arc, minted on the destination chain. It requires Merit's Gateway balance to be funded; an unfunded deployment returns an honest error here, never a fake success. The recipient is compliance-screened before anything moves.</div>
+    <div id="form-note"></div>
+    <div id="form-err"></div>
+  </div>
+
+  <h2 class="lbl">Recent payouts</h2>
+  <div id="recent"></div>
+  </main>
+
+  <footer class="foot">A mint-tx link only ever appears here when it's a real destination transaction — Merit never fabricates a settlement. <a href="/api/crosschain" style="text-decoration:underline">Raw JSON →</a></footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function usd(n){return n==null?'—':'$'+Number(n).toFixed(4);}
+  function truncMid(s,a,b){s=String(s||'');a=a||10;b=b||8;return s.length>a+b+1?s.slice(0,a)+'…'+s.slice(-b):s;}
+  function fmtDate(s){try{return new Date(s).toLocaleString();}catch(e){return '';}}
+
+  var chainsCache = [];
+  function labelFor(chain){
+    var m = chainsCache.filter(function(c){return c.chain===chain;})[0];
+    return m ? m.label : chain;
+  }
+
+  // Renders one settled payout — form result or recent-list row alike. Never renders a tx link unless
+  // explorerUrl is a real, non-empty string; never shows a number that wasn't in the record.
+  function renderPayout(p){
+    p = p || {};
+    var label = p.label || labelFor(p.chain) || p.chain || '—';
+    var hasTx = !!(p.explorerUrl && String(p.explorerUrl).trim());
+    var when = p.at ? '<span class="podate mono">'+esc(fmtDate(p.at))+'</span>' : '';
+    var txHtml = hasTx
+      ? '<div class="potx"><a href="'+esc(p.explorerUrl)+'" target="_blank" rel="noopener noreferrer nofollow">mint tx on '+esc(label)+' →</a></div>'
+      : '';
+    var hashHtml = (!hasTx && p.hash) ? '<div class="potxid mono">tx '+esc(truncMid(p.hash))+'</div>' : '';
+    var noteHtml = p.note ? '<div class="note">'+esc(p.note)+'</div>' : '';
+    return '<div class="pocard">'
+      + '<div class="pohead"><span class="chip ok">✓ Settled</span><span class="podest">'+esc(label)+'</span>'+when+'</div>'
+      + '<div class="poamt mono">'+usd(p.amount)+' USDC</div>'
+      + '<div class="porecipient mono">to '+esc(truncMid(p.recipient))+'</div>'
+      + txHtml
+      + hashHtml
+      + noteHtml
+      + '</div>';
+  }
+
+  function renderRecent(list){
+    var el = document.getElementById('recent');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No cross-chain payouts yet.</div>'; return; }
+    el.innerHTML = list.map(renderPayout).join('');
+  }
+
+  function renderStats(balance){
+    var a = document.getElementById('st-available'), w = document.getElementById('st-withdrawable');
+    if (balance) { a.textContent = usd(balance.available); w.textContent = usd(balance.withdrawable); }
+    else { a.textContent = 'balance unavailable'; w.textContent = 'balance unavailable'; }
+  }
+
+  function populateChains(chains){
+    chainsCache = chains || [];
+    var sel = document.getElementById('in-chain');
+    if (!chainsCache.length) { sel.innerHTML = '<option value="">no chains available</option>'; return; }
+    sel.innerHTML = chainsCache.map(function(c){ return '<option value="'+esc(c.chain)+'">'+esc(c.label)+'</option>'; }).join('');
+  }
+
+  async function load(){
+    try{
+      var res = await fetch('/api/crosschain', {cache:'no-store'});
+      var d = await res.json();
+      populateChains(d.chains || []);
+      renderStats(d.balance || null);
+      renderRecent(d.recent || []);
+    }catch(e){
+      document.getElementById('in-chain').innerHTML = '<option value="">could not load chains</option>';
+      renderStats(null);
+      document.getElementById('recent').innerHTML = '<div class="err">Could not load recent payouts.</div>';
+    }
+  }
+
+  var go = document.getElementById('go');
+  var amountEl = document.getElementById('in-amount'), chainEl = document.getElementById('in-chain'),
+      recipientEl = document.getElementById('in-recipient'), keyEl = document.getElementById('in-key');
+  var noteEl = document.getElementById('form-note'), errEl = document.getElementById('form-err');
+
+  go.addEventListener('click', async function(){
+    noteEl.innerHTML = ''; errEl.innerHTML = '';
+    var amount = Number((amountEl.value || '').trim());
+    var chain = chainEl.value;
+    var recipient = (recipientEl.value || '').trim();
+    var key = (keyEl.value || '').trim();
+
+    if (!(amount > 0)) { errEl.innerHTML = '<div class="err">Enter a positive USDC amount.</div>'; return; }
+    if (!chain) { errEl.innerHTML = '<div class="err">Choose a destination chain.</div>'; return; }
+    if (!/^0x[a-fA-F0-9]{40}$/.test(recipient)) { errEl.innerHTML = '<div class="err">Enter a valid 0x recipient address.</div>'; return; }
+    if (!key) { errEl.innerHTML = '<div class="err">An API key is required — a payout moves real money.</div>'; return; }
+
+    go.disabled = true; go.textContent = 'Settling cross-chain… (can take up to 60s)';
+    try {
+      var res = await fetch('/api/crosschain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({ amount: amount, chain: chain, recipient: recipient })
+      });
+      var d = await res.json();
+      if (!res.ok) { errEl.innerHTML = '<div class="err">'+esc(d.error || ('error ' + res.status))+'</div>'; return; }
+      var payout = d.payout || {};
+      payout.note = d.note;
+      var recentEl = document.getElementById('recent');
+      if (recentEl.querySelector('.empty')) recentEl.innerHTML = '';
+      recentEl.insertAdjacentHTML('afterbegin', renderPayout(payout));
+      amountEl.value = ''; recipientEl.value = '';
+      load();
+    } catch (e) {
+      errEl.innerHTML = '<div class="err">Request failed — the network may be slow or the Gateway unreachable.</div>';
+    } finally {
+      go.disabled = false; go.textContent = 'Withdraw';
+    }
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>
