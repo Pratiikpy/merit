@@ -13,6 +13,7 @@ recompute without trusting a Merit server.
 
 <p>
 <a href="https://merit-ecru.vercel.app"><img src="https://img.shields.io/badge/live%20demo-merit--ecru.vercel.app-16A34A?style=flat-square" alt="Live demo" /></a>
+<a href="https://youtu.be/MuV-c3yaQwY"><img src="https://img.shields.io/badge/%E2%96%B6%20demo-2%20min%20video-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="2-minute demo video" /></a>
 <img src="https://img.shields.io/badge/Arc-testnet%205042002-0A0A0A?style=flat-square" alt="Arc testnet" />
 <img src="https://img.shields.io/badge/tests-480%20passing-3FB950?style=flat-square" alt="480 tests passing" />
 <img src="https://img.shields.io/badge/proof--of--citation-275--case%20adversarial%20benchmark-3FB950?style=flat-square" alt="275-case adversarial benchmark" />
@@ -33,7 +34,7 @@ recompute without trusting a Merit server.
 
 <br /><br />
 
-[Live demo](https://merit-ecru.vercel.app) &nbsp;·&nbsp; [What it is](#what-it-is) &nbsp;·&nbsp; [How it works](#how-it-works) &nbsp;·&nbsp; [Settlement](#settlement-is-gated-on-verification) &nbsp;·&nbsp; [Quickstart](#quickstart) &nbsp;·&nbsp; [Verify everything](#verify-everything) &nbsp;·&nbsp; [Contracts](#deployed-contracts)
+[Live demo](https://merit-ecru.vercel.app) &nbsp;·&nbsp; [2-min video](https://youtu.be/MuV-c3yaQwY) &nbsp;·&nbsp; [Product page](https://comfortable-goal-205.notion.site/Merit-3939c0ce78768113a3c6d659ea8a1f5d) &nbsp;·&nbsp; [What it is](#what-it-is) &nbsp;·&nbsp; [How it works](#how-it-works) &nbsp;·&nbsp; [Settlement](#settlement-is-gated-on-verification) &nbsp;·&nbsp; [Quickstart](#quickstart) &nbsp;·&nbsp; [Verify everything](#verify-everything) &nbsp;·&nbsp; [Contracts](#deployed-contracts)
 
 </div>
 
