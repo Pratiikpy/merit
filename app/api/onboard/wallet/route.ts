@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createApiKey, refreshAuthFromMirror } from "@/lib/auth";
+import { createApiKeyDurable } from "@/lib/auth";
 import { provisionWallet, walletMode, circleDcwConfigured, walletSeedConfigured } from "@/lib/wallet";
 import { depositAddressFor } from "@/lib/balance";
 import { isStub } from "@/lib/arc";
@@ -30,10 +30,9 @@ export async function POST(req: Request) {
 
   const cap = Number(process.env.MERIT_ONBOARD_CAP);
   const budgetCap = Number.isFinite(cap) && cap > 0 ? cap : 1; // bound a self-serve principal (default $1)
-  // Merge onto the authoritative key set before minting, so self-serve onboarding never clobbers keys minted on
-  // another instance (the same cross-instance last-writer-wins hazard fixed in /api/admin/keys).
-  await refreshAuthFromMirror().catch(() => {});
-  const { key, principal } = createApiKey(label, budgetCap);
+  // Durable mint: an AWAITED authoritative read → union → write (read-your-writes), so rapid self-serve
+  // onboarding can never clobber a just-minted key out of the shared mirror (the observed 401-forever drop).
+  const { key, principal } = await createApiKeyDurable(label, budgetCap);
 
   let wallet: { address: string | null; mode: string };
   let managed = false;

@@ -9,7 +9,7 @@
  * keyless demo + smoke keep working; even with auth off, a PROVIDED key is still validated + budget-tracked.
  */
 import crypto from "node:crypto";
-import { loadDoc, loadDocFromMirror, saveDoc } from "./store";
+import { loadDoc, loadDocFromMirror, saveDoc, saveDocNow } from "./store";
 import { isStub } from "./arc";
 
 export interface Principal {
@@ -73,6 +73,34 @@ export function createApiKey(name: string, budgetCap = 0): { key: string; princi
   };
   store[id] = principal;
   persist(store);
+  return { key, principal };
+}
+
+/**
+ * Durably mint a key WITHOUT the last-writer-wins clobber a plain createApiKey suffers under rapid onboarding.
+ * createApiKey persists via a DEFERRED, non-awaited blob upsert from a possibly-stale local base — so a mint
+ * that reads the mirror microseconds before a prior mint's deferred write lands overwrites the whole apikeys
+ * blob and DROPS the earlier key (observed: a freshly onboarded key returns 401 forever). Here every mint does
+ * an AWAITED, authoritative read → UNION → write (read-your-writes with loadDocFromMirror), then re-reads to
+ * confirm its key survived and retries if a concurrent writer clobbered it. Union preserves every key from both
+ * the mirror and the local set, so no principal is lost. Use this for any self-serve / public key minting.
+ */
+export async function createApiKeyDurable(name: string, budgetCap = 0): Promise<{ key: string; principal: Principal }> {
+  const key = "merit_sk_" + crypto.randomBytes(24).toString("hex");
+  const id = "prin_" + crypto.randomBytes(8).toString("hex");
+  const principal: Principal = { id, name: name || id, keyHash: hashKey(key), budgetCap: Math.max(0, budgetCap), spent: 0, createdAt: Date.now() };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const mirror = (await loadDocFromMirror<Store>("apikeys")) || {};
+      const merged: Store = { ...mirror, ...(cache || {}), [id]: principal }; // union: never drop a key from either side
+      cache = merged;
+      await saveDocNow("apikeys", merged); // AWAITED authoritative write — next onboard's read sees this key
+      const check = (await loadDocFromMirror<Store>("apikeys")) || {};
+      if (check[id]) { cache = check[id] ? { ...check, ...cache } : cache; break; } // our key survived the write
+    } catch (e) {
+      if (attempt === 2) { console.error("[auth] durable mint persist failed (key valid on this instance):", (e as Error).message); break; }
+    }
+  }
   return { key, principal };
 }
 
