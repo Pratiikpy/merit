@@ -3,6 +3,7 @@ import { authGate, refreshAuthFromMirror } from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { attestedInference, verifiedAnswer, listInference, inferenceStats, refreshInferenceFromMirror, routeInference, INFERENCE_MODELS, DEFAULT_MODEL, PRICE } from "@/lib/inference";
 import { MODELS, type TrustMode } from "@/lib/models";
+import { verifiedVisionExtract } from "@/lib/vision";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,6 +45,15 @@ export async function POST(req: Request) {
     model = pick;
     const top = ranked.find((r) => r.id === pick);
     if (top) routed = { pick, verifiedRate: Math.round(top.verifiedRate * 1000) / 1000, blendedUsdPerM: top.blendedUsdPerM, trust: top.trust };
+  }
+
+  if (tier === "vision") {
+    const res = await verifiedVisionExtract({ imageUrl: (body as { imageUrl?: string }).imageUrl || "", question: body.question || body.prompt || "", model });
+    if ("error" in res) return NextResponse.json({ error: res.error }, { status: res.status });
+    return NextResponse.json({
+      extraction: res.extraction,
+      note: "Verified vision extraction over a 0G TEE-attested vision model. The model returns the answer AND the text it read from the image; Merit's verifier grounds the answer in that transcription — a fabricated figure is refused.",
+    });
   }
 
   if (tier === "attested") {
