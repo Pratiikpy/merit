@@ -14,6 +14,8 @@ import { signReceipt, verificationId } from "./receipt";
 import { snapshotMetrics } from "./metrics";
 import { auditStats, verifyAuditChain } from "./audit";
 import { round6 } from "./arc";
+import { inferenceStats, refreshInferenceFromMirror } from "./inference";
+import { tollStats, refreshTollFromMirror } from "./toll";
 
 export interface VerifiedSpendStatement {
   schema: "merit.statement/v1";
@@ -29,6 +31,10 @@ export interface VerifiedSpendStatement {
   jury: { panels: number; claimsGraded: number; claimsSupported: number; claimsRefused: number; gradedUsdc: number };
   // Compliance (Phase 7): payee screenings + approved/review/denied split (aggregate only — no addresses/PII).
   compliance: { screens: number; approved: number; review: number; denied: number; viaCircle: number };
+  // Verified inference (the product door) — 0G-attested resale where the buyer is charged only if the answer verifies.
+  verifiedInference: { calls: number; verified: number; refused: number; chargedUsdc: number };
+  // Verified citation toll (the moat door) — the neutral gate: released vs refused, and mis-pays a pay-on-access toll avoided.
+  citationToll: { gates: number; released: number; refused: number; releasedUsdc: number; savedUsdc: number };
   // Verified-citation cache — re-verifications avoided (a true count) + honestly-labelled cost saved.
   cache: { reverificationsAvoided: number; entries: number; estSavedUsd: number };
   // Operator safety guard — is settlement currently frozen, and the day's spend vs its cap.
@@ -47,6 +53,11 @@ export async function buildStatement(opts: { sign?: boolean } = {}): Promise<Ver
   const m = snapshotMetrics();
   const a = auditStats();
   const chain = verifyAuditChain();
+  // Fold in the two front doors (best-effort mirror refresh so a warm serverless instance reports current totals).
+  await refreshInferenceFromMirror().catch(() => {});
+  await refreshTollFromMirror().catch(() => {});
+  const inf = inferenceStats();
+  const toll = tollStats();
 
   const body: VerifiedSpendStatement = {
     schema: "merit.statement/v1",
@@ -80,6 +91,8 @@ export async function buildStatement(opts: { sign?: boolean } = {}): Promise<Ver
       denied: m.compliance.denied,
       viaCircle: m.compliance.viaCircle,
     },
+    verifiedInference: { calls: inf.calls, verified: inf.verified, refused: inf.refused, chargedUsdc: inf.chargedUsdc },
+    citationToll: { gates: toll.gates, released: toll.released, refused: toll.refused, releasedUsdc: toll.releasedUsdc, savedUsdc: toll.savedUsdc },
     cache: { reverificationsAvoided: m.cache.reverificationsAvoided, entries: m.cache.entries, estSavedUsd: m.cache.estSavedUsd },
     guard: m.guard,
     attestation:
