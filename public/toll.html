@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verified Citation Toll — Merit</title>
+<meta name="description" content="A neutral verification gate any AI-payment rail or publisher calls before releasing a citation payment. Cloudflare / TollBit / ProRata pay on access; Merit checks the citation is actually correct first.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Verified Citation Toll — Merit">
+<meta property="og:description" content="The gate under pay-per-crawl: pay a publisher only if the AI answer actually, correctly used their source. Signed verdict, release-or-refuse, per citation.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:74ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  h2.lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;}
+  .card{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .field{flex:1;min-width:220px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+  input[type=text],input[type=number],textarea,select{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid #D4D4D8;border-radius:10px;color:#0A0A0A;outline:none;background:#fff;}
+  textarea{resize:vertical;min-height:76px;line-height:1.5;}
+  input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{border-color:#0A0A0A;}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#fff;background:#0A0A0A;border:none;border-radius:10px;padding:12px 20px;cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:#18181B;} .btn:disabled{opacity:.5;cursor:default;}
+  .pricehint{font-size:12.5px;font-weight:700;color:#52525B;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:999px;padding:7px 13px;white-space:nowrap;}
+  .hint{font-size:12px;color:#6B7280;margin-top:8px;}
+  .note{font-size:13px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 13px;margin-top:12px;}
+  .err{border:1px solid #FECDD3;background:#FFF1F2;border-radius:10px;padding:12px 14px;color:#9F1239;font-size:13.5px;margin-top:12px;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  .rcard{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .rhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .decision{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;}
+  .decision.release{background:#DCFCE7;color:#047857;} .decision.refuse{background:#FEE2E2;color:#BE123C;}
+  .muted{color:#6B7280;font-size:11.5px;}
+  .claimline{font-size:14.5px;color:#0A0A0A;margin:4px 0 2px;padding:12px 14px;background:#FAFAFA;border-radius:10px;border:1px solid #F3F4F6;white-space:pre-wrap;word-break:break-word;}
+  .methods{font-size:12px;color:#4B5563;margin:11px 0 4px;}
+  .mchip2{display:inline-block;font-size:11px;font-weight:700;color:#52525B;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:999px;padding:2px 9px;margin-right:6px;}
+  .reasonline{font-size:13px;color:#4B5563;margin-top:8px;}
+  .payline{font-size:13.5px;font-weight:700;margin-top:11px;padding:8px 13px;border-radius:9px;display:inline-block;}
+  .payline.paid{background:#DCFCE7;color:#047857;} .payline.free{background:#FEE2E2;color:#BE123C;}
+  .idrow{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;}
+  .vidchip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#52525B;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:7px;padding:3px 9px;max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;user-select:all;}
+  pre.snip{font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;background:#0A0A0A;color:#E4E4E7;border-radius:12px;padding:16px 18px;overflow-x:auto;margin:0;}
+  pre.snip .k{color:#7DD3FC;} pre.snip .s{color:#86EFAC;} pre.snip .c{color:#71717A;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/inference.html">Inference</a>
+      <a href="/proof.html">Ledger</a>
+      <a href="/scorecard.html">Scorecard</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Verified Citation Toll</h1>
+  <p class="sub">The gate under pay-per-crawl. Cloudflare, TollBit and ProRata pay a publisher whether or not the AI's answer actually used their work. Merit is the neutral check they call first: give it a claim and the cited source, it returns a signed <span class="mono">release</span>-or-<span class="mono">refuse</span> verdict, and your rail pays only when the citation genuinely holds.</p>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">Gate calls</div><div class="v" id="st-gates">—</div></div>
+    <div class="stat"><div class="k">Released</div><div class="v" id="st-released">—</div></div>
+    <div class="stat"><div class="k">Refused</div><div class="v" id="st-refused">—</div></div>
+    <div class="stat"><div class="k">Released USDC</div><div class="v" id="st-relusd">—</div></div>
+    <div class="stat"><div class="k">Saved (mis-pays)</div><div class="v" id="st-saved">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="field"><label for="claim">Claim the AI made</label><textarea id="claim" placeholder="e.g. TollBit works with about 7,000 publisher sites."></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="passage">Cited source passage</label><textarea id="passage" style="min-height:96px" placeholder="Paste the passage the publisher is being cited for."></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field" style="max-width:220px"><label for="toll">Toll to release (USDC)</label><input type="number" id="toll" step="0.001" min="0" value="0.002"></div>
+      <div class="field"><label for="publisher">Publisher (optional)</label><input type="text" id="publisher" placeholder="e.g. TollBit"></div>
+    </div>
+    <div class="row" style="margin-top:12px;align-items:center;justify-content:space-between">
+      <div class="pricehint mono">signed verdict · release-or-refuse</div>
+      <button class="btn" id="go" type="button">Run the gate</button>
+    </div>
+    <div class="hint">Merit does not move the money — it returns the signed verdict your rail settles on. The same <span class="mono">verificationId</span> links it to your payment, the <a href="/proof.html">/proof</a> ledger and the on-chain hook.</div>
+    <div id="note"></div>
+    <div id="err"></div>
+  </div>
+
+  <div id="result"></div>
+
+  <h2 class="lbl">Drop it into any rail</h2>
+  <div class="card" style="padding:0;overflow:hidden;border:none">
+<pre class="snip"><span class="c">// before releasing a per-citation toll, ask Merit if the citation actually holds</span>
+<span class="k">const</span> gate = <span class="k">await</span> fetch(<span class="s">"https://merit-ecru.vercel.app/api/toll/verify"</span>, {
+  method: <span class="s">"POST"</span>, headers: { <span class="s">"content-type"</span>: <span class="s">"application/json"</span> },
+  body: JSON.stringify({ claim, citedPassage, tollUsdc: <span class="s">0.002</span>, publisher })
+}).<span class="k">then</span>(r => r.json());
+
+<span class="k">if</span> (gate.receipt.decision === <span class="s">"release"</span>) payPublisher(gate.receipt.released);  <span class="c">// verified — pay</span>
+<span class="k">else</span> hold(gate.receipt.reason);                                     <span class="c">// unsupported — $0</span></pre>
+  </div>
+
+  <h2 class="lbl">Recent gate decisions</h2>
+  <div id="recent"><div class="empty">Loading…</div></div>
+  </main>
+
+  <footer class="foot">
+    Merit — settlement gated on whether the cited work is correct. <a href="/">Home</a> · <a href="/inference.html">Verified Inference</a> · <a href="/proof.html">Ledger</a>
+  </footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function usd(n){ return n == null ? '—' : '$' + Number(n).toFixed(4); }
+  var claimEl=document.getElementById('claim'), passageEl=document.getElementById('passage'), tollEl=document.getElementById('toll'), pubEl=document.getElementById('publisher');
+  var go=document.getElementById('go'), noteEl=document.getElementById('note'), errEl=document.getElementById('err'), resultEl=document.getElementById('result');
+
+  function renderStats(s){
+    s = s || {};
+    document.getElementById('st-gates').textContent = s.gates != null ? s.gates : '—';
+    document.getElementById('st-released').textContent = s.released != null ? s.released : '—';
+    document.getElementById('st-refused').textContent = s.refused != null ? s.refused : '—';
+    document.getElementById('st-relusd').textContent = s.releasedUsdc != null ? usd(s.releasedUsdc) : '—';
+    document.getElementById('st-saved').textContent = s.savedUsdc != null ? usd(s.savedUsdc) : '—';
+  }
+  function renderReceipt(r){
+    if (!r) return '';
+    var dec = r.decision === 'release' ? 'release' : 'refuse';
+    var methods = (r.methods || []).map(function(m){ return '<span class="mchip2">'+esc(m)+'</span>'; }).join('');
+    var pay = dec === 'release'
+      ? '<div class="payline paid">Release '+usd(r.released)+' to '+esc(r.publisher || 'the publisher')+'</div>'
+      : '<div class="payline free">Refused — $0 paid. A pay-on-access toll would have wrongly paid '+usd(r.tollUsdc)+'.</div>';
+    var ids = '';
+    if (r.verificationId) ids += '<span class="vidchip" title="verificationId">'+esc(r.verificationId)+'</span>';
+    if (r.signer) ids += '<span class="vidchip" title="signer">signer '+esc(r.signer)+'</span>';
+    return '<div class="rcard">'
+      + '<div class="rhead"><span class="decision '+dec+'">'+esc(r.decision)+'</span>'
+      + '<span class="muted mono">conf '+(r.confidence != null ? r.confidence : '—')+'</span>'
+      + (r.publisher ? '<span class="muted">· '+esc(r.publisher)+'</span>' : '')+'</div>'
+      + '<div class="claimline">'+esc(r.claimPreview || '')+'</div>'
+      + '<div class="methods">'+methods+'</div>'
+      + pay
+      + (r.reason ? '<div class="reasonline">'+esc(r.reason)+'</div>' : '')
+      + (ids ? '<div class="idrow">'+ids+'</div>' : '')
+      + '</div>';
+  }
+  function renderRecent(list){
+    var el = document.getElementById('recent');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No gate decisions yet. Run one above.</div>'; return; }
+    el.innerHTML = list.map(renderReceipt).join('');
+  }
+  async function refreshBoard(){
+    try { var d = await (await fetch('/api/toll/verify', { cache:'no-store' })).json(); renderStats(d.stats); renderRecent(d.recent || []); } catch(e){}
+  }
+
+  go.addEventListener('click', async function(){
+    errEl.innerHTML=''; noteEl.innerHTML='';
+    var claim = (claimEl.value||'').trim(), passage = (passageEl.value||'').trim();
+    if (!claim || !passage) { errEl.innerHTML = '<div class="err">Provide both the claim and the cited source passage.</div>'; return; }
+    var body = { claim: claim, citedPassage: passage };
+    var toll = parseFloat(tollEl.value); if (toll > 0) body.tollUsdc = toll;
+    var pub = (pubEl.value||'').trim(); if (pub) body.publisher = pub;
+    go.disabled = true; go.textContent = 'Verifying… ~5-20s';
+    try {
+      var res = await fetch('/api/toll/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      var d = await res.json();
+      if (!res.ok) { errEl.innerHTML = '<div class="err">'+esc(d.error || ('error '+res.status))+'</div>'; return; }
+      if (d.note) noteEl.innerHTML = '<div class="note">'+esc(d.note)+'</div>';
+      resultEl.innerHTML = renderReceipt(d.receipt) + resultEl.innerHTML;
+      refreshBoard();
+    } catch(e){ errEl.innerHTML = '<div class="err">Request failed — the verifier may be slow or unreachable.</div>'; }
+    finally { go.disabled = false; go.textContent = 'Run the gate'; }
+  });
+
+  refreshBoard();
+})();
+</script>
+</body>
+</html>

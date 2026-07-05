@@ -244,9 +244,17 @@
     document.getElementById('st-saved').textContent = s.savedUsdc != null ? usd(s.savedUsdc) : '—';
   }
 
-  function fillModels(models, def, sel){
+  function fillModels(catalog, models, def, sel, withRoute){
     if (!sel) return;
-    sel.innerHTML = (models || []).map(function(m){ return '<option value="'+esc(m)+'"'+(m === def ? ' selected' : '')+'>'+esc(m)+'</option>'; }).join('');
+    var byId = {}; (catalog || []).forEach(function(m){ byId[m.id] = m; });
+    var opts = (models || []).map(function(m){
+      var info = byId[m];
+      var label = info ? (info.label + ' · ' + (info.trust === 'verified' ? 'Verified TEE+TeeTLS' : 'Private TEE') + ' · $' + info.inUsdPerM + '/M') : m;
+      var selected = (!withRoute && m === def) ? ' selected' : '';
+      return '<option value="'+esc(m)+'"'+selected+'>'+esc(label)+'</option>';
+    });
+    if (withRoute) opts.unshift('<option value="__route__" selected>🔀 Route for me — best verified-quality-per-dollar</option>');
+    sel.innerHTML = opts.join('');
   }
 
   var atModelEl = document.getElementById('at-model'), atPromptEl = document.getElementById('at-prompt'), atSystemEl = document.getElementById('at-system');
@@ -258,8 +266,8 @@
     try {
       var res = await fetch('/api/inference', { cache: 'no-store' });
       var d = await res.json();
-      fillModels(d.models, d.defaultModel, atModelEl);
-      fillModels(d.models, d.defaultModel, vfModelEl);
+      fillModels(d.catalog, d.models, d.defaultModel, atModelEl, false);
+      fillModels(d.catalog, d.models, d.defaultModel, vfModelEl, true);
       var atPrice = usd((d.prices || {}).attested);
       var vfPrice = usd((d.prices || {}).verified);
       document.getElementById('at-pricehint').textContent = atPrice + ' / call';
@@ -325,7 +333,8 @@
     var question = (vfQuestionEl.value || '').trim();
     var source = (vfSourceEl.value || '').trim();
     if (!question || !source) { vfErrEl.innerHTML = '<div class="err">Provide both a question and the source it must be grounded in.</div>'; return; }
-    var body = { tier: 'verified', question: question, source: source, model: vfModelEl.value };
+    var body = { tier: 'verified', question: question, source: source };
+    if (vfModelEl.value === '__route__') body.route = true; else body.model = vfModelEl.value;
     var headers = { 'Content-Type': 'application/json' };
     var key = (vfKeyEl.value || '').trim();
     if (key) headers['Authorization'] = 'Bearer ' + key;
@@ -334,7 +343,10 @@
       var res = await fetch('/api/inference', { method: 'POST', headers: headers, body: JSON.stringify(body) });
       var d = await res.json();
       if (!res.ok) { vfErrEl.innerHTML = '<div class="err">'+esc(d.error || ('error ' + res.status))+'</div>'; return; }
-      if (d.note) vfNoteEl.innerHTML = '<div class="note">'+esc(d.note)+'</div>';
+      var vnotes = '';
+      if (d.routed) vnotes += '<div class="note">Routed to <b>'+esc(d.routed.pick)+'</b> — top verified-quality-per-dollar (pass-rate '+Math.round(d.routed.verifiedRate*100)+'%, ~$'+d.routed.blendedUsdPerM+'/M blended).</div>';
+      if (d.note) vnotes += '<div class="note">'+esc(d.note)+'</div>';
+      vfNoteEl.innerHTML = vnotes;
       vfResultEl.innerHTML = renderReceipt(d.receipt, { settleNote: d.settleNote }) + vfResultEl.innerHTML;
       refreshBoard();
     } catch (e) {

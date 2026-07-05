@@ -24,21 +24,16 @@ import { fabricatedFigures } from "./numcheck";
 import { modelTee, type Attestation } from "./jury";
 import { signReceipt, verificationId } from "./receipt";
 import { loadDocFresh, loadDocFromMirror, saveDoc } from "./store";
+import { CHAT_MODELS, DEFAULT_MODEL as DEFAULT_MODEL_ID, isChatModel, rankByQualityPerDollar, type RankedModel, type RouteOpts } from "./models";
 
 const CALL_TIMEOUT_MS = 45000;
 const MAX_PROMPT = 8000;
 const MAX_SOURCE = 20000;
 
-/** The 0G models Merit resells (its TEE-verified roster). The router validates the id; an unknown id 404s honestly. */
-export const INFERENCE_MODELS = [
-  "deepseek-v4-flash",
-  "glm-5.2",
-  "qwen3.7-plus",
-  "minimax-m3",
-  "kimi-k2.7-code",
-  "0gm-1.0-35b-a3b",
-];
-export const DEFAULT_MODEL = "deepseek-v4-flash";
+/** The 0G text roster Merit resells (full chat + vision-capable models), from the registry in ./models. The
+ *  router validates the id against this set; an unknown id 404s honestly at the 0G router. */
+export const INFERENCE_MODELS = CHAT_MODELS;
+export const DEFAULT_MODEL = DEFAULT_MODEL_ID;
 
 /** Per-call price in USDC (the x402 toll). A small markup over the tiny 0G cost; the verified tier charges only
  *  when the answer passes, so a hallucination is free. */
@@ -177,7 +172,26 @@ function newId(): string {
 }
 function normModel(m?: string): string {
   const v = (m || "").trim();
-  return INFERENCE_MODELS.includes(v) ? v : DEFAULT_MODEL;
+  return isChatModel(v) ? v : DEFAULT_MODEL;
+}
+
+/** Per-model verified-tier pass counts from real receipts — the data the router ranks on. */
+export function perModelRates(): Record<string, { verified: number; total: number }> {
+  const out: Record<string, { verified: number; total: number }> = {};
+  for (const r of load().receipts) {
+    if (r.tier !== "verified" || typeof r.verified !== "boolean") continue;
+    const m = (out[r.model] ||= { verified: 0, total: 0 });
+    m.total += 1;
+    if (r.verified) m.verified += 1;
+  }
+  return out;
+}
+
+/** Verified-quality-per-dollar routing across the full 0G chat roster: picks by smoothed pass-rate ÷ price,
+ *  NOT by cheapest. Respects a required trust mode / vision / tools / price ceiling. */
+export function routeInference(opts: RouteOpts = {}): { ranked: RankedModel[]; pick: string } {
+  const ranked = rankByQualityPerDollar(perModelRates(), opts);
+  return { ranked, pick: ranked[0]?.id || DEFAULT_MODEL };
 }
 
 // ---- Tier 1: attested inference ---------------------------------------------------------------------------
