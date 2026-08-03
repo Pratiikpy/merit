@@ -12,7 +12,7 @@ else is refused before a cent moves, and every decision returns a signed receipt
 recompute without trusting a Merit server.
 
 <p>
-<a href="https://merit-ecru.vercel.app"><img src="https://img.shields.io/badge/live%20demo-merit--ecru.vercel.app-16A34A?style=flat-square" alt="Live demo" /></a>
+<a href="https://onmerit.xyz"><img src="https://img.shields.io/badge/live%20demo-onmerit.xyz-16A34A?style=flat-square" alt="Live demo" /></a>
 <a href="https://youtu.be/MuV-c3yaQwY"><img src="https://img.shields.io/badge/%E2%96%B6%20demo-2%20min%20video-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="2-minute demo video" /></a>
 <img src="https://img.shields.io/badge/Arc-testnet%205042002-0A0A0A?style=flat-square" alt="Arc testnet" />
 <img src="https://img.shields.io/badge/tests-516%20passing-3FB950?style=flat-square" alt="516 tests passing" />
@@ -30,11 +30,11 @@ recompute without trusting a Merit server.
 
 <br />
 
-<a href="https://merit-ecru.vercel.app"><img src="docs/demo.png" width="840" alt="Merit live demo: the agent releases sub-cent USDC to cited sources and refuses the rest, with a signed receipt for each decision" /></a>
+<a href="https://onmerit.xyz"><img src="docs/demo.png" width="840" alt="Merit live demo: the agent releases sub-cent USDC to cited sources and refuses the rest, with a signed receipt for each decision" /></a>
 
 <br /><br />
 
-[Live demo](https://merit-ecru.vercel.app) &nbsp;·&nbsp; [2-min video](https://youtu.be/MuV-c3yaQwY) &nbsp;·&nbsp; [Product page](https://comfortable-goal-205.notion.site/Merit-3939c0ce78768113a3c6d659ea8a1f5d) &nbsp;·&nbsp; [What it is](#what-it-is) &nbsp;·&nbsp; [How it works](#how-it-works) &nbsp;·&nbsp; [Settlement](#settlement-is-gated-on-verification) &nbsp;·&nbsp; [Quickstart](#quickstart) &nbsp;·&nbsp; [Verify everything](#verify-everything) &nbsp;·&nbsp; [Contracts](#deployed-contracts)
+[Live demo](https://onmerit.xyz) &nbsp;·&nbsp; [2-min video](https://youtu.be/MuV-c3yaQwY) &nbsp;·&nbsp; [Product page](https://comfortable-goal-205.notion.site/Merit-3939c0ce78768113a3c6d659ea8a1f5d) &nbsp;·&nbsp; [What it is](#what-it-is) &nbsp;·&nbsp; [How it works](#how-it-works) &nbsp;·&nbsp; [Settlement](#settlement-is-gated-on-verification) &nbsp;·&nbsp; [Quickstart](#quickstart) &nbsp;·&nbsp; [Verify everything](#verify-everything) &nbsp;·&nbsp; [Contracts](#deployed-contracts)
 
 </div>
 
@@ -143,7 +143,7 @@ The judge is available on its own, so any agent can check a citation before payi
   carrying the exact bytes that were signed, so a caller recovers the signer offline and confirms the
   verdict without trusting the server. Altering any field breaks the signature.
 - **Metered tier.** `POST /api/verify/paid` is the same oracle behind an x402 paywall, discoverable at
-  [`/.well-known/x402`](https://merit-ecru.vercel.app/.well-known/x402).
+  [`/.well-known/x402`](https://onmerit.xyz/.well-known/x402).
 - **Signed receipts.** Every verified citation becomes a shareable receipt at `/v/<id>`, and
   `GET /api/card/<id>` returns its `signed` object for offline recovery. The receipt is checkable with
   `scripts/verify-receipt.mjs` and never depends on a live server.
@@ -153,7 +153,7 @@ figure the source contradicts with no LLM at all. An adversarial LLM judge (`lib
 whether the source actually supports the exact claim citing it, catching on-topic-but-unsupported
 citations that similarity scoring alone would pass.
 
-> [Try to get a lie paid.](https://merit-ecru.vercel.app/break.html) Submit a fabricated citation on
+> [Try to get a lie paid.](https://onmerit.xyz/break.html) Submit a fabricated citation on
 > the live site and watch the verifier refuse it before a cent moves, with a running "attacks held"
 > counter and every attempt harvested into the gold set. On a system that trusts the writer, the
 > fabricated citation pays; here, the chain reverts.
@@ -182,7 +182,7 @@ reputation, uptime, relevance, or the generator's own say-so, because none has a
 Merit does, so the same proof-of-citation gate becomes every capability the agentic economy needs. Each
 is live on the deployment and proven with a real on-chain outcome.
 
-- **Verified Inference — the flagship** (`POST /api/inference`, [inference.html](https://merit-ecru.vercel.app/inference.html)).
+- **Verified Inference — the flagship** (`POST /api/inference`, [inference.html](https://onmerit.xyz/inference.html)).
   Don't sell AI tokens; sell AI proven to have run correctly (a 0G TEE hardware attestation) and proven to be
   right (Merit's verifier, whose judge is itself an attested 0G model). Merit resells 0G's TEE-attested models
   over x402 and staples proof to every answer; you pay per call in USDC on Arc, only if it verifies, and a wrong
@@ -193,7 +193,7 @@ is live on the deployment and proven with a real on-chain outcome.
   TeeML) and both API surfaces (OpenAI + Anthropic) — and **routes by verified-quality-per-dollar** (pass-rate²
   ÷ price, not cheapest). **Verified vision extraction** (`tier:vision`, qwen3-vl-30b) reads a figure from an image
   and grounds it in the model's own transcription; live: read `42B` from an image → SUPPORTED + attested.
-- **Verified Citation Toll — the moat door** (`POST /api/toll/verify`, [toll.html](https://merit-ecru.vercel.app/toll.html)).
+- **Verified Citation Toll — the moat door** (`POST /api/toll/verify`, [toll.html](https://onmerit.xyz/toll.html)).
   A neutral gate any rail or publisher calls *before* releasing a per-citation payment: give it a claim + the cited
   source, it returns a signed release-or-refuse verdict on the same `verificationId`, and the rail pays only when the
   citation holds. The check Cloudflare / TollBit / ProRata skip — they pay on access, not on correct use. Live:
@@ -210,23 +210,23 @@ is live on the deployment and proven with a real on-chain outcome.
   Sample an AI output's claims against a licensed source and flag *misattribution* — claims credited to the source
   that it does not support — the audit layer bulk AI-licensing deals (OpenAI/Meta with publishers) lack. Live: 2
   claims → 1 supported, 1 misattributed → a signed royalty-true-up report.
-- **Score any x402 endpoint** (`POST /api/score`, [scorecard.html](https://merit-ecru.vercel.app/scorecard.html)).
+- **Score any x402 endpoint** (`POST /api/score`, [scorecard.html](https://onmerit.xyz/scorecard.html)).
   Point Merit at any agent's paid endpoint with a claim it should back; Merit pays the toll, runs the
   delivered content through the verifier, and publishes a verified-quality-per-dollar leaderboard — the one
   axis a price/latency/uptime directory can't produce. Live: a three-gate SUPPORTED at 0.933 and a numeric REFUSE at 0.
-- **Verified escrow board** (`POST /api/gigs`, [gigs.html](https://merit-ecru.vercel.app/gigs.html)).
+- **Verified escrow board** (`POST /api/gigs`, [gigs.html](https://onmerit.xyz/gigs.html)).
   A bounty board for humans and agents: post a brief + requirements + a USDC bounty; a worker delivers;
   Merit's real adversarial grader releases the escrow only when every requirement is met — the evaluator
   Receipt/Arco/BugBountyAI shipped fake. Live: on-brief → ACCEPTED → ERC-8183 hook job released on-chain; off-brief → REJECTED, $0.
-- **Ground-truth prediction market** (`POST /api/market`, [market.html](https://merit-ecru.vercel.app/market.html)).
+- **Ground-truth prediction market** (`POST /api/market`, [market.html](https://onmerit.xyz/market.html)).
   A pari-mutuel market on "will this claim verify?", settled by Merit's own verifier as the on-chain oracle —
   no human committee, no dispute window. Live: full stake → resolve → redeem on-chain against the deployed
   `PredictionMarket`.
-- **Provenance-verified media licensing** (`POST /api/media`, [media.html](https://merit-ecru.vercel.app/media.html)).
+- **Provenance-verified media licensing** (`POST /api/media`, [media.html](https://onmerit.xyz/media.html)).
   License a clip, image, or audio only if Merit verifies its own description + transcript genuinely support the
   request — the citation gate on a new modality. You never license media that isn't what it claims. Live:
   a match at 0.973 released the fee on-chain; a non-match → REFUSED, $0.
-- **Cross-chain payout** (`POST /api/crosschain`, [crosschain.html](https://merit-ecru.vercel.app/crosschain.html)).
+- **Cross-chain payout** (`POST /api/crosschain`, [crosschain.html](https://onmerit.xyz/crosschain.html)).
   Withdraw verified earnings from Arc to Base, Arbitrum, Optimism, or Avalanche via Circle Gateway. Live: a real
   Arc Gateway settlement tx; the cross-chain leg settles the moment the payout wallet holds destination-chain gas.
 
@@ -287,7 +287,7 @@ and no key is handed to Merit; the payout wallet is receive-only.
 npm run onboard-feed https://yourblog.com/feed.xml
 ```
 
-Or open [`/onboard.html`](https://merit-ecru.vercel.app/onboard.html) and paste the feed there. To
+Or open [`/onboard.html`](https://onmerit.xyz/onboard.html) and paste the feed there. To
 direct payouts to your own wallet instead of a Merit-generated one, add a single line anywhere in the
 feed and re-onboard:
 
@@ -331,7 +331,7 @@ full-product test harness, and some came through Twitter-originated activity and
 the product. We do not present the full number as purely organic external usage, and we also do not
 present it as only internal testing. Broadening sustained external usage is the next phase, and the
 on-ramps for it (creator onboarding, break-the-verifier) are already live. Labor volume is kept
-deliberately distinct from the verified creator totals at [`/api/metrics`](https://merit-ecru.vercel.app/api/metrics)
+deliberately distinct from the verified creator totals at [`/api/metrics`](https://onmerit.xyz/api/metrics)
 so unverified activity never inflates the verified number. Detail in [`TRACTION.md`](TRACTION.md).
 
 One research job is dozens of sub-cent agent-to-agent payments. On card rails the fees exceed the

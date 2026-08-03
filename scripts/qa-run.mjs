@@ -1,13 +1,13 @@
 // QA SSE run driver (TEST-PLAN §5.2/§12). Drives a real /api/run, parses the SSE stream, asserts the run
 // reaches a terminal state, and reconciles the settlement (released + refunded ≈ escrowed). Appends to
-// qa-run-report.md. Run: QA_BASE=https://merit-ecru.vercel.app node scripts/qa-run.mjs
+// qa-run-report.md. Run: QA_BASE=https://onmerit.xyz node scripts/qa-run.mjs
 import fs from "node:fs";
 import { recoverMessageAddress } from "viem";
 
 function sortKeys(v) { if (Array.isArray(v)) return v.map(sortKeys); if (v && typeof v === "object") return Object.keys(v).sort().reduce((a, k) => { a[k] = sortKeys(v[k]); return a; }, {}); return v; }
 const canonicalize = (v) => JSON.stringify(sortKeys(v));
 
-const BASE = process.env.QA_BASE || "https://merit-ecru.vercel.app";
+const BASE = process.env.QA_BASE || "https://onmerit.xyz";
 const QUESTION = process.env.QA_QUESTION || "What is driving stablecoin payment adoption in 2026?";
 const out = [];
 const rec = (name, pass, detail) => { out.push({ name, pass, detail: detail || "" }); const m = pass === true ? "PASS" : pass === "warn" ? "WARN" : "FAIL"; console.log(`[${m}] ${name}${detail ? " — " + detail : ""}`); };

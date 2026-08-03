@@ -74,5 +74,5 @@ LLM judge, strict dual-gate) via `npm run bench-judge`:
 The evaluator is **conservative by design**: a false-refuse costs recall and UX; a false-pay breaks the moat.
 So it errs toward refusing a borderline-true claim rather than paying for a false one — the safe direction for
 money. Reproduce: `npm run bench-judge` (writes `benchmark/results.json`, which the public
-[`/api/benchmark`](https://merit-ecru.vercel.app/api/benchmark) surface reads). Confusion matrix
+[`/api/benchmark`](https://onmerit.xyz/api/benchmark) surface reads). Confusion matrix
 (positive = REFUSED): tp=197, fp=21, tn=49, fn=0.

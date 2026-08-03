@@ -2,11 +2,11 @@
 // Loads every public page in a real browser and enumerates EVERYTHING a human/agent can see or touch:
 // every heading, button, link, input, dynamic mount point, image, and visible text string — plus a
 // console-error/overflow/sentinel-leak gate per page. Output: TEST-PLAN-INVENTORY.md (the walk-this-and-
-// nothing-is-missed checklist). Run: QA_BASE=https://merit-ecru.vercel.app node scripts/qa-inventory.mjs
+// nothing-is-missed checklist). Run: QA_BASE=https://onmerit.xyz node scripts/qa-inventory.mjs
 import { chromium } from "playwright";
 import fs from "node:fs";
 
-const BASE = process.env.QA_BASE || "https://merit-ecru.vercel.app";
+const BASE = process.env.QA_BASE || "https://onmerit.xyz";
 const PAGES = [
   { slug: "home", path: "/" },
   { slug: "verify", path: "/verify.html" },

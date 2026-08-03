@@ -1,12 +1,12 @@
 // QA accessibility scan (TEST-PLAN §13) — injects axe-core into every public page and reports WCAG 2.1 A/AA
-// violations. Writes qa-a11y-report.md. Run: QA_BASE=https://merit-ecru.vercel.app node scripts/qa-a11y.mjs
+// violations. Writes qa-a11y-report.md. Run: QA_BASE=https://onmerit.xyz node scripts/qa-a11y.mjs
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import { chromium } from "playwright";
 
 const require = createRequire(import.meta.url);
 const axeSource = fs.readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
-const BASE = process.env.QA_BASE || "https://merit-ecru.vercel.app";
+const BASE = process.env.QA_BASE || "https://onmerit.xyz";
 const PAGES = ["/", "/verify.html", "/proof.html", "/statement.html", "/jury.html", "/compliance.html", "/inference.html", "/scorecard.html", "/gigs.html", "/crosschain.html", "/market.html", "/media.html", "/break.html", "/honesty.html", "/benchmark.html", "/onboard.html", "/passport.html", "/brandkit"];
 
 const browser = await chromium.launch();

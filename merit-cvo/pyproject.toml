@@ -26,7 +26,7 @@ ragas = ["ragas>=0.2"]                             # merit_cvo.integrations.raga
 dev = ["pytest>=7"]
 
 [project.urls]
-Homepage = "https://merit-ecru.vercel.app"
+Homepage = "https://onmerit.xyz"
 Source = "https://github.com/Pratiikpy/merit"
 
 [project.scripts]

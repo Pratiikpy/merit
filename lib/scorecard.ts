@@ -230,7 +230,7 @@ export async function scoreEndpoint(opts: ScoreOptions): Promise<Scorecard> {
   try {
     const res = await guardedFetch(url, {
       method: "GET",
-      headers: { "User-Agent": "MeritEndpointScorer/1 (+https://merit-ecru.vercel.app)", Accept: "application/json, text/plain, */*" },
+      headers: { "User-Agent": "MeritEndpointScorer/1 (+https://onmerit.xyz)", Accept: "application/json, text/plain, */*" },
       timeoutMs: FETCH_TIMEOUT_MS,
     });
     base.reachable = true;

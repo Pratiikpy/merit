@@ -1,11 +1,11 @@
 // QA API + ground-truth + IDOR + reconciliation runner (TEST-PLAN §5/§9/§12).
 // Exercises every route for happy-path + negative statuses, runs IDOR probes, verifies signatures by
 // recovering the signer offline, checks the audit hash-chain, and reconciles metrics/audit deltas.
-// Writes qa-api-report.md. Run: QA_BASE=https://merit-ecru.vercel.app node scripts/qa-api.mjs
+// Writes qa-api-report.md. Run: QA_BASE=https://onmerit.xyz node scripts/qa-api.mjs
 import fs from "node:fs";
 import { recoverMessageAddress } from "viem";
 
-const BASE = process.env.QA_BASE || "https://merit-ecru.vercel.app";
+const BASE = process.env.QA_BASE || "https://onmerit.xyz";
 const results = [];
 const rec = (cat, name, pass, detail) => { results.push({ cat, name, pass, detail: detail || "" }); const m = pass === true ? "PASS" : pass === "warn" ? "WARN" : "FAIL"; console.log(`[${m}] ${cat} · ${name}${detail ? " — " + detail : ""}`); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

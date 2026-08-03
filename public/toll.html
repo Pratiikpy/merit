@@ -114,7 +114,7 @@
   <h2 class="lbl">Drop it into any rail</h2>
   <div class="card" style="padding:0;overflow:hidden;border:none">
 <pre class="snip"><span class="c">// before releasing a per-citation toll, ask Merit if the citation actually holds</span>
-<span class="k">const</span> gate = <span class="k">await</span> fetch(<span class="s">"https://merit-ecru.vercel.app/api/toll/verify"</span>, {
+<span class="k">const</span> gate = <span class="k">await</span> fetch(<span class="s">"https://onmerit.xyz/api/toll/verify"</span>, {
   method: <span class="s">"POST"</span>, headers: { <span class="s">"content-type"</span>: <span class="s">"application/json"</span> },
   body: JSON.stringify({ claim, citedPassage, tollUsdc: <span class="s">0.002</span>, publisher })
 }).<span class="k">then</span>(r => r.json());

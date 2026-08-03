@@ -4,10 +4,10 @@
   "description": "Proof-of-citation verification for AI agents. Verify a (claim, source) before paying for it — a signed, tamper-evident SUPPORTED/REFUSED verdict a settlement hook can consume so a hallucinated citation never settles — or run a full research agent that pays sources only for citations that verify, in sub-cent USDC on Circle's Arc.",
   "version": "1.0.0",
   "repository": {
-    "url": "https://merit-ecru.vercel.app",
+    "url": "https://onmerit.xyz",
     "source": "web"
   },
-  "websiteUrl": "https://merit-ecru.vercel.app",
+  "websiteUrl": "https://onmerit.xyz",
   "packages": [
     {
       "registryType": "local",
@@ -17,7 +17,7 @@
       "environmentVariables": [
         {
           "name": "MERIT_BASE",
-          "description": "Base URL of a running Merit server (default http://localhost:3000; the hosted instance is https://merit-ecru.vercel.app).",
+          "description": "Base URL of a running Merit server (default http://localhost:3000; the hosted instance is https://onmerit.xyz).",
           "isRequired": false,
           "default": "http://localhost:3000"
         }

@@ -8,7 +8,7 @@ import { verifyDomainClaim } from "@/lib/passport";
 export const runtime = "nodejs";
 
 const MAX_CREATORS = 200;
-const ORIGIN = process.env.MERIT_ORIGIN || "https://merit-ecru.vercel.app";
+const ORIGIN = process.env.MERIT_ORIGIN || "https://onmerit.xyz";
 
 // POST /api/passport { domain } — Proof-of-Citation Passport. A creator proves control of their DOMAIN by
 // publishing /.well-known/merit.json (their payout wallet + optional name/content). Merit binds domain → wallet

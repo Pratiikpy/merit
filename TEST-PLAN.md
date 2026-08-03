@@ -38,7 +38,7 @@ A human-executable QA plan covering **every page, every feature, every control, 
 **🔴 BLOCKER** (money wrong / feature broken / security hole / a judge notices instantly — incl. **mock-data-shown-as-real**) · **🟠 HIGH** (works but obviously broken/confusing) · **🟡 MED** (paper-cut, unprofessional in aggregate) · **🟢 LOW/INFO**. Each finding: *what happened · repro · screenshot/evidence · root cause · suggested fix · severity*. **Any 🔴 = automatic no-go.** Keep **harness bugs separate from product flaws** — a test-script failure disproven by evidence is not a product bug; say so.
 
 ### Environments
-- **Production:** `https://merit-ecru.vercel.app` (the URL judges/users hit).
+- **Production:** `https://onmerit.xyz` (the URL judges/users hit).
 - **Local dev:** `npm run dev` → open `http://localhost:3011` (use **3011+**, not 3000/3001 — those are occupied and silently intercept).
 - **Local prod build:** `npm run build && PORT=3011 npm start`.
 
@@ -483,7 +483,7 @@ Merit has **no browser wallet-connect** (server-side settlement + agent-to-serve
 - [ ] **SSE run driver:** POST `/api/run`, assert the terminal-state UI finalizes (§5.2 `done`/`end`), screenshot the signed-receipt card, reconcile the ledger.
 - [ ] **Node API + ground-truth harness:** hit all 26 routes for happy-path + every negative status (§5), assert real bodies, run the **IDOR** probes (§9), the **money-reconciliation** checks (§12), and the **audit-chain tamper** test. Emit pass/fail counts.
 - [ ] **x402 client** (Circle CLI or scripted): exercise `/api/verify/paid` 402→pay→200 in LIVE.
-- [ ] Run all against **both** `http://localhost:3011` and `https://merit-ecru.vercel.app`.
+- [ ] Run all against **both** `http://localhost:3011` and `https://onmerit.xyz`.
 
 ## 16. Hostile-judge master checklist (the full axis list — nothing omitted)
 

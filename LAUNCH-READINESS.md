@@ -1,6 +1,6 @@
 # Merit — Launch-Readiness Report
 
-**Verdict: GO** for public demo / submission in the declared scope (testnet, STUB settlement). Every gap that can be closed without a user-provided secret is closed and **verified on the live deployment** (`https://merit-ecru.vercel.app`), with reproducible evidence via the `scripts/qa-*.mjs` harness. The one honest scope limit — real on-chain USDC settlement — is gated on a funded key (see below), and the code path for it is fully built.
+**Verdict: GO** for public demo / submission in the declared scope (testnet, STUB settlement). Every gap that can be closed without a user-provided secret is closed and **verified on the live deployment** (`https://onmerit.xyz`), with reproducible evidence via the `scripts/qa-*.mjs` harness. The one honest scope limit — real on-chain USDC settlement — is gated on a funded key (see below), and the code path for it is fully built.
 
 This report is held to the proof-first bar of `TEST-PLAN.md`: every green below is a real assertion against a source of truth, not "it looked fine."
 

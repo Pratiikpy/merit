@@ -4,7 +4,7 @@
   "description": "Proof-of-citation verification for the agent economy. Merit verifies that a source actually supports a claim, and gates payment on the verdict — pay only for citations that verify, in sub-cent USDC on Circle's Arc.",
   "network": "arc-testnet",
   "chainId": 5042002,
-  "pricing": "https://merit-ecru.vercel.app/api/pricing",
+  "pricing": "https://onmerit.xyz/api/pricing",
   "services": [
     {
       "id": "citation-verification-oracle",
@@ -78,6 +78,6 @@
     "receiptSchema": "merit.cvo/v2 — signed, offline-recoverable; open any /v/<id> receipt",
     "auditChain": "/api/audit?verify=1 — keccak256 hash chain over every verdict (EU AI Act Art. 12)"
   },
-  "docs": "https://merit-ecru.vercel.app",
+  "docs": "https://onmerit.xyz",
   "mcp": { "server": "server.json", "tools": ["verify_citation", "merit_research"], "run": "node scripts/mcp-server.mjs" }
 }
