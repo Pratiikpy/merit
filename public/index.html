@@ -157,22 +157,22 @@
         <div><div style="font-size:12px;font-weight:600;color:#6B7280;">Total released to creators</div><div class="mono" id="hc-total" style="font-size:25px;font-weight:600;letter-spacing:-.01em;color:#0A0A0A;margin-top:2px;">$0.00</div><div style="font-size:11.5px;font-weight:600;color:#047857;margin-top:3px;">▲ <span id="hc-paid">0</span> creators paid · <a href="/api/metrics" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">verify ↗</a></div></div>
         <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#047857;"><span style="width:6px;height:6px;border-radius:50%;background:#10B981;animation:mblink 1.4s infinite;"></span>live</span>
       </div>
-      <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">A sample run</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
-        <div style="border:1px solid #ECECEE;border-radius:11px;padding:11px;background:#FFFFFF;"><div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Escrowed</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#0A0A0A;">$0.1970</div></div>
-        <div style="border:1px solid #D1FAE5;border-radius:11px;padding:11px;background:#F0FDF4;"><div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Released</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#047857;">$0.1550</div></div>
-        <div style="border:1px solid #FECDD3;border-radius:11px;padding:11px;background:#FFF1F2;"><div style="font-size:11px;font-weight:600;color:#4B5563;text-transform:uppercase;letter-spacing:.04em;">Refunded</div><div class="mono" style="font-size:18px;font-weight:600;margin-top:6px;color:#BE123C;">$0.0420</div></div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #ECECEE;border-radius:11px;padding:11px 13px;">
-          <div style="display:flex;align-items:center;gap:10px;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#047857;background:#ECFDF5;border:1px solid #D1FAE5;border-radius:999px;padding:2px 8px;">✓ Release</span><span style="font-size:13.5px;font-weight:600;">Chainletter Weekly</span></div>
-          <span class="mono" style="font-size:13.5px;font-weight:600;color:#047857;">+$0.0540</span>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #FECDD3;border-radius:11px;padding:11px 13px;background:#FFFBFB;">
-          <div style="display:flex;align-items:center;gap:10px;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#BE123C;background:#FFF1F2;border:1px solid #FECDD3;border-radius:999px;padding:2px 8px;">✕ Refund</span><span style="font-size:13.5px;font-weight:600;">CryptoBuzz Daily</span></div>
-          <span class="mono" style="font-size:13.5px;font-weight:600;color:#BE123C;">−$0.0300</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Try the verifier — live, no signup</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" id="hv-ex-fab" style="font-family:inherit;font-size:11.5px;font-weight:600;color:#BE123C;background:#FFF1F2;border:1px solid #FECDD3;border-radius:999px;padding:3px 10px;cursor:pointer;">Try a fabricated one</button>
+          <button type="button" id="hv-ex-true" style="font-family:inherit;font-size:11.5px;font-weight:600;color:#047857;background:#ECFDF5;border:1px solid #D1FAE5;border-radius:999px;padding:3px 10px;cursor:pointer;">Try a true one</button>
         </div>
       </div>
+      <label for="hv-claim" style="display:block;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin:10px 0 5px;">The claim an AI made</label>
+      <input id="hv-claim" placeholder="e.g. Stablecoin volume reached $40 trillion in 2025." style="width:100%;border:1px solid #E4E4E7;border-radius:10px;padding:11px 12px;font-size:14px;font-weight:500;background:#fff;outline:none;color:#0A0A0A;box-sizing:border-box;" />
+      <label for="hv-source" style="display:block;font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin:10px 0 5px;">The cited source — paste text, or just a URL</label>
+      <textarea id="hv-source" rows="3" placeholder="Paste the source passage… or paste a URL and Merit reads the page." style="width:100%;border:1px solid #E4E4E7;border-radius:10px;padding:11px 12px;font-size:14px;font-weight:500;background:#fff;outline:none;color:#0A0A0A;box-sizing:border-box;resize:vertical;font-family:inherit;line-height:1.5;"></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;">
+        <span style="font-size:12px;color:#6B7280;">Real verdict, signed receipt — money would move (or not) on this.</span>
+        <button type="button" id="hv-go" class="btn-primary" style="font-family:inherit;font-size:14px;font-weight:600;color:#fff;background:#0A0A0A;border:none;padding:10px 18px;border-radius:9px;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.1),0 2px 8px rgba(10,10,10,.28);white-space:nowrap;">Verify it</button>
+      </div>
+      <div id="hv-result" aria-live="polite"></div>
     </div>
   </div>
 </section>
@@ -1392,6 +1392,69 @@
 
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', mount); }
   else { mount(); }
+})();
+
+// ---- Instant hero verifier — the live "try it in 10 seconds" box. Self-contained; real /api/verify verdicts. ----
+(function(){
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  var claimEl=document.getElementById('hv-claim'), srcEl=document.getElementById('hv-source'),
+      go=document.getElementById('hv-go'), resEl=document.getElementById('hv-result'),
+      exFab=document.getElementById('hv-ex-fab'), exTrue=document.getElementById('hv-ex-true');
+  if(!claimEl||!srcEl||!go||!resEl) return;
+
+  var EX_FAB={ c:'Stablecoin transaction volume reached $40 trillion in 2025.',
+               s:'The report found stablecoin transaction volume reached $4.1 trillion in 2025, driven by payment adoption across emerging markets.' };
+  var EX_TRUE={ c:'TollBit works with roughly 7,000 publisher sites.',
+                s:'TollBit has onboarded roughly 7,000 publisher sites and raised 31 million dollars in venture funding.' };
+  function fill(ex){ claimEl.value=ex.c; srcEl.value=ex.s; resEl.innerHTML=''; claimEl.focus(); }
+  if(exFab) exFab.addEventListener('click', function(){ fill(EX_FAB); runVerify(); });
+  if(exTrue) exTrue.addEventListener('click', function(){ fill(EX_TRUE); runVerify(); });
+
+  function chip(txt){ return '<span class="mono" style="display:inline-block;font-size:10.5px;font-weight:600;color:#52525B;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:999px;padding:2px 8px;margin:0 5px 5px 0;">'+esc(txt)+'</span>'; }
+  function idChip(label,val){ return '<span class="mono" title="'+esc(label)+'" style="display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;font-size:10.5px;color:#52525B;background:#fff;border:1px solid #E4E4E7;border-radius:7px;padding:2px 8px;margin:0 5px 5px 0;user-select:all;">'+esc(label)+' '+esc(val)+'</span>'; }
+  function render(v){
+    var ok = v.verdict==='SUPPORTED';
+    var head = ok
+      ? '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#047857;background:#ECFDF5;border:1px solid #D1FAE5;border-radius:999px;padding:3px 11px;">✓ SUPPORTED — this citation would be paid</span>'
+      : '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#BE123C;background:#FFF1F2;border:1px solid #FECDD3;border-radius:999px;padding:3px 11px;">✕ REFUSED — this citation pays $0</span>';
+    var methods = (v.methods||[]).map(chip).join('');
+    var ids='';
+    if(v.verificationId) ids+=idChip('id', v.verificationId);
+    if(v.signer) ids+=idChip('signer', v.signer);
+    resEl.innerHTML =
+      '<div style="border:1px solid '+(ok?'#D1FAE5':'#FECDD3')+';background:'+(ok?'#F8FFFB':'#FFFBFB')+';border-radius:12px;padding:13px 14px;margin-top:14px;">'
+      + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'+head+(v.cached?'<span style="font-size:11px;color:#6B7280;">cached verdict</span>':'')+'</div>'
+      + (v.reason?'<div style="font-size:13px;color:#4B5563;margin-top:9px;line-height:1.5;">'+esc(v.reason)+'</div>':'')
+      + (v.sourceURL?'<div style="font-size:12px;color:#6B7280;margin-top:7px;">source read from <span class="mono">'+esc(v.sourceURL)+'</span></div>':'')
+      + '<div style="margin-top:10px;">'+methods+'</div>'
+      + (ids?'<div style="margin-top:4px;">'+ids+'</div>':'')
+      + '<div style="font-size:12px;color:#6B7280;margin-top:9px;">Signed and recoverable offline — no trust in Merit’s server needed. <a href="/verify.html" style="color:#0A0A0A;font-weight:600;">Open the full verifier →</a></div>'
+      + '</div>';
+  }
+  function fail(msg){
+    resEl.innerHTML = '<div style="border:1px solid #FECDD3;background:#FFF1F2;border-radius:12px;padding:12px 14px;margin-top:14px;font-size:13px;color:#9F1239;">'+esc(msg)+'</div>';
+  }
+  function runVerify(){
+    var claim=(claimEl.value||'').trim(), src=(srcEl.value||'').trim();
+    if(!claim||!src){ fail('Give the verifier both a claim and its cited source (text or a URL).'); return; }
+    var body={ claim: claim };
+    if(/^https?:\/\/\S+$/.test(src)) body.sourceURL=src; else body.source=src;
+    go.disabled=true; var prev=go.textContent; go.textContent='Verifying…';
+    fetch('/api/verify',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, status:r.status, d:d}; }); })
+      .then(function(x){
+        if(!x.ok){
+          if(x.status===429||x.status===503&&x.d&&x.d.error==='busy') fail('The verifier is busy — try again in a few seconds.');
+          else fail(x.d&&x.d.error?x.d.error:('Verification failed ('+x.status+').'));
+          return;
+        }
+        render(x.d);
+      })
+      .catch(function(){ fail('Could not reach the verifier — check your connection and try again.'); })
+      .finally(function(){ go.disabled=false; go.textContent=prev; });
+  }
+  go.addEventListener('click', runVerify);
+  claimEl.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); runVerify(); } });
 })();
 </script>
 </body>

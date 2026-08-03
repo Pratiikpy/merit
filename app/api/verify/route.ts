@@ -4,6 +4,7 @@ import { verifyWithCache, refreshVcacheFromMirror } from "@/lib/vcache";
 import { asDepth, depthLayers } from "@/lib/pricing";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { recordAuditVerdict, refreshAuditFromMirror } from "@/lib/audit";
+import { extractSourceFromUrl } from "@/lib/extract";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,11 +25,23 @@ export async function POST(req: Request) {
       { status: gate.status, headers: { "Retry-After": String(Math.ceil((gate.retryMs ?? 3000) / 1000)) } },
     );
   }
-  let body: { claim?: string; source?: string; depth?: string };
+  let body: { claim?: string; source?: string; sourceURL?: string; depth?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
+  }
+
+  // Zero-friction path: accept a URL as the source. The page is fetched SSRF-guarded (extractSourceFromUrl
+  // resolves+validates the host and pins the connection), extracted to text, and verified like any pasted
+  // source. An explicit pasted `source` always wins; the URL leg only runs when no source text was given.
+  let source = body.source ?? "";
+  let fetchedFrom: string | undefined;
+  if (!source.trim() && typeof body.sourceURL === "string" && body.sourceURL.trim()) {
+    const ex = await extractSourceFromUrl(body.sourceURL.trim());
+    if (!ex.ok) return NextResponse.json({ error: `could not read the source URL: ${ex.error}` }, { status: 400 });
+    source = ex.text;
+    fetchedFrom = body.sourceURL.trim();
   }
 
   // Layered verifier lives in the engine: numeric check needs no LLM, so a fabricated FIGURE is caught even in a
@@ -41,8 +54,8 @@ export async function POST(req: Request) {
   const { useNLI, useJudge } = depthLayers(depth);
   const cacheClaim = depth === "full" ? (body.claim ?? "") : `${body.claim ?? ""} [depth:${depth}]`;
   await refreshVcacheFromMirror().catch(() => {});
-  const { outcome: out, cached } = await verifyWithCache(cacheClaim, body.source ?? "", () =>
-    verifyCitation(body.claim ?? "", body.source ?? "", { useNLI, useJudge }),
+  const { outcome: out, cached } = await verifyWithCache(cacheClaim, source, () =>
+    verifyCitation(body.claim ?? "", source, { useNLI, useJudge }),
   );
   if (isVerifyError(out)) {
     return NextResponse.json(
@@ -62,6 +75,7 @@ export async function POST(req: Request) {
   }
   return NextResponse.json({
     ...v,
+    ...(fetchedFrom ? { sourceURL: fetchedFrom } : {}), // the URL the source text was extracted from (SSRF-guarded)
     cached, // true when served from the verified-citation cache (recompute skipped; same signed verdict)
     depth, // the verification depth tier that ran (numeric | nli | full)
     by: v.methods.join(" + "), // back-compat alias for the layer(s) that decided
