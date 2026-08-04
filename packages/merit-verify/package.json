@@ -1,0 +1,46 @@
+{
+  "name": "@merit/verify",
+  "version": "0.1.0",
+  "description": "Gate any payment on whether the work is actually correct. Signed verdicts from Merit's verification oracle on Arc, checked locally — with a server-signed payment binding so a receipt can never authorize a different payment.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "llms.txt",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "viem": ">=2"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "viem": "^2"
+  },
+  "keywords": [
+    "arc",
+    "usdc",
+    "x402",
+    "verification",
+    "agent-payments",
+    "circle",
+    "proof-of-citation"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pratiikpy/merit.git",
+    "directory": "packages/merit-verify"
+  },
+  "homepage": "https://onmerit.xyz"
+}
