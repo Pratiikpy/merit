@@ -15,7 +15,7 @@ recompute without trusting a Merit server.
 <a href="https://onmerit.xyz"><img src="https://img.shields.io/badge/live%20demo-onmerit.xyz-16A34A?style=flat-square" alt="Live demo" /></a>
 <a href="https://youtu.be/MuV-c3yaQwY"><img src="https://img.shields.io/badge/%E2%96%B6%20demo-2%20min%20video-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="2-minute demo video" /></a>
 <img src="https://img.shields.io/badge/Arc-testnet%205042002-0A0A0A?style=flat-square" alt="Arc testnet" />
-<img src="https://img.shields.io/badge/tests-516%20passing-3FB950?style=flat-square" alt="516 tests passing" />
+<img src="https://img.shields.io/badge/tests-558%20passing-3FB950?style=flat-square" alt="558 tests passing" />
 <img src="https://img.shields.io/badge/proof--of--citation-275--case%20adversarial%20benchmark-3FB950?style=flat-square" alt="275-case adversarial benchmark" />
 <img src="https://img.shields.io/badge/license-Apache--2.0-3178C6?style=flat-square" alt="Apache-2.0" />
 </p>
@@ -206,6 +206,28 @@ is live on the deployment and proven with a real on-chain outcome.
   Pay any x402 seller, but keep the payment only if the delivered work verifies — a signed keep/dispute verdict on
   the content you paid for. Reuses the production-proven `payAndFetch` the scorecard uses. A rail that pays on
   HTTP-200 trusts blindly; Merit doesn't.
+- **The Replayable Credit File** (`GET /api/credit-file`).
+  Merit's verified-settlement history as a self-proving, clearing-compatible credit artifact (built for Arc's
+  new Cycles clearing network, consumable by any app): a domain-separated Merkle root over the settlement
+  entries, a raw export so any consumer recomputes every ratio without trusting Merit's math, a
+  commit-to-settle ratio with refusals on the record (no survivorship bias), concentration entropy as the
+  anti-wash signal, a staleness watermark, and an honest Sybil boundary — signed. Live: an external script
+  recomputed the Merkle root from the raw export and matched.
+- **Agent Treasury Guardrails** (`POST /api/guard/authorize`).
+  Circle's framing is "agents holding discretion over balance sheets" — this is what makes that safe: one
+  authorize call composing the kill-switch, Circle compliance, an admin-authored policy the spending agent can
+  only read (anti self-escalation), rolling per-(principal, payee) exposure that defeats salami-slicing, and
+  the tx simulation. Every decision — allow AND block — is itself a signed `merit.guard/v1` receipt persisted
+  before the caller sees it; a human override chains to the blocked receipt naming the operator. Live: allow
+  with all five gates evaluated; block carrying both the policy and exposure reasons, signed.
+- **@merit/verify SDK** ([`packages/merit-verify`](packages/merit-verify)).
+  The one-line integration, built as contracts not conventions: a REQUIRED `failureMode` constructor argument
+  (outage behavior pre-committed at design time), local signature recovery against a pinned or discovered
+  signer (never trust a boolean; unsigned verdicts fail closed against a known signer), and `verifyThenPay` on
+  the server-signed payment binding — `bindingHash = keccak256(canonical {amount, payee, claim, sourceHash,
+  nonce})` lives INSIDE the signed verdict, so a receipt for one payment can never authorize another, and a
+  per-call nonce makes it one-receipt-one-payment. Ships as npm package + `llms.txt` with the full source
+  embedded for paste-not-install coding agents.
 - **Licensing-compliance audit** (`POST /api/license/audit`).
   Sample an AI output's claims against a licensed source and flag *misattribution* — claims credited to the source
   that it does not support — the audit layer bulk AI-licensing deals (OpenAI/Meta with publishers) lack. Live: 2
@@ -367,7 +389,7 @@ Every claim Merit makes is recomputable from Arc with no Merit server.
 
 | Command | What it does |
 |---|---|
-| `npm test` | 516 unit tests (vitest) over the pure logic: the agency decision table, crew grading and the whole-run budget guard, the receipt settlement-integrity rule, proof-of-citation matching and the deterministic numeric verifier, RSS/Atom parsing, registry persistence, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
+| `npm test` | 558 unit tests (vitest) over the pure logic: the agency decision table, crew grading and the whole-run budget guard, the receipt settlement-integrity rule, proof-of-citation matching and the deterministic numeric verifier, RSS/Atom parsing, registry persistence, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
 | `npm run smoke` | end-to-end, 57 checks: sources, a full run, ledger consistency, the summary receipt, no private-key leak, the agent-labor market, a zero-budget pays-nothing invariant, off-topic pays no creators, onboarding, on-chain reputation, the MCP handshake, `verify-all`, `leaderboard`, and the `challenge` re-audit |
 | `npm run prove-moat` | one command: a verified run releases the ERC-8183 escrow; an off-topic run reverts `complete()` via the hook, then refunds |
 | `npm run audit-demo` | feeds the Auditor a genuine citation, two contradictions, and a prompt injection; pays the real one, refuses the rest |
