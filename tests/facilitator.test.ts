@@ -17,3 +17,12 @@ describe("verify-gated x402 facilitator", () => {
     expect("error" in r && r.status).toBe(400);
   });
 });
+
+describe("facilitator SSRF guard", () => {
+  it("refuses an internal/metadata target before any probe", async () => {
+    for (const url of ["http://169.254.169.254/latest/meta-data", "http://127.0.0.1/x", "http://10.0.0.5/", "http://[::1]:9200/"]) {
+      const r = await facilitate({ url, claim: "the content supports this" });
+      expect("error" in r && r.status).toBe(400);
+    }
+  });
+});

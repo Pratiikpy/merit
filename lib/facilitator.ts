@@ -14,6 +14,7 @@
 import { supportsPayment, payAndFetch } from "./pay";
 import { verifyCitation, isVerifyError } from "./verify/engine";
 import { isStub } from "./arc";
+import { assertPublicHost } from "./ssrf";
 
 const MAX_CONTENT = 20000;
 
@@ -45,6 +46,13 @@ export async function facilitate(input: { url: string; claim: string; maxUsdc?: 
   if (!url) return { error: "provide an x402 seller { url }", status: 400 };
   if (!claim) return { error: "provide the { claim } the delivered content is supposed to support", status: 400 };
   if (!/^https?:\/\//.test(url)) return { error: "url must start with http(s)://", status: 400 };
+  // SSRF guard BEFORE any probe: resolve+validate the host so we never make even a blind request to an
+  // internal/loopback/link-local/cloud-metadata target (169.254.169.254, 10./172.16./192.168., ::1, …).
+  try {
+    await assertPublicHost(new URL(url).hostname);
+  } catch {
+    return { error: "that host isn't allowed", status: 400 };
+  }
   const maxUsdc = Number.isFinite(input.maxUsdc) && (input.maxUsdc as number) > 0 ? (input.maxUsdc as number) : 0.05;
 
   const support = await supportsPayment(url).catch((e) => ({ supported: false, priceUsdc: null as number | null, error: (e as Error).message }));
