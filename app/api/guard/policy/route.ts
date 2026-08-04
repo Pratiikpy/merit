@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { getPolicy, setPolicy, recordOverride, refreshGuardPlaneFromMirror } from "@/lib/guardplane";
+
+function tokenOk(given: string | null, expected: string): boolean {
+  if (!given) return false;
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +23,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const token = process.env.MERIT_ADMIN_TOKEN;
   if (!token) return NextResponse.json({ error: "admin API disabled (no MERIT_ADMIN_TOKEN configured)" }, { status: 503 });
-  if (req.headers.get("x-admin-token") !== token) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!tokenOk(req.headers.get("x-admin-token"), token)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   let body: {
     maxPerTxUsdc?: number;
     maxPerPayeeWindowUsdc?: number;

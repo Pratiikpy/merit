@@ -28,6 +28,20 @@ describe("payment binding", () => {
     expect(a.verdict.binding!.bindingHash).not.toBe(c.verdict.binding!.bindingHash);
   });
 
+  it("a nonce changes the hash (one-receipt-one-payment) and rides inside the signed binding", async () => {
+    const a = await verifyCitation(CLAIM, SOURCE, { sign: false, binding: { amount: 0.005, payee: "0xPayeeA", nonce: "n-1" } });
+    const b = await verifyCitation(CLAIM, SOURCE, { sign: false, binding: { amount: 0.005, payee: "0xPayeeA", nonce: "n-2" } });
+    if (isVerifyError(a) || isVerifyError(b)) throw new Error("expected verdicts");
+    expect(a.verdict.binding!.nonce).toBe("n-1");
+    expect(a.verdict.binding!.bindingHash).not.toBe(b.verdict.binding!.bindingHash);
+  });
+
+  it("rejects an over-length payee instead of silently truncating a payment identity", async () => {
+    const out = await verifyCitation(CLAIM, SOURCE, { sign: false, binding: { amount: 0.005, payee: "P".repeat(121) } });
+    expect(isVerifyError(out)).toBe(true);
+    if (isVerifyError(out)) expect(out.status).toBe(400);
+  });
+
   it("omits the binding when none was requested", async () => {
     const out = await verifyCitation(CLAIM, SOURCE, { sign: false });
     if (isVerifyError(out)) throw new Error("expected verdict");

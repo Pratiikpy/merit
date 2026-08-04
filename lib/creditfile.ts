@@ -29,20 +29,33 @@ import { round6 } from "./arc";
 
 // ---- Merkle module (the primitive everything else depends on) ---------------------------------------------
 
-/** Leaf = keccak256 of the canonical entry. Doubles as the dedupe/idempotency key. */
+/**
+ * Leaf = keccak256 over a domain-separated canonical SETTLEMENT IDENTITY. When the entry carries an on-chain
+ * `tx`, identity is (tx, sourceId, amount) — the stable key a webhook replay reproduces exactly, so a retried
+ * delivery of the same settlement is the SAME leaf (true idempotency). Without a tx, identity falls back to
+ * the full entry (runId, sourceId, amount, at) — byte-identical replays dedupe; a re-recorded settlement with
+ * a fresh runId/timestamp does not (stated honestly in the payload). Leaves are prefixed 0x00 and interior
+ * nodes 0x01 (domain separation), and an odd node is DUPLICATED, not promoted — so no interior value can ever
+ * be presented as a leaf and a single-leaf root is not the leaf itself.
+ */
 export function leafOf(e: LedgerEntry): `0x${string}` {
-  return keccak256(toHex(canonicalize({ runId: e.runId, sourceId: e.sourceId, amount: e.amount, tx: e.tx ?? "", at: e.at })));
+  const identity = e.tx
+    ? { v: 1, kind: "tx", tx: e.tx, sourceId: e.sourceId, amount: e.amount }
+    : { v: 1, kind: "entry", runId: e.runId, sourceId: e.sourceId, amount: e.amount, at: e.at };
+  return keccak256(toHex("\x00" + canonicalize(identity)));
 }
 
-/** Pairwise-keccak Merkle root over the leaves (sorted for determinism; odd leaf promoted). Empty set → 0x00…0. */
+/** Pairwise-keccak Merkle root over the leaves (sorted for determinism; odd node duplicated; 0x01 node domain).
+ *  Empty set → 0x00…0. */
 export function merkleRoot(leaves: `0x${string}`[]): `0x${string}` {
   if (leaves.length === 0) return `0x${"0".repeat(64)}`;
   let level = [...leaves].sort();
   while (level.length > 1) {
     const next: `0x${string}`[] = [];
     for (let i = 0; i < level.length; i += 2) {
-      if (i + 1 < level.length) next.push(keccak256(toHex(level[i] + level[i + 1].slice(2))));
-      else next.push(level[i]); // odd leaf promoted unchanged
+      const left = level[i];
+      const right = i + 1 < level.length ? level[i + 1] : level[i]; // odd → duplicate, never promote
+      next.push(keccak256(("0x01" + left.slice(2) + right.slice(2)) as `0x${string}`));
     }
     level = next;
   }
@@ -71,7 +84,7 @@ export interface CreditFile {
   verification: { supported: number; refused: number; total: number; commitToSettleRatio: number };
   subjects: CreditSubject[];
   concentrationEntropy: number; // 0..1 normalized entropy of the settled-value distribution across payees
-  merkle: { root: `0x${string}`; leaves: number; leaf: "keccak256(canonical {runId,sourceId,amount,tx,at})"; construction: "sorted leaves, pairwise keccak256, odd promoted" };
+  merkle: { root: `0x${string}`; leaves: number; leaf: string; construction: string };
   replay: { export: string; how: string };
   honesty: string;
   generatedAt: string;
@@ -150,15 +163,15 @@ export async function buildCreditFile(opts: { sign?: boolean } = {}): Promise<Cr
     merkle: {
       root: merkleRoot(leaves),
       leaves: leaves.length,
-      leaf: "keccak256(canonical {runId,sourceId,amount,tx,at})",
-      construction: "sorted leaves, pairwise keccak256, odd promoted",
+      leaf: 'keccak256(0x00 || canonical identity) — identity is {v:1,kind:"tx",tx,sourceId,amount} when an on-chain tx exists, else {v:1,kind:"entry",runId,sourceId,amount,at}',
+      construction: "sorted leaves; node = keccak256(0x01 || left || right); odd node duplicated",
     },
     replay: {
       export: "/api/credit-file?export=1",
-      how: "fetch the raw entries, recompute each leaf and the root locally, compare to merkle.root — then recompute any ratio yourself. The score is replayable; you never have to trust Merit's math.",
+      how: "fetch the export, recompute each leaf and the root locally, compare to merkle.root; the export also carries the verification counts and cumulative totals, so the commit-to-settle ratio and every subject aggregate are recomputable too. You never have to trust Merit's math.",
     },
     honesty:
-      "Payees are wallet-backed identities, not verified legal entities (Sybil identities are possible; concentrationEntropy is the concentration signal). Cumulative counters are monotonic over all time; the merkleized export is the retained entry tail. Every settlement behind these numbers passed proof-of-citation verification before USDC moved; refused obligations are counted, not hidden.",
+      "Payees are wallet-backed identities, not verified legal entities (Sybil identities are possible; concentrationEntropy is the concentration signal). Cumulative counters are monotonic over all time; the merkleized export is the retained entry tail. Idempotency is by settlement identity: entries carrying an on-chain tx dedupe exactly under replay; entries without one dedupe only byte-identically. Every settlement behind these numbers passed proof-of-citation verification before USDC moved; refused obligations are counted, not hidden.",
     generatedAt: now,
   };
 

@@ -51,7 +51,7 @@ export interface Verdict {
   // binding is folded INSIDE the signed body — so a verdict for "$5 to payee A" can never be replayed to wave
   // through "$50 to payee B". bindingHash = keccak256(canonical {amount, payee, claim, sourceHash}); any
   // consumer (SDK, hook, rail) recomputes it locally and refuses on mismatch. Absent when no binding was given.
-  binding?: { amount: number; payee: string; bindingHash: `0x${string}` };
+  binding?: { amount: number; payee: string; nonce?: string; bindingHash: `0x${string}` };
   // signature fields (best-effort; present only if a signer wallet is configured)
   signer?: string;
   signature?: string;
@@ -89,15 +89,19 @@ export interface VerifyOptions {
   useJudge?: boolean;
   /** Skip signing (e.g. in tests). */
   sign?: boolean;
-  /** Bind the verdict to one specific payment (amount in USDC + payee). The binding is signed with the verdict,
-   *  so the receipt authorizes exactly this payment and no other. */
-  binding?: { amount: number; payee: string };
+  /** Bind the verdict to one specific payment (amount in USDC + payee, and optionally a caller nonce). The
+   *  binding is signed with the verdict, so the receipt cannot authorize a DIFFERENT payment (substitution).
+   *  Without a nonce, an identical (amount, payee, claim, source) payment could reuse the receipt — callers
+   *  who need one-receipt-one-payment MUST pass a unique `nonce`, which is folded into the signed hash. */
+  binding?: { amount: number; payee: string; nonce?: string };
 }
 
-/** The versioned binding-hash spec (recomputable in any language, independent of this module):
- *  keccak256(utf8(canonicalize({ amount, payee, claim, sourceHash }))) with keys sorted lexicographically. */
-export function bindingHash(amount: number, payee: string, claim: string, sourceHash: `0x${string}`): `0x${string}` {
-  return keccak256(toHex(canonicalize({ amount, payee, claim, sourceHash })));
+/** The versioned binding-hash spec (v1): keccak256(utf8(canonicalJson)) over
+ *  { amount, payee, claim, sourceHash } — plus `nonce` when given — with keys sorted lexicographically and
+ *  `amount` encoded exactly as ECMAScript JSON.stringify renders the number (shortest round-trip decimal).
+ *  Cross-language consumers must reproduce that number encoding byte-for-byte or fail closed. */
+export function bindingHash(amount: number, payee: string, claim: string, sourceHash: `0x${string}`, nonce?: string): `0x${string}` {
+  return keccak256(toHex(canonicalize(nonce ? { amount, payee, claim, sourceHash, nonce } : { amount, payee, claim, sourceHash })));
 }
 
 const MAX_CLAIM = 4000;
@@ -257,10 +261,13 @@ export async function verifyCitation(
 
   // Fold the payment binding into the body BEFORE signing, so the signature covers exactly which payment this
   // verdict authorizes — the anti-confused-deputy guarantee is server-signed fact, not client-side convention.
+  // The payee is validated, never silently truncated: a sliced payee would bind a DIFFERENT identity.
   if (opts.binding && Number.isFinite(opts.binding.amount) && opts.binding.payee) {
     const amount = opts.binding.amount;
-    const payee = String(opts.binding.payee).slice(0, 120);
-    body.binding = { amount, payee, bindingHash: bindingHash(amount, payee, claim, body.sourceHash) };
+    const payee = String(opts.binding.payee);
+    if (payee.length > 120) return { error: "binding payee too long (max 120 chars) — refusing to truncate a payment identity", status: 400 };
+    const nonce = opts.binding.nonce ? String(opts.binding.nonce).slice(0, 80) : undefined;
+    body.binding = { amount, payee, ...(nonce ? { nonce } : {}), bindingHash: bindingHash(amount, payee, claim, body.sourceHash, nonce) };
   }
 
   if (opts.sign !== false) {

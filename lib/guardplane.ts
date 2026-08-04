@@ -16,10 +16,16 @@
  * log grep. A human override is its own signed receipt naming the operator, chained to the blocked receipt it
  * overrides.
  *
- * Honest boundary (stated, not hidden): the anti-self-escalation guarantee is as strong as the key separation.
- * Here the policy is authored with MERIT_ADMIN_TOKEN and the agent spends with its API key — two credentials,
- * but hosted in one deployment. Real treasury-grade separation puts the admin credential in separate custody
- * (HSM / multisig); the policy receipt chain makes any tampering visible either way.
+ * Honest boundaries (stated, not hidden):
+ *   - Anti-self-escalation is as strong as the key separation. Policy is authored with MERIT_ADMIN_TOKEN and
+ *     the agent spends with its API key — two credentials, hosted in one deployment. Treasury-grade separation
+ *     puts the admin credential in separate custody (HSM / multisig); the policy receipt chain makes tampering
+ *     visible either way.
+ *   - Exposure counting on serverless: state is merged against the shared mirror on refresh and save (union by
+ *     receipt id; exposure entries unioned), but two instances authorizing in the same instant can each admit a
+ *     payment before either sees the other — the window cap is enforced within one instance's view and
+ *     converges on merge, it is not a global atomic counter. Exposure is keyed per (principal, payee), so one
+ *     caller's authorizations can never consume another principal's headroom (no cross-principal griefing).
  */
 import { randomBytes } from "node:crypto";
 import { round6 } from "./arc";
@@ -74,7 +80,7 @@ export interface GuardReceipt {
 interface GuardPlaneDoc {
   policy: GuardPolicy | null;
   receipts: GuardReceipt[];
-  exposure: Record<string, Array<{ at: number; amount: number }>>; // payee → window entries
+  exposure: Record<string, Array<{ at: number; amount: number }>>; // "principal|payee" → window entries
 }
 
 const DOC = "guardplane";
@@ -88,9 +94,24 @@ function load(): GuardPlaneDoc {
   if (cacheable) cache = value;
   return value;
 }
+/** Merge, never clobber: union receipts by id and exposure entries by value, keep the higher policy version.
+ *  A concurrent instance's signed receipts are never lost to a last-writer-wins overwrite. */
+function mergeDocs(a: GuardPlaneDoc, b: GuardPlaneDoc): GuardPlaneDoc {
+  const receipts = new Map<string, GuardReceipt>();
+  for (const r of [...(a.receipts || []), ...(b.receipts || [])]) if (!receipts.has(r.id)) receipts.set(r.id, r);
+  const exposure: GuardPlaneDoc["exposure"] = {};
+  for (const src of [a.exposure || {}, b.exposure || {}]) {
+    for (const [k, rows] of Object.entries(src)) {
+      const seen = new Set((exposure[k] ||= []).map((r) => `${r.at}:${r.amount}`));
+      for (const r of rows) if (!seen.has(`${r.at}:${r.amount}`)) exposure[k].push(r);
+    }
+  }
+  const policy = !a.policy ? b.policy : !b.policy ? a.policy : (b.policy.version || 0) > (a.policy.version || 0) ? b.policy : a.policy;
+  return { policy, receipts: [...receipts.values()].sort((x, y) => x.createdAt.localeCompare(y.createdAt)), exposure };
+}
 export async function refreshGuardPlaneFromMirror(): Promise<void> {
   const v = await loadDocFromMirror<GuardPlaneDoc>(DOC);
-  if (v && Array.isArray(v.receipts)) cache = v;
+  if (v && Array.isArray(v.receipts)) cache = cache ? mergeDocs(cache, v) : v;
 }
 function save(): void {
   const d = load();
@@ -133,18 +154,22 @@ function num(v: unknown, fallback: number): number {
   return typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : fallback;
 }
 
-// ---- rolling exposure (anti salami-slicing) ----------------------------------------------------------------
+// ---- rolling exposure (anti salami-slicing; keyed per principal so no cross-principal griefing) ------------
 
-export function rollingExposure(payee: string, windowHours: number, now = Date.now()): number {
+function expKey(principal: string, payee: string): string {
+  return `${principal}|${payee}`;
+}
+export function rollingExposure(principal: string, payee: string, windowHours: number, now = Date.now()): number {
   const d = load();
+  const k = expKey(principal, payee);
   const cut = now - windowHours * 3600_000;
-  const rows = (d.exposure[payee] || []).filter((r) => r.at >= cut);
-  d.exposure[payee] = rows; // prune expired as we read
+  const rows = (d.exposure[k] || []).filter((r) => r.at >= cut);
+  d.exposure[k] = rows; // prune expired as we read
   return round6(rows.reduce((a, r) => a + r.amount, 0));
 }
-function addExposure(payee: string, amount: number, now = Date.now()): void {
+function addExposure(principal: string, payee: string, amount: number, now = Date.now()): void {
   const d = load();
-  (d.exposure[payee] ||= []).push({ at: now, amount });
+  (d.exposure[expKey(principal, payee)] ||= []).push({ at: now, amount });
 }
 
 // ---- the authorize gate ------------------------------------------------------------------------------------
@@ -173,12 +198,15 @@ export async function authorize(input: { principal: string; payee: string; amoun
     reasons.push("operator guard: settlement is frozen (kill-switch)");
   }
 
-  // 2) compliance (fail-closed inside screenAddress: a denylisted/sanctioned payee is DENIED)
+  // 2) compliance (fail-closed inside screenAddress: a denylisted/sanctioned payee is DENIED; under the strict
+  //    posture MERIT_COMPLIANCE_BLOCK_REVIEW=1, a REVIEW-flagged payee blocks too — same policy as payouts)
   if (payee) {
     try {
       const s = await screenAddress(payee, { sign: false });
       gates.compliance = s.decision;
+      const blockReview = process.env.MERIT_COMPLIANCE_BLOCK_REVIEW === "1";
       if (s.decision === "DENIED") reasons.push(`compliance: payee is ${s.riskScore || "denied"}${s.ruleName ? ` (${s.ruleName})` : ""}`);
+      else if (s.decision === "REVIEW" && blockReview) reasons.push(`compliance: payee flagged for REVIEW${s.ruleName ? ` (${s.ruleName})` : ""} — blocked under the strict posture`);
     } catch {
       gates.compliance = "error";
       reasons.push("compliance: screening unavailable — failing closed");
@@ -192,7 +220,7 @@ export async function authorize(input: { principal: string; payee: string; amoun
   }
 
   // 4) rolling per-counterparty exposure (salami-slicing: many sub-cap payments to one payee)
-  const exposed = payee ? rollingExposure(payee, policy.windowHours, now) : 0;
+  const exposed = payee ? rollingExposure(principal, payee, policy.windowHours, now) : 0;
   if (payee && exposed + amount > policy.maxPerPayeeWindowUsdc) {
     gates.exposure = "over-window";
     reasons.push(
@@ -213,7 +241,7 @@ export async function authorize(input: { principal: string; payee: string; amoun
   }
 
   const decision: "allow" | "block" = reasons.length === 0 ? "allow" : "block";
-  if (decision === "allow") addExposure(payee, amount, now);
+  if (decision === "allow") addExposure(principal, payee, amount, now);
 
   const receipt: GuardReceipt = {
     id: newId(),
@@ -224,7 +252,7 @@ export async function authorize(input: { principal: string; payee: string; amoun
     reasons,
     gates,
     policyVersion: policy.version,
-    exposureAfterUsdc: payee ? rollingExposure(payee, policy.windowHours, now) : 0,
+    exposureAfterUsdc: payee ? rollingExposure(principal, payee, policy.windowHours, now) : 0,
     createdAt: new Date(now).toISOString(),
   };
   await sign(receipt);

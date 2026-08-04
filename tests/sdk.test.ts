@@ -13,7 +13,7 @@ function mockFetch(handler: (url: string, init?: RequestInit) => { status: numbe
   }) as typeof fetch;
 }
 
-async function signedVerdict(binding?: { amount: number; payee: string }) {
+async function signedVerdict(binding?: { amount: number; payee: string; nonce?: string }) {
   const claim = "Revenue was $2 billion.";
   const sourceHash = ("0x" + "ab".repeat(32)) as `0x${string}`;
   const body: Record<string, unknown> = {
@@ -27,7 +27,7 @@ async function signedVerdict(binding?: { amount: number; payee: string }) {
     reason: "test",
     verifiedAt: "2026-08-04T00:00:00.000Z",
   };
-  if (binding) body.binding = { ...binding, bindingHash: computeBindingHash(binding.amount, binding.payee, claim, sourceHash) };
+  if (binding) body.binding = { ...binding, bindingHash: computeBindingHash(binding.amount, binding.payee, claim, sourceHash, binding.nonce) };
   const sig = await signReceiptWith(HH_KEY, body);
   return { ...body, ...sig } as never;
 }
@@ -73,6 +73,26 @@ describe("verifyLocal — never trust a boolean", () => {
     expect(check.signerOk).toBe(false);
   });
 
+  it("ANTI SIGNATURE-STRIPPING (H1): an unsigned verdict FAILS when a trusted signer exists", async () => {
+    const c = new MeritClient({ failureMode: "fail-closed", trustedSigner: HH_ADDR });
+    const v = (await signedVerdict({ amount: 0.01, payee: "0xPayeeA" })) as Record<string, unknown>;
+    delete v.signature; // the MITM strips the signature but keeps a self-computed valid binding
+    delete v.signer;
+    const check = await c.verifyLocal(v as never, { amount: 0.01, payee: "0xPayeeA" });
+    expect(check.signed).toBe(false);
+    expect(check.signerOk).toBe(false); // fails CLOSED — the downgrade does not work
+    expect(check.ok).toBe(false);
+  });
+
+  it("prefers the server's signed envelope and rejects an inconsistent one", async () => {
+    const c = new MeritClient({ failureMode: "fail-closed", trustedSigner: HH_ADDR });
+    const base = (await signedVerdict()) as Record<string, unknown>;
+    const { signer: _s, signature: _sig, ...signedBody } = base;
+    const withEnvelope = { ...base, verdict: "REFUSED", signed: signedBody }; // top-level flipped after signing
+    const check = await c.verifyLocal(withEnvelope as never);
+    expect(check.ok).toBe(false); // envelope disagrees with the tampered top level
+  });
+
   it("ANTI CONFUSED-DEPUTY: a verdict bound to one payment does not authorize another", async () => {
     const c = new MeritClient({ failureMode: "fail-closed", trustedSigner: HH_ADDR });
     const v = await signedVerdict({ amount: 0.005, payee: "0xPayeeA" });
@@ -116,20 +136,28 @@ describe("failure modes — pre-committed, never a 3am surprise", () => {
 });
 
 describe("verifyThenPay — the paved path", () => {
-  it("pays on a good bound verdict and passes it to pay()", async () => {
-    const v = await signedVerdict({ amount: 0.01, payee: "0xPayeeA" });
+  it("pays on a good bound verdict (nonce echoed) and passes it to pay()", async () => {
+    const v = await signedVerdict({ amount: 0.01, payee: "0xPayeeA", nonce: "n-test" });
     const c = new MeritClient({ failureMode: "fail-closed", trustedSigner: HH_ADDR, fetchImpl: mockFetch(() => ({ status: 200, json: v })) });
     let paidTo = "";
-    const out = await c.verifyThenPay({ claim: "Revenue was $2 billion.", source: "s", amount: 0.01, payee: "0xPayeeA", pay: (vd) => (paidTo = vd.binding!.payee) });
+    const out = await c.verifyThenPay({ claim: "Revenue was $2 billion.", source: "s", amount: 0.01, payee: "0xPayeeA", nonce: "n-test", pay: (vd) => (paidTo = vd.binding!.payee) });
     expect(out.paid).toBe(true);
     expect(paidTo).toBe("0xPayeeA");
   });
 
-  it("REFUSES to pay when the server's binding does not match the requested payment", async () => {
-    const v = await signedVerdict({ amount: 0.01, payee: "0xPayeeA" }); // server bound A…
+  it("REFUSES a replayed receipt whose nonce does not match this payment", async () => {
+    const v = await signedVerdict({ amount: 0.01, payee: "0xPayeeA", nonce: "old-payment" }); // a real receipt from an EARLIER payment
     const c = new MeritClient({ failureMode: "fail-closed", trustedSigner: HH_ADDR, fetchImpl: mockFetch(() => ({ status: 200, json: v })) });
     await expect(
-      c.verifyThenPay({ claim: "Revenue was $2 billion.", source: "s", amount: 5, payee: "0xPayeeB", pay: () => "MUST NOT RUN" }),
+      c.verifyThenPay({ claim: "Revenue was $2 billion.", source: "s", amount: 0.01, payee: "0xPayeeA", nonce: "new-payment", pay: () => "MUST NOT RUN" }),
+    ).rejects.toThrow(MeritError);
+  });
+
+  it("REFUSES to pay when the server's binding does not match the requested payment", async () => {
+    const v = await signedVerdict({ amount: 0.01, payee: "0xPayeeA", nonce: "n-x" }); // server bound A…
+    const c = new MeritClient({ failureMode: "fail-closed", trustedSigner: HH_ADDR, fetchImpl: mockFetch(() => ({ status: 200, json: v })) });
+    await expect(
+      c.verifyThenPay({ claim: "Revenue was $2 billion.", source: "s", amount: 5, payee: "0xPayeeB", nonce: "n-x", pay: () => "MUST NOT RUN" }),
     ).rejects.toThrow(MeritError); // …the SDK refuses to pay B
   });
 

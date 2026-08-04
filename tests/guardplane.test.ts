@@ -33,14 +33,22 @@ describe("guard authorize", () => {
     for (let i = 0; i < 5; i++) outcomes.push((await authorize({ principal: "a", payee, amountUsdc: 0.24, now: t0 + i })).decision);
     expect(outcomes.slice(0, 4)).toEqual(["allow", "allow", "allow", "allow"]);
     expect(outcomes[4]).toBe("block"); // each alone is under the per-tx cap; the WINDOW catches the pattern
-    expect(rollingExposure(payee, 24, t0 + 10)).toBeCloseTo(0.96, 6);
+    expect(rollingExposure("a", payee, 24, t0 + 10)).toBeCloseTo(0.96, 6);
+  });
+
+  it("GRIEFING ISOLATION: one principal's authorizations never consume another principal's headroom", async () => {
+    const payee = "0x7C3aED000000000000000000000000000000AbCd";
+    const t0 = Date.now();
+    for (let i = 0; i < 4; i++) await authorize({ principal: "griefer", payee, amountUsdc: 0.24, now: t0 + i }); // griefer fills ITS window
+    const victim = await authorize({ principal: "victim", payee, amountUsdc: 0.24, now: t0 + 10 });
+    expect(victim.decision).toBe("allow"); // the victim's (principal, payee) window is untouched
   });
 
   it("the window slides — old exposure expires", async () => {
     const payee = "0x7C3aED000000000000000000000000000000CcCc";
     const t0 = Date.now();
     await authorize({ principal: "a", payee, amountUsdc: 0.24, now: t0 });
-    expect(rollingExposure(payee, 24, t0 + 25 * 3600_000)).toBe(0); // 25h later, outside the 24h window
+    expect(rollingExposure("a", payee, 24, t0 + 25 * 3600_000)).toBe(0); // 25h later, outside the 24h window
   });
 });
 

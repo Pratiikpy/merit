@@ -25,6 +25,7 @@ export type FailureMode = "fail-open" | "fail-closed" | "last-good-verdict";
 export interface Binding {
   amount: number;
   payee: string;
+  nonce?: string;
   bindingHash: `0x${string}`;
 }
 
@@ -48,8 +49,10 @@ export interface Verdict {
 export interface MeritClientOptions {
   /** REQUIRED: what happens when the verifier is unreachable or a check cannot complete.
    *  'fail-closed' → treat as REFUSED (the safe default for money). 'fail-open' → treat as SUPPORTED
-   *  (availability over safety — you accept the risk). 'last-good-verdict' → reuse the most recent good
-   *  verdict for the SAME claim+source within `lastGoodTtlMs`, else fail closed. */
+   *  (availability over safety — you accept the risk, and NOTE: a fail-open synthetic verdict carries no
+   *  signature and no payment binding, so the anti-confused-deputy guarantee is suspended for that payment;
+   *  an attacker who can force an outage forces exactly this mode). 'last-good-verdict' → reuse the most
+   *  recent good verdict for the SAME claim+source within `lastGoodTtlMs`, else fail closed. */
   failureMode: FailureMode;
   /** Merit deployment to call. Default: the hosted instance. */
   baseUrl?: string;
@@ -90,9 +93,11 @@ export function canonicalize(value: unknown): string {
   return JSON.stringify(sortKeys(value));
 }
 
-/** The versioned binding-hash spec (v1): keccak256(utf8(canonical {amount, payee, claim, sourceHash})). */
-export function computeBindingHash(amount: number, payee: string, claim: string, sourceHash: `0x${string}`): `0x${string}` {
-  return keccak256(toHex(canonicalize({ amount, payee, claim, sourceHash })));
+/** The versioned binding-hash spec (v1): keccak256(utf8(canonical {amount, payee, claim, sourceHash[, nonce]})).
+ *  `amount` is encoded exactly as ECMAScript JSON.stringify renders the number. The binding prevents
+ *  SUBSTITUTION; a unique per-payment `nonce` additionally prevents REUSE of one receipt. */
+export function computeBindingHash(amount: number, payee: string, claim: string, sourceHash: `0x${string}`, nonce?: string): `0x${string}` {
+  return keccak256(toHex(canonicalize(nonce ? { amount, payee, claim, sourceHash, nonce } : { amount, payee, claim, sourceHash })));
 }
 
 export class MeritError extends Error {
@@ -149,7 +154,7 @@ export class MeritClient {
   async verify(
     claim: string,
     source: string,
-    opts: { sourceIsUrl?: boolean; amount?: number; payee?: string; depth?: "numeric" | "nli" | "full" } = {},
+    opts: { sourceIsUrl?: boolean; amount?: number; payee?: string; nonce?: string; depth?: "numeric" | "nli" | "full" } = {},
   ): Promise<Verdict> {
     const key = canonicalize({ claim, source, a: opts.amount, p: opts.payee });
     const body: Record<string, unknown> = { claim, depth: opts.depth };
@@ -158,6 +163,7 @@ export class MeritClient {
     if (typeof opts.amount === "number" && opts.payee) {
       body.amount = opts.amount;
       body.payee = opts.payee;
+      if (opts.nonce) body.nonce = opts.nonce;
     }
     let res: Response;
     try {
@@ -191,28 +197,53 @@ export class MeritClient {
   }
 
   /** Verify a verdict LOCALLY: recover the signer over the canonical signed body and (when present) recompute
-   *  the payment binding. No network call except signer discovery. Never trusts a boolean. */
-  async verifyLocal(verdict: Verdict, expected?: { amount: number; payee: string }): Promise<LocalCheck> {
+   *  the payment binding. No network call except signer discovery. Never trusts a boolean — and when a trusted
+   *  signer exists, an UNSIGNED verdict FAILS (a MITM stripping the signature must not downgrade the check). */
+  async verifyLocal(verdict: Verdict, expected?: { amount: number; payee: string; nonce?: string }): Promise<LocalCheck> {
     // 1) signature
     let signerOk: boolean | null = null;
     let signed = false;
+    const expectedSigner = await this.trustedSigner();
     if (verdict.signature && verdict.signer) {
       signed = true;
-      const expectedSigner = await this.trustedSigner();
-      const { signer, signature, verificationId: _vid, cached: _c, depth: _d, by: _b, reasoning: _r, settlement: _s, signed: _sg, sourceURL: _u, ...body } = verdict as Record<string, unknown>;
+      // Prefer the server's own `signed` envelope (exactly the bytes it signed): assert each of its fields
+      // matches the top-level verdict, so tampering with either copy is caught, and new unsigned presentation
+      // fields can never break recovery. Fall back to strip-listing for older servers.
+      let body: Record<string, unknown>;
+      const envelope = (verdict as Record<string, unknown>).signed as Record<string, unknown> | undefined;
+      if (envelope && typeof envelope === "object") {
+        let consistent = true;
+        for (const k of Object.keys(envelope)) {
+          if (k === "signer" || k === "signature") continue;
+          if (canonicalize(envelope[k]) !== canonicalize((verdict as Record<string, unknown>)[k])) consistent = false;
+        }
+        if (!consistent) return { ok: false, signed, signerOk: false, bindingOk: null, reason: "SIGNED ENVELOPE MISMATCH — the signed body disagrees with the verdict fields" };
+        const { signer: _s1, signature: _s2, ...env } = envelope;
+        body = env;
+      } else {
+        const { signer, signature, verificationId: _vid, cached: _c, depth: _d, by: _b, reasoning: _r, settlement: _s, signed: _sg, sourceURL: _u, ...rest } = verdict as Record<string, unknown>;
+        void signer;
+        void signature;
+        body = rest;
+      }
       try {
-        const recovered = await recoverMessageAddress({ message: canonicalize(body), signature: signature as `0x${string}` });
-        signerOk = recovered === signer && (!expectedSigner || recovered === expectedSigner);
+        const recovered = await recoverMessageAddress({ message: canonicalize(body), signature: verdict.signature as `0x${string}` });
+        signerOk = recovered === verdict.signer && (!expectedSigner || recovered === expectedSigner);
       } catch {
         signerOk = false;
       }
+    } else if (expectedSigner) {
+      // A trusted signer exists but this verdict is unsigned → fail closed (anti signature-stripping).
+      signerOk = false;
     }
     // 2) binding
     let bindingOk: boolean | null = null;
     if (verdict.binding) {
       const b = verdict.binding;
-      const recomputed = computeBindingHash(b.amount, b.payee, verdict.claim, verdict.sourceHash);
-      bindingOk = recomputed === b.bindingHash && (!expected || (expected.amount === b.amount && expected.payee === b.payee));
+      const recomputed = computeBindingHash(b.amount, b.payee, verdict.claim, verdict.sourceHash, b.nonce);
+      bindingOk =
+        recomputed === b.bindingHash &&
+        (!expected || (expected.amount === b.amount && expected.payee === b.payee && (expected.nonce === undefined || expected.nonce === b.nonce)));
     } else if (expected) {
       bindingOk = false; // a binding was expected but the verdict carries none
     }
@@ -225,26 +256,34 @@ export class MeritClient {
       reason: ok
         ? "verdict checks out locally"
         : signerOk === false
-          ? "SIGNATURE MISMATCH — do not trust this verdict"
+          ? signed
+            ? "SIGNATURE MISMATCH — do not trust this verdict"
+            : "UNSIGNED VERDICT from a deployment with a known signer — refusing (anti signature-stripping)"
           : "BINDING MISMATCH — this verdict does not authorize this payment",
     };
   }
 
   /** The paved path: verify with a payment binding, check everything locally, and only then run your `pay`
-   *  callback. A REFUSED verdict, a bad signature, or a binding mismatch → `pay` never runs. */
+   *  callback. A REFUSED verdict, a bad signature, or a binding mismatch → `pay` never runs. A fresh nonce is
+   *  generated per call (override with `nonce`), so the signed receipt is one-payment-one-receipt — a reused
+   *  receipt for an identical payment fails the nonce check. */
   async verifyThenPay<T>(input: {
     claim: string;
     source: string;
     sourceIsUrl?: boolean;
     amount: number;
     payee: string;
+    nonce?: string;
     pay: (verdict: Verdict) => Promise<T> | T;
   }): Promise<{ paid: boolean; verdict: Verdict; check: LocalCheck; result?: T }> {
-    const verdict = await this.verify(input.claim, input.source, { sourceIsUrl: input.sourceIsUrl, amount: input.amount, payee: input.payee });
-    const check = await this.verifyLocal(verdict, { amount: input.amount, payee: input.payee });
+    const nonce = input.nonce ?? (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    const verdict = await this.verify(input.claim, input.source, { sourceIsUrl: input.sourceIsUrl, amount: input.amount, payee: input.payee, nonce });
+    const check = await this.verifyLocal(verdict, { amount: input.amount, payee: input.payee, nonce });
     if (verdict.verdict !== "SUPPORTED") return { paid: false, verdict, check };
     if (verdict.schema === "merit.sdk.synthetic/v1") {
-      // fail-open synthesized SUPPORTED: there is no signature or binding to check — pay only under fail-open.
+      // Fail-open synthesized SUPPORTED: no signature and NO BINDING exist — the anti-confused-deputy guarantee
+      // is suspended for this payment, exactly as the failureMode docs warn. Pays only because YOU pre-committed
+      // to fail-open; fail-closed and last-good-verdict never reach this branch with a synthetic SUPPORTED.
       const result = await input.pay(verdict);
       return { paid: true, verdict, check, result };
     }

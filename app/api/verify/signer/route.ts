@@ -25,8 +25,8 @@ export function GET() {
     recover: "viem recoverMessageAddress({ message: canonicalJson, signature }) === signer",
     bindingSpec: {
       version: 1,
-      hash: "keccak256(utf8(canonicalJson({ amount, payee, claim, sourceHash })))",
-      note: "keys sorted lexicographically; amount is the USDC number as given; a consumer MUST recompute and refuse a payment whose (amount, payee) do not match the verdict's binding.bindingHash",
+      hash: "keccak256(utf8(canonicalJson({ amount, payee, claim, sourceHash[, nonce] })))",
+      note: "keys sorted lexicographically. `amount` is encoded exactly as ECMAScript JSON.stringify renders the number (shortest round-trip decimal) — a cross-language consumer must reproduce that byte-for-byte or fail closed. The binding prevents SUBSTITUTION (a different amount/payee); pass a unique `nonce` per payment to also prevent REUSE of one receipt for repeated identical payments.",
     },
   });
 }

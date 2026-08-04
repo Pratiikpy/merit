@@ -25,7 +25,7 @@ export async function POST(req: Request) {
       { status: gate.status, headers: { "Retry-After": String(Math.ceil((gate.retryMs ?? 3000) / 1000)) } },
     );
   }
-  let body: { claim?: string; source?: string; sourceURL?: string; depth?: string; amount?: number; payee?: string };
+  let body: { claim?: string; source?: string; sourceURL?: string; depth?: string; amount?: number; payee?: string; nonce?: string };
   try {
     body = await req.json();
   } catch {
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   // served where a binding was requested, and per-payment verdicts shouldn't pollute the (claim, source) cache.
   const binding =
     typeof body.amount === "number" && Number.isFinite(body.amount) && body.amount > 0 && typeof body.payee === "string" && body.payee.trim()
-      ? { amount: body.amount, payee: body.payee.trim() }
+      ? { amount: body.amount, payee: body.payee.trim(), ...(typeof body.nonce === "string" && body.nonce.trim() ? { nonce: body.nonce.trim() } : {}) }
       : undefined;
 
   const cacheClaim = depth === "full" ? (body.claim ?? "") : `${body.claim ?? ""} [depth:${depth}]`;
