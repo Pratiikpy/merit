@@ -19,7 +19,7 @@
 import { keccak256, toHex } from "viem";
 import { judgeCitation, looksLikeInjection } from "../llm";
 import { fabricatedFigures } from "../numcheck";
-import { signReceipt, verificationId } from "../receipt";
+import { canonicalize, signReceipt, verificationId } from "../receipt";
 import { scoreNLI, nliAvailable, nliModelTag } from "./nli";
 
 export const ENGINE_VERSION = "merit-verify/0.1.0";
@@ -47,6 +47,11 @@ export interface Verdict {
   modelTag: string;
   verifiedAt: string;
   gates?: GateBreakdown; // what each of the three verifiers found (for a shareable, moat-visible receipt)
+  // Payment binding (anti confused-deputy): when the caller names the payment this verdict will authorize, the
+  // binding is folded INSIDE the signed body — so a verdict for "$5 to payee A" can never be replayed to wave
+  // through "$50 to payee B". bindingHash = keccak256(canonical {amount, payee, claim, sourceHash}); any
+  // consumer (SDK, hook, rail) recomputes it locally and refuses on mismatch. Absent when no binding was given.
+  binding?: { amount: number; payee: string; bindingHash: `0x${string}` };
   // signature fields (best-effort; present only if a signer wallet is configured)
   signer?: string;
   signature?: string;
@@ -84,6 +89,15 @@ export interface VerifyOptions {
   useJudge?: boolean;
   /** Skip signing (e.g. in tests). */
   sign?: boolean;
+  /** Bind the verdict to one specific payment (amount in USDC + payee). The binding is signed with the verdict,
+   *  so the receipt authorizes exactly this payment and no other. */
+  binding?: { amount: number; payee: string };
+}
+
+/** The versioned binding-hash spec (recomputable in any language, independent of this module):
+ *  keccak256(utf8(canonicalize({ amount, payee, claim, sourceHash }))) with keys sorted lexicographically. */
+export function bindingHash(amount: number, payee: string, claim: string, sourceHash: `0x${string}`): `0x${string}` {
+  return keccak256(toHex(canonicalize({ amount, payee, claim, sourceHash })));
 }
 
 const MAX_CLAIM = 4000;
@@ -240,6 +254,14 @@ export async function verifyCitation(
     verifiedAt: new Date().toISOString(),
     gates,
   };
+
+  // Fold the payment binding into the body BEFORE signing, so the signature covers exactly which payment this
+  // verdict authorizes — the anti-confused-deputy guarantee is server-signed fact, not client-side convention.
+  if (opts.binding && Number.isFinite(opts.binding.amount) && opts.binding.payee) {
+    const amount = opts.binding.amount;
+    const payee = String(opts.binding.payee).slice(0, 120);
+    body.binding = { amount, payee, bindingHash: bindingHash(amount, payee, claim, body.sourceHash) };
+  }
 
   if (opts.sign !== false) {
     try {
