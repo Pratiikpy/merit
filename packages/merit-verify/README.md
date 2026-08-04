@@ -1,4 +1,4 @@
-# @merit/verify
+# merit-verify
 
 Gate any payment on whether the work is actually correct.
 
@@ -8,7 +8,7 @@ judge, and come back as a **keccak256-signed verdict**. This SDK is the one-line
 guarantees are contracts, not conventions.
 
 ```ts
-import { MeritClient } from "@merit/verify";
+import { MeritClient } from "merit-verify";
 
 const merit = new MeritClient({ failureMode: "fail-closed" }); // REQUIRED: pre-commit your outage behavior
 

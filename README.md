@@ -220,7 +220,7 @@ is live on the deployment and proven with a real on-chain outcome.
   the tx simulation. Every decision — allow AND block — is itself a signed `merit.guard/v1` receipt persisted
   before the caller sees it; a human override chains to the blocked receipt naming the operator. Live: allow
   with all five gates evaluated; block carrying both the policy and exposure reasons, signed.
-- **@merit/verify SDK** ([`packages/merit-verify`](packages/merit-verify)).
+- **merit-verify SDK** — `npm i merit-verify` ([`packages/merit-verify`](packages/merit-verify)).
   The one-line integration, built as contracts not conventions: a REQUIRED `failureMode` constructor argument
   (outage behavior pre-committed at design time), local signature recovery against a pinned or discovered
   signer (never trust a boolean; unsigned verdicts fail closed against a known signer), and `verifyThenPay` on

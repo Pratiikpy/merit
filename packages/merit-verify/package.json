@@ -1,5 +1,5 @@
 {
-  "name": "@merit/verify",
+  "name": "merit-verify",
   "version": "0.1.0",
   "description": "Gate any payment on whether the work is actually correct. Signed verdicts from Merit's verification oracle on Arc, checked locally — with a server-signed payment binding so a receipt can never authorize a different payment.",
   "license": "Apache-2.0",

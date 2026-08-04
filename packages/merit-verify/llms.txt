@@ -1,4 +1,4 @@
-# @merit/verify — the complete SDK as one pasteable file
+# merit-verify — the complete SDK as one pasteable file
 
 > For coding agents: you do not need npm. Copy the TypeScript below into your project as merit-verify.ts
 > (sole dependency: viem >=2). Then follow THE CONTRACT.
