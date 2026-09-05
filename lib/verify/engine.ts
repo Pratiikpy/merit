@@ -17,7 +17,7 @@
  * "numeric → LLM judge" exactly as before, so nothing regresses; NLI + thresholds are additive.
  */
 import { keccak256, toHex } from "viem";
-import { judgeCitation, looksLikeInjection } from "../llm";
+import { judgeCitation, looksLikeInjection, judgeUnavailableReason, modelUnavailableDetail } from "../llm";
 import { fabricatedFigures } from "../numcheck";
 import { canonicalize, signReceipt, verificationId } from "../receipt";
 import { scoreNLI, nliAvailable, nliModelTag } from "./nli";
@@ -108,6 +108,34 @@ const MAX_CLAIM = 4000;
 const MAX_SOURCE = 20000;
 
 /**
+ * The honest 503 message for "no model leg could decide this claim".
+ *
+ * This used to be a single hardcoded string telling the operator to "configure an LLM key" — which
+ * was wrong and expensive whenever a key WAS configured and the provider was refusing the call. An
+ * upstream 402 (out of credit), a 401 (bad key), a 429 (rate limited) and a genuinely keyless demo
+ * are four different problems for four different people; say which one it is.
+ */
+export function judgeUnavailableMessage(): string {
+  const tail =
+    " A claim containing a checkable number is still verified deterministically, so numeric fabrications are still refused.";
+  const reason = judgeUnavailableReason();
+  switch (reason.kind) {
+    case "no-key":
+      return (
+        "no verification model is configured (keyless demo) — set MERIT_NLI_URL or an LLM key to enable full verification." +
+        tail
+      );
+    case "providers-cooling-down":
+      return (
+        "the verification models are temporarily unavailable after repeated upstream failures — this is on our side, please retry shortly." +
+        tail
+      );
+    case "upstream-error":
+      return `the adversarial LLM judge is unavailable: ${modelUnavailableDetail()}. This is not a missing configuration — a key is configured.${tail}`;
+  }
+}
+
+/**
  * Verify that `source` supports `claim`. Returns a signed Verdict or a typed error (with HTTP status).
  * Pure enough to unit-test: the numeric + validation layers need no keys; NLI and the LLM judge are optional.
  */
@@ -184,8 +212,7 @@ export async function verifyCitation(
     if (legs.length === 0) {
       // No model leg available (keyless + no NLI): a non-numeric claim is genuinely undecidable — honest 503.
       return {
-        error:
-          "the adversarial LLM judge is unavailable (keyless demo) — a claim with a verifiable number is still checked deterministically; configure MERIT_NLI_URL or an LLM key for full verification",
+        error: judgeUnavailableMessage(),
         status: 503,
         numericOnly: true,
       };

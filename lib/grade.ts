@@ -15,7 +15,7 @@
  * Signed with the same wallet as every Merit receipt, so a third party recovers the grader offline.
  */
 import { keccak256, toHex } from "viem";
-import { judgeRequirements, looksLikeInjection, lexicalOverlap } from "./llm";
+import { judgeRequirements, looksLikeInjection, lexicalOverlap, modelUnavailableDetail } from "./llm";
 import { hasLLM } from "./arc";
 import { signReceipt, verificationId } from "./receipt";
 import { nliModelTag } from "./verify/nli";
@@ -118,7 +118,9 @@ export async function gradeDeliverable(
   // No live grader. The judge IS the moat — without it, do NOT auto-release. `allowOffline` (tests/demos only)
   // opts into a deterministic lexical grade; otherwise this is an honest 503, never a heuristic release.
   if (!opts.allowOffline) {
-    if (hasLLM()) return { error: "the grader is temporarily unavailable — try again shortly", status: 503 };
+    // Name the real cause: "try again shortly" is actively wrong when the provider is refusing for
+    // billing (402) — the operator would retry forever instead of topping up the account.
+    if (hasLLM()) return { error: `the grader is unavailable: ${modelUnavailableDetail()}`, status: 503 };
     return {
       error: "no grader is configured (keyless demo) — configure an LLM key to grade deliverables; Merit never releases escrow on a heuristic",
       status: 503,
