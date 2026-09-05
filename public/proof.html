@@ -32,6 +32,14 @@
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px;}
   .stat{border:1px solid #ECECEE;border-radius:14px;padding:16px 18px;}
+  /* The ledger is fetched, so these containers sat empty for ~1.7s and the page looked broken.
+     A shimmer skeleton at the loaded dimensions keeps the layout stable while data arrives. */
+  @keyframes mshimmer{100%{background-position:-200% 0;}}
+  .sk{background:linear-gradient(90deg,#F1F1F3 0%,#E7E7EA 40%,#F1F1F3 80%);background-size:200% 100%;animation:mshimmer 1.4s linear infinite;border-radius:6px;}
+  @media (prefers-reduced-motion: reduce){.sk{animation:none;}}
+  .sk-line{height:12px;margin-top:8px;}
+  #stats[aria-busy] .stat{min-height:154px;}
+  #ledgerwrap[aria-busy] .sk-row{height:38px;margin-top:8px;}
   .stat .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
   .stat .v{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
   .stat .d{font-size:12.5px;color:#6B7280;margin-top:3px;}
@@ -69,8 +77,17 @@
   <h1>The live ledger<span class="live" id="live" hidden><span class="dot"></span>live</span></h1>
   <p class="sub">Every citation Merit verified or <strong>refused</strong>, the real USDC settled on Arc, and the re-verifications the cache avoided — each row a <strong>signed receipt</strong> you can open, most deep-linking a real Arc transaction. The <strong>refused</strong> count is the one number a pay-on-retrieval tool can never show: it pays them all.</p>
 
-  <div class="stats" id="stats"></div>
-  <div id="ledgerwrap"></div>
+  <div class="stats" id="stats" aria-busy="true">
+    <div class="stat"><div class="sk" style="height:10px;width:66%"></div><div class="sk sk-line" style="height:30px;width:52%;margin-top:12px"></div><div class="sk sk-line" style="height:8px;width:100%;margin-top:16px"></div><div class="sk sk-line" style="width:74%"></div></div>
+    <div class="stat"><div class="sk" style="height:10px;width:58%"></div><div class="sk sk-line" style="height:30px;width:46%;margin-top:12px"></div><div class="sk sk-line" style="width:88%;margin-top:16px"></div><div class="sk sk-line" style="width:70%"></div></div>
+    <div class="stat"><div class="sk" style="height:10px;width:62%"></div><div class="sk sk-line" style="height:30px;width:40%;margin-top:12px"></div><div class="sk sk-line" style="width:84%;margin-top:16px"></div><div class="sk sk-line" style="width:66%"></div></div>
+  </div>
+  <div id="ledgerwrap" aria-busy="true">
+    <div class="sk sk-row" style="height:30px;width:100%"></div>
+    <div class="sk sk-row"></div><div class="sk sk-row"></div><div class="sk sk-row"></div>
+    <div class="sk sk-row"></div><div class="sk sk-row"></div><div class="sk sk-row"></div>
+    <div class="sk sk-row"></div><div class="sk sk-row"></div><div class="sk sk-row"></div>
+  </div>
   <div id="err"></div>
   </main>
 
@@ -119,14 +136,18 @@
     }).join('');
     ledgerEl.innerHTML = '<table><thead><tr><th>Verdict</th><th>Claim</th><th class="hide-sm">Settled</th><th>Proof</th><th class="hide-sm">When</th></tr></thead><tbody>'+body+'</tbody></table>';
   }
+  var loaded=false;
   async function load(){
     try{
       var res=await fetch('/api/proof?limit=50',{cache:'no-store'});
       if(!res.ok){ throw new Error('status '+res.status); }
       var p=await res.json();
       render(p);
-      liveEl.hidden=false;
-    }catch(e){ if(!statsEl.innerHTML) errEl.innerHTML='<div class="err">Could not load the ledger. Retrying…</div>'; }
+      liveEl.hidden=false; loaded=true; errEl.innerHTML='';
+      statsEl.removeAttribute('aria-busy'); ledgerEl.removeAttribute('aria-busy');
+      // `loaded` replaces the old `!statsEl.innerHTML` test: the containers now start with a loading
+      // skeleton, so innerHTML is never empty and that check would have swallowed the error.
+    }catch(e){ if(!loaded) errEl.innerHTML='<div class="err">Could not load the ledger. Retrying…</div>'; }
   }
   load();
   setInterval(load, 15000);
