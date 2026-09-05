@@ -109,3 +109,7 @@ playwright/.cache/
 .e2e-profile*/
 .e2e-keys.json
 personas.env
+
+# scratch harness scripts
+.*.tmp.mjs
+*.tmp.mjs
