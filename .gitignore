@@ -93,4 +93,19 @@ docs/RESEARCH-RAW.md
 docs/ECOSYSTEM-INTEL.md
 docs/FEATURES.md
 docs/HUB-PLAN.md
+docs/ARC-ECONOMY-RESEARCH.md
+docs/ARC-ECONOMY-RESEARCH-sources.json
 *.stackdump
+
+# Playwright / QA harness artifacts (evidence can contain keys and is large — never commit)
+test-results/
+docs/qa/playwright-report/
+docs/qa/playwright-report.json
+docs/qa/evidence/
+docs/qa/agents/
+docs/qa/judges/
+blob-report/
+playwright/.cache/
+.e2e-profile*/
+.e2e-keys.json
+personas.env

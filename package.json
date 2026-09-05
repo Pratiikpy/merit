@@ -51,7 +51,15 @@
     "volume": "node scripts/volume.mjs",
     "seed-creators": "node scripts/seed-creators.mjs",
     "fund-payers": "node scripts/fund-payers.mjs",
-    "check-payers": "node scripts/check-payers.mjs"
+    "check-payers": "node scripts/check-payers.mjs",
+    "typecheck": "tsc --noEmit",
+    "typecheck:e2e": "tsc -p tsconfig.e2e.json",
+    "e2e": "playwright test",
+    "e2e:report": "playwright show-report docs/qa/playwright-report",
+    "qa:inventory": "node scripts/qa-inventory.mjs",
+    "qa:a11y": "node scripts/qa-a11y.mjs",
+    "qa:api": "node scripts/qa-api.mjs",
+    "qa:repo": "node scripts/qa-repo.mjs"
   },
   "dependencies": {
     "@circle-fin/developer-controlled-wallets": "^10.7.1",
@@ -77,6 +85,8 @@
     "viem": "^2.47.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "axe-core": "^4.13.0",
     "eslint": "^9.39.4",
     "vitest": "^4.1.9"
   }

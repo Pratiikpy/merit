@@ -25,3 +25,12 @@ node_modules/
 # Scratch / logs.
 *.log
 docs/HUB-PLAN.md
+docs/ARC-ECONOMY-RESEARCH.md
+docs/ARC-ECONOMY-RESEARCH-sources.json
+
+# QA harness — never shipped to the deployment.
+e2e/
+playwright.config.ts
+tsconfig.e2e.json
+test-results/
+docs/qa/

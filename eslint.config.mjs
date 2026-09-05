@@ -21,7 +21,9 @@ import nextConfig from "eslint-config-next";
 // Python sidecars (NLI server, merit-cvo package) ship their own vendored JS inside virtualenvs —
 // never Merit's TypeScript. Keep ESLint scoped to the app so third-party bundles don't add noise.
 const config = [
-  { ignores: ["nli-server/**", "merit-cvo/**"] },
+  // QA harness artifacts are generated, not source: the Playwright HTML report ships minified
+  // vendor bundles that trip react-hooks rules and add hundreds of meaningless errors.
+  { ignores: ["nli-server/**", "merit-cvo/**", "docs/qa/**", "test-results/", "playwright-report/**", "blob-report/**"] },
   ...(Array.isArray(nextConfig) ? nextConfig : [nextConfig]),
 ];
 
