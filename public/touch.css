@@ -1,0 +1,60 @@
+/*
+ * Touch ergonomics, mobile only.
+ *
+ * A visual audit found header, nav and small-button controls rendering 15-38px tall on a phone,
+ * under the 44px touch-target guideline. Every rule here is inside a max-width media query and
+ * only ever grows the interactive area — the desktop rendering, the type scale and the palette
+ * are untouched, so the design language is unchanged.
+ */
+@media (max-width: 700px) {
+  /* Header: the wordmark, the nav links and the "back to demo" link. */
+  .logo,
+  nav .logo,
+  header .logo,
+  nav a.back,
+  .navlinks a,
+  nav .navlinks a,
+  header .links a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Buttons: the base class, the compact .sm variant on the gigs and media boards,
+     and the .btn-primary / .cta variants used on the landing page. */
+  .btn,
+  .btn.sm,
+  button.btn,
+  a.btn,
+  .btn-primary,
+  /* a.cta / button.cta only: on honesty.html ".cta" is a container div, and making it
+     inline-flex shrink-wrapped it to 550px and overflowed a 390px viewport. */
+  a.cta,
+  button.cta,
+  .go,
+  .exbtn,
+  button.go {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Form fields sat at 42px — just under the line. */
+  input[type="text"],
+  input[type="url"],
+  input[type="number"],
+  input[type="email"],
+  input:not([type]),
+  select {
+    min-height: 44px;
+  }
+
+  /* Footer link columns: 17-19px rows are hard to hit and easy to mis-tap. */
+  footer a,
+  .foot a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}

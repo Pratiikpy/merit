@@ -84,7 +84,13 @@
   .chiprow{margin-top:12px;display:flex;flex-wrap:wrap;gap:2px;}
   .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
   @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}.tab{padding:9px 12px;font-size:12.5px;}}
+  /* Loading skeleton for the fetched "Recent calls" list. */
+  @keyframes mshimmer{100%{background-position:-200% 0;}}
+  .sk{background:linear-gradient(90deg,#F1F1F3 0%,#E7E7EA 40%,#F1F1F3 80%);background-size:200% 100%;animation:mshimmer 1.4s linear infinite;border-radius:12px;}
+  @media (prefers-reduced-motion: reduce){.sk{animation:none;}}
+  .sk-rec{height:96px;margin-bottom:10px;}
 </style>
+<link rel="stylesheet" href="/touch.css">
 </head>
 <body>
 <div class="wrap">
@@ -117,7 +123,8 @@
 
   <div class="card" id="panel-attested" role="tabpanel">
     <div class="row">
-      <div class="field"><label for="at-model">Model</label><select id="at-model"></select></div>
+      <!-- A placeholder option so the select is never an empty box while the roster loads. -->
+      <div class="field"><label for="at-model">Model</label><select id="at-model"><option>Loading models…</option></select></div>
     </div>
     <div class="row" style="margin-top:10px">
       <div class="field"><label for="at-prompt">Prompt</label><textarea id="at-prompt" style="min-height:100px" placeholder="Ask anything."></textarea></div>
@@ -159,7 +166,10 @@
   <div id="vf-result"></div>
 
   <h2 class="lbl">Recent calls</h2>
-  <div id="recent"></div>
+  <!-- Skeleton: this list is fetched, and sat empty for ~1s under the heading. -->
+  <div id="recent" aria-busy="true">
+    <div class="sk sk-rec"></div><div class="sk sk-rec"></div><div class="sk sk-rec"></div>
+  </div>
   </main>
 
   <footer class="foot">Attested inference runs over the 0G router Merit already operates today — the full 0G Compute SDK broker (on-chain ledger settlement and the raw TDX quote) is the roadmap upgrade. Every verdict is either hardware-attested or publicly recomputable; nothing here trusts Merit's server. <a href="/api/inference" style="text-decoration:underline">Raw JSON →</a></footer>
@@ -231,6 +241,7 @@
 
   function renderRecent(list){
     var el = document.getElementById('recent');
+    el.removeAttribute('aria-busy'); // data (or a real empty state) has arrived — drop the skeleton
     if (!list || !list.length) { el.innerHTML = '<div class="empty">No calls yet — run an attested or verified call above.</div>'; return; }
     el.innerHTML = list.map(function(r){ return renderReceipt(r); }).join('');
   }
