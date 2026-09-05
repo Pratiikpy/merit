@@ -40,6 +40,9 @@
     "node_modules",
     "e2e",
     "playwright.config.ts",
-    "tsconfig.e2e.json"
+    "tsconfig.e2e.json",
+    "vitest.config.ts",
+    "tests",
+    "scripts"
   ]
 }
