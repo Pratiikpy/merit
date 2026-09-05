@@ -19,7 +19,7 @@
 import { randomBytes } from "node:crypto";
 import { keccak256, toHex } from "viem";
 import { llmConfig, hasLLM, round6 } from "./arc";
-import { llmAcquire } from "./llm";
+import { llmAcquire, providerFailureMessage } from "./llm";
 import { fabricatedFigures } from "./numcheck";
 import { modelTee, type Attestation } from "./jury";
 import { signReceipt, verificationId } from "./receipt";
@@ -63,7 +63,7 @@ async function chat0G(model: string, messages: Array<{ role: string; content: st
       body: JSON.stringify({ model, messages, temperature, max_tokens: 1200, stream: false }),
       signal: ctrl.signal,
     });
-    if (!res.ok) return { error: `model "${model}" unavailable (${res.status})`, status: res.status === 404 ? 400 : 502 };
+    if (!res.ok) return { error: providerFailureMessage(res.status, "Verified Inference"), status: res.status === 404 ? 400 : 502 };
     const data = await res.json();
     const msg = data?.choices?.[0]?.message || {};
     const content = (msg.content || msg.reasoning_content || "").trim();

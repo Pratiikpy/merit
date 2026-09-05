@@ -7,7 +7,7 @@
  * a fabricated figure is caught by the same deterministic numeric gate every other door uses. Attested + verified.
  */
 import { llmConfig, hasLLM } from "./arc";
-import { llmAcquire } from "./llm";
+import { llmAcquire, providerFailureMessage } from "./llm";
 import { modelTee, type Attestation } from "./jury";
 import { verifyCitation, isVerifyError } from "./verify/engine";
 import { DEFAULT_VISION_MODEL, getModel } from "./models";
@@ -51,7 +51,7 @@ async function chatVision(model: string, imageUrl: string, question: string): Pr
       }),
       signal: ctrl.signal,
     });
-    if (!res.ok) return { error: `vision model "${model}" unavailable (${res.status})`, status: res.status === 404 ? 400 : 502 };
+    if (!res.ok) return { error: providerFailureMessage(res.status, "The vision model"), status: res.status === 404 ? 400 : 502 };
     const data = await res.json();
     const msg = data?.choices?.[0]?.message || {};
     const content = (msg.content || msg.reasoning_content || "").trim();

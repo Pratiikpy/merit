@@ -98,3 +98,29 @@ describe("judgeUnavailableMessage", () => {
     expect(judgeUnavailableMessage()).toMatch(/numeric fabrications are still refused/i);
   });
 });
+
+describe("providerFailureMessage", () => {
+  it("explains a 402 in human terms and never leaks the raw status alone", async () => {
+    const { providerFailureMessage } = await import("../lib/llm");
+    const m = providerFailureMessage(402, "Verified Inference");
+    expect(m).toMatch(/out of credit/i);
+    expect(m).toMatch(/on our side/i);
+    expect(m).toMatch(/no charge/i);
+    // The old text was `model "deepseek-v4-flash" unavailable (402)` — a raw status and model id.
+    expect(m).not.toMatch(/^model "/);
+  });
+
+  it("owns a rate limit and invites a retry", async () => {
+    const { providerFailureMessage } = await import("../lib/llm");
+    const m = providerFailureMessage(429, "Verified Inference");
+    expect(m).toMatch(/busy/i);
+    expect(m).toMatch(/try again/i);
+  });
+
+  it("never blames the caller for an upstream failure", async () => {
+    const { providerFailureMessage } = await import("../lib/llm");
+    for (const s of [401, 402, 429, 500]) {
+      expect(providerFailureMessage(s, "Verified Inference")).not.toMatch(/your (input|prompt|request)/i);
+    }
+  });
+});
