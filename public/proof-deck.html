@@ -341,7 +341,10 @@
 <div class="lightbox" id="lightbox" aria-hidden="true">
   <div class="lightbox-dialog">
     <button class="lightbox-close" aria-label="Close">×</button>
-    <img src="" alt="">
+    <!-- No src attribute: an empty src="" resolves to this page's own URL, so the browser
+         re-downloads the whole HTML and then fails to decode it as an image. Omitting the
+         attribute issues no request at all; the lightbox sets .src when a shot is opened. -->
+    <img alt="">
     <div class="lightbox-caption"></div>
   </div>
 </div>
@@ -350,7 +353,8 @@
 (function(){
   var lb=document.getElementById("lightbox"),img=lb.querySelector("img"),cap=lb.querySelector(".lightbox-caption"),close=lb.querySelector(".lightbox-close");
   function open(src,alt){img.src=src;img.alt=alt||"";cap.textContent=alt||"";lb.classList.add("open");lb.setAttribute("aria-hidden","false");document.body.classList.add("lb-active");}
-  function shut(){lb.classList.remove("open");lb.setAttribute("aria-hidden","true");document.body.classList.remove("lb-active");img.src="";}
+  // removeAttribute, never src="": assigning "" makes the browser re-request this page as an image.
+  function shut(){lb.classList.remove("open");lb.setAttribute("aria-hidden","true");document.body.classList.remove("lb-active");img.removeAttribute("src");}
   document.querySelectorAll("figure.shot img").forEach(function(el){el.addEventListener("click",function(){open(el.getAttribute("src"),el.getAttribute("alt"));});});
   close.addEventListener("click",shut);
   lb.addEventListener("click",function(e){if(e.target===lb)shut();});

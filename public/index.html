@@ -35,6 +35,26 @@
   @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}#ticker-track{animation:none!important;}}
   a{color:inherit;text-decoration:none;}
   ::placeholder{color:#6B7280;}
+  /* Scrollable card lists (creator earnings, receipts) cut their last row mid-height, which reads as a
+     rendering bug rather than "there is more". A bottom fade turns the sliver into a deliberate
+     affordance; it is applied only while the list is actually scrollable AND not scrolled to the end. */
+  [data-scrollfade="1"]{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 28px),transparent 100%);mask-image:linear-gradient(to bottom,#000 calc(100% - 28px),transparent 100%);}
+  /* The ambient earnings toast is a nice-to-have on desktop, but on a narrow screen it lands on top of
+     real content — it was covering the hero's "total released to creators" figure. The live ticker
+     already carries the same signal, so the toast stands down on small viewports. */
+  @media (max-width: 700px){ #merit-toasts{display:none!important;} }
+  /* Touch ergonomics: the hero's example pills and the nav toggle are comfortable with a mouse but
+     were 23px and 38px tall on a phone, well under the 44px touch guideline. Grow them on small
+     viewports only — desktop rendering is untouched. */
+  @media (max-width: 700px){
+    /* Side-by-side, the taller pills squeeze the label onto two lines and stack unevenly. On a phone
+       give the label its own line and let the two pills share a full-width row — bigger touch
+       targets AND a cleaner rhythm, rather than trading one for the other. */
+    #hv-try-row{ flex-direction:column!important; align-items:stretch!important; gap:8px!important; }
+    #hv-presets{ display:grid!important; grid-template-columns:1fr 1fr; gap:8px!important; }
+    #hv-ex-fab, #hv-ex-true{ padding-top:14px!important; padding-bottom:14px!important; text-align:center; }
+    #nav-menu-btn{ width:44px!important; height:44px!important; }
+  }
   .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;}
   h1,h2,h3{font-family:'Hanken Grotesk',sans-serif;letter-spacing:-.028em;}
   nav a{white-space:nowrap;}
@@ -157,9 +177,9 @@
         <div><div style="font-size:12px;font-weight:600;color:#6B7280;">Total released to creators</div><div class="mono" id="hc-total" style="font-size:25px;font-weight:600;letter-spacing:-.01em;color:#0A0A0A;margin-top:2px;">$0.00</div><div style="font-size:11.5px;font-weight:600;color:#047857;margin-top:3px;">▲ <span id="hc-paid">0</span> creators paid · <a href="/api/metrics" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">verify ↗</a></div></div>
         <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#047857;"><span style="width:6px;height:6px;border-radius:50%;background:#10B981;animation:mblink 1.4s infinite;"></span>live</span>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">
+      <div id="hv-try-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;">
         <div style="font-size:11px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Try the verifier — live, no signup</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <div id="hv-presets" style="display:flex;gap:6px;flex-wrap:wrap;">
           <button type="button" id="hv-ex-fab" style="font-family:inherit;font-size:11.5px;font-weight:600;color:#BE123C;background:#FFF1F2;border:1px solid #FECDD3;border-radius:999px;padding:3px 10px;cursor:pointer;">Try a fabricated one</button>
           <button type="button" id="hv-ex-true" style="font-family:inherit;font-size:11.5px;font-weight:600;color:#047857;background:#ECFDF5;border:1px solid #D1FAE5;border-radius:999px;padding:3px 10px;cursor:pointer;">Try a true one</button>
         </div>
@@ -170,7 +190,7 @@
       <textarea id="hv-source" rows="3" placeholder="Paste the source passage… or paste a URL and Merit reads the page." style="width:100%;border:1px solid #E4E4E7;border-radius:10px;padding:11px 12px;font-size:14px;font-weight:500;background:#fff;outline:none;color:#0A0A0A;box-sizing:border-box;resize:vertical;font-family:inherit;line-height:1.5;"></textarea>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;">
         <span style="font-size:12px;color:#6B7280;">Real verdict, signed receipt — money would move (or not) on this.</span>
-        <button type="button" id="hv-go" class="btn-primary" style="font-family:inherit;font-size:14px;font-weight:600;color:#fff;background:#0A0A0A;border:none;padding:10px 18px;border-radius:9px;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.1),0 2px 8px rgba(10,10,10,.28);white-space:nowrap;">Verify it</button>
+        <button type="button" id="hv-go" class="btn-primary" style="font-family:inherit;font-size:14px;font-weight:600;color:#fff;background:#0A0A0A;border:none;padding:10px 18px;border-radius:9px;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.1),0 2px 8px rgba(10,10,10,.28);white-space:nowrap;flex:none;">Verify it</button>
       </div>
       <div id="hv-result" aria-live="polite"></div>
     </div>
@@ -276,7 +296,7 @@
 </section>
 
 <section style="border-top:1px solid #E9E4DA;border-bottom:1px solid #E9E4DA;background:#fff;overflow:hidden;">
-  <div aria-hidden="true" style="display:flex;align-items:stretch;">
+  <div id="live-ticker" aria-hidden="true" style="display:flex;align-items:stretch;">
     <div style="flex:none;display:flex;align-items:center;gap:8px;padding:13px 18px;border-right:1px solid #E9E4DA;background:#FAFAFA;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#1D1D1F;"><span style="width:8px;height:8px;border-radius:50%;background:#10B981;box-shadow:0 0 0 3px rgba(16,185,129,.18);"></span>Live</div>
     <div style="flex:1;overflow:hidden;">
       <div id="ticker-track" style="display:flex;width:max-content;align-items:center;animation:mmarq 38s linear infinite;"></div>
@@ -1207,7 +1227,35 @@
   function mount(){
     // toast host
     var th = document.getElementById('merit-toasts');
-    if(!th){ th = document.createElement('div'); th.id='merit-toasts'; th.style.cssText='position:fixed;right:20px;bottom:20px;z-index:70;display:flex;flex-direction:column;gap:10px;align-items:flex-end;pointer-events:none;'; document.body.appendChild(th); }
+    if(!th){ th = document.createElement('div'); th.id='merit-toasts'; th.style.cssText='position:fixed;right:20px;bottom:20px;z-index:70;display:flex;flex-direction:column;gap:10px;align-items:flex-end;pointer-events:none;transition:opacity .25s ease,transform .25s ease;'; document.body.appendChild(th); }
+
+    // Scroll-fade the card lists whose last row is otherwise sliced mid-height.
+    (function(){
+      var lists = ['creators-mount','receipts-mount'].map(function(id){ return document.getElementById(id); }).filter(Boolean);
+      function sync(el){
+        var more = el.scrollHeight - el.clientHeight - el.scrollTop > 4;
+        el.setAttribute('data-scrollfade', more ? '1' : '0');
+      }
+      lists.forEach(function(el){
+        sync(el);
+        el.addEventListener('scroll', function(){ sync(el); }, { passive: true });
+        if ('ResizeObserver' in window) new ResizeObserver(function(){ sync(el); }).observe(el);
+        if ('MutationObserver' in window) new MutationObserver(function(){ sync(el); }).observe(el, { childList: true, subtree: true });
+      });
+    })();
+
+    // The floating earnings toast and the full-width live ticker show the SAME thing (a creator
+    // being paid) and were colliding: the toast covered ~305x52px of the ticker's right end.
+    // While the ticker is on screen it is the better presentation, so stand the toast down.
+    (function(){
+      var ticker = document.getElementById('live-ticker');
+      if(!ticker || !('IntersectionObserver' in window)) return;
+      new IntersectionObserver(function(entries){
+        var visible = entries.some(function(e){ return e.isIntersecting; });
+        th.style.opacity = visible ? '0' : '1';
+        th.style.transform = visible ? 'translateY(8px)' : 'none';
+      }, { threshold: 0 }).observe(ticker);
+    })();
 
     // Reputation profile overlay — created once; opened by clicking any creator row (data-rep).
     if(!document.getElementById('rep-overlay')){
