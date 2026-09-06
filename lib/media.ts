@@ -246,7 +246,7 @@ async function releaseLicense(media: MediaItem, vId: string | undefined): Promis
 
   try {
     await refreshCustodyFromMirror();
-    accrueCustody(ownerId, media.owner, amount);
+    accrueCustody(ownerId, media.owner, amount, { verificationId: vId });
   } catch {
     /* accrual best-effort */
   }

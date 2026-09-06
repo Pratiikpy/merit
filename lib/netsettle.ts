@@ -96,7 +96,7 @@ export async function settleVerifiedBatch(items: BatchItemResolved[], opts: { ve
 
     if (v.verdict === "SUPPORTED") {
       // Settle this line to the source — real custody accrual, claimable on-chain via domain proof.
-      accrueCustody(it.sourceId || it.sourceName, it.sourceName, it.amount, it.domain ? { domain: it.domain } : undefined);
+      accrueCustody(it.sourceId || it.sourceName, it.sourceName, it.amount, { ...(it.domain ? { domain: it.domain } : {}), verificationId: v.verificationId });
       if (it.sourceId) {
         try {
           applyOutcome(it.sourceId, { meritDelta: 1, earned: it.amount });

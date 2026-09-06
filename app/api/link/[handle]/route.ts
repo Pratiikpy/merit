@@ -104,7 +104,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ handle: string
       // verify gate: only a passing citation's amount is ever split; no buyer-wallet spend (custody accrual).
       await refreshCustodyFromMirror().catch(() => {});
       const shares = computeSplits(s.splits, price);
-      for (const sh of shares) accrueCustody(`split:${(sh.domain || sh.name).toLowerCase()}`, sh.name, sh.amount, sh.domain ? { domain: sh.domain } : undefined);
+      for (const sh of shares) accrueCustody(`split:${(sh.domain || sh.name).toLowerCase()}`, sh.name, sh.amount, { ...(sh.domain ? { domain: sh.domain } : {}), verificationId: v.verificationId });
       applyOutcome(s.id, { meritDelta: 1, earned: price });
       recordSettlement({ runId: "link", sourceId: s.id, cited: true, released: true, amount: price, confidence: v.score ?? 0, reason: "link:split", at: now });
       settled = { amount: price, custody: true, onchain: false, splits: shares };
@@ -112,7 +112,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ handle: string
       // Wallet-less creator: hold the earning in Merit custody (claimable on-chain via domain proof). No buyer
       // spend, so this is not subject to the public toll budget.
       await refreshCustodyFromMirror().catch(() => {});
-      accrueCustody(s.id, s.name, price, { domain: s.domain });
+      accrueCustody(s.id, s.name, price, { domain: s.domain, verificationId: v.verificationId });
       applyOutcome(s.id, { meritDelta: 1, earned: price });
       recordSettlement({ runId: "link", sourceId: s.id, cited: true, released: true, amount: price, confidence: v.score ?? 0, reason: "link:custody", at: now });
       settled = { amount: price, custody: true, onchain: false };

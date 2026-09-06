@@ -65,7 +65,7 @@ export async function POST(req: Request) {
       // BUY the best-value source that actually VERIFIED — settle its price to the creator's custody (claimable
       // on-chain via domain proof), mint a signed settlement receipt, and stop (we found a correct source).
       await refreshCustodyFromMirror().catch(() => {});
-      accrueCustody(src.id, src.name, c.price, src.domain ? { domain: src.domain } : undefined);
+      accrueCustody(src.id, src.name, c.price, { ...(src.domain ? { domain: src.domain } : {}), verificationId: r.verdictObj.verificationId });
       try {
         applyOutcome(src.id, { meritDelta: 1, earned: c.price });
         recordSettlement({ runId: "buy", sourceId: src.id, cited: true, released: true, amount: c.price, confidence: r.verdictObj.score ?? 0, reason: "buy:custody", at: Date.now() });

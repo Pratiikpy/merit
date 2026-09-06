@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checked against Arc — Merit</title>
+<meta name="description" content="Merit's ledger, audited against Arc itself. Every published settlement is re-read from chain logs in both directions, and every payout carries an on-chain memo naming the verified work it settled — readable by anyone, with no Merit server in the loop.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Checked against Arc — Merit">
+<meta property="og:description" content="The ledger audited against chain state, both directions. Every payout carries an on-chain memo naming the verified work behind it.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  nav a.back{font-size:14px;color:#6B7280;text-decoration:none;font-weight:600;}
+  nav a.back:hover{color:#0A0A0A;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 12px;font-weight:800;}
+  h2{font-size:20px;letter-spacing:-.02em;margin:38px 0 6px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 28px;max-width:70ch;}
+  .lede{font-size:14.5px;color:#4B5563;margin:0 0 14px;max-width:74ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:16px 18px;}
+  .stat .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:4px;overflow-wrap:anywhere;}
+  .stat .v.sm{font-size:22px;}
+  .stat .d{font-size:12.5px;color:#6B7280;margin-top:3px;}
+  @keyframes mshimmer{100%{background-position:-200% 0;}}
+  .sk{background:linear-gradient(90deg,#F1F1F3 0%,#E7E7EA 40%,#F1F1F3 80%);background-size:200% 100%;animation:mshimmer 1.4s linear infinite;border-radius:6px;}
+  @media (prefers-reduced-motion: reduce){.sk{animation:none;}}
+  .sk-line{height:12px;margin-top:8px;}
+  #stats[aria-busy] .stat{min-height:120px;}
+  #rowswrap[aria-busy] .sk-row{height:38px;margin-top:8px;}
+  .ok{color:#047857;font-weight:700;}
+  .bad{color:#BE123C;font-weight:700;}
+  .flag{color:#B45309;font-weight:700;}
+  .muted{color:#6B7280;}
+  /* Wide content scrolls inside its own box; the page itself must never scroll sideways. */
+  .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px;}
+  thead th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;padding:10px;border-bottom:1px solid #ECECEE;}
+  tbody td{padding:11px 10px;border-bottom:1px solid #F3F4F6;vertical-align:top;}
+  tbody tr:hover{background:#FAFAFA;}
+  .chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;}
+  .chip.m{background:#DCFCE7;color:#047857;} .chip.x{background:#FEE2E2;color:#BE123C;} .chip.n{background:#F3F4F6;color:#4B5563;}
+  .lnk{font-size:12px;text-decoration:underline;text-underline-offset:2px;white-space:nowrap;color:#047857;}
+  .card{border:1px solid #ECECEE;border-radius:14px;padding:18px;margin-top:14px;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;}
+  input[type=text]{flex:1;min-width:260px;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:11px 12px;border:1px solid #E4E4E7;border-radius:10px;background:#fff;color:#0A0A0A;}
+  input[type=text]:focus{outline:2px solid #0A0A0A;outline-offset:1px;}
+  button.go{cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;padding:11px 18px;border-radius:10px;border:1px solid #0A0A0A;background:#0A0A0A;color:#fff;}
+  button.go:disabled{opacity:.55;cursor:default;}
+  .check{display:flex;gap:9px;align-items:flex-start;font-size:13px;padding:6px 0;border-bottom:1px solid #F3F4F6;}
+  .check:last-child{border-bottom:0;}
+  .check .m{font-size:12px;color:#6B7280;word-break:break-all;}
+  pre.payload{background:#FAFAFA;border:1px solid #ECECEE;border-radius:10px;padding:12px;font-family:'IBM Plex Mono',monospace;font-size:12px;overflow-x:auto;margin:10px 0 0;}
+  .note{font-size:12.5px;color:#6B7280;margin-top:10px;max-width:78ch;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:36px;}
+  .err{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:14px;color:#374151;font-size:14px;margin-top:16px;}
+  @media(max-width:640px){.hide-sm{display:none;}h1{font-size:30px;}.card{padding:14px;}table{font-size:12.5px;}tbody td,thead th{padding:9px 8px;}pre.payload{font-size:11px;}}
+</style>
+<link rel="stylesheet" href="/touch.css">
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <a class="back" href="/proof.html">← the live ledger</a>
+  </nav>
+
+  <main>
+  <h1>Checked against Arc</h1>
+  <p class="sub">The ledger is Merit's account of what Merit settled. This page is the <strong>audit of that account</strong>, run against chain state — so the honesty claim stops depending on us.</p>
+
+  <h2>Does the chain back what we published?</h2>
+  <p class="lede">Every settlement Merit published with a real transaction hash is re-read from Arc: did it succeed, did USDC of exactly that size move, and do Arc's <strong>two</strong> USDC log streams — the 18-decimal native system emitter (EIP-7708) and the 6-decimal ERC-20 contract — tell the same story? The second stream is an independent witness, not a restatement of the first.</p>
+  <div class="stats" id="stats" aria-busy="true">
+    <div class="stat"><div class="sk" style="height:10px;width:64%"></div><div class="sk sk-line" style="height:30px;width:44%;margin-top:12px"></div><div class="sk sk-line" style="width:82%;margin-top:14px"></div></div>
+    <div class="stat"><div class="sk" style="height:10px;width:58%"></div><div class="sk sk-line" style="height:30px;width:40%;margin-top:12px"></div><div class="sk sk-line" style="width:76%;margin-top:14px"></div></div>
+    <div class="stat"><div class="sk" style="height:10px;width:60%"></div><div class="sk sk-line" style="height:30px;width:48%;margin-top:12px"></div><div class="sk sk-line" style="width:70%;margin-top:14px"></div></div>
+  </div>
+  <div id="rowswrap" aria-busy="true">
+    <div class="sk sk-row" style="height:30px;width:100%"></div>
+    <div class="sk sk-row"></div><div class="sk sk-row"></div><div class="sk sk-row"></div><div class="sk sk-row"></div>
+  </div>
+
+  <h2>Did anything leave without a receipt?</h2>
+  <p class="lede">The opposite failure, and the one ledger-side checking structurally cannot see. Merit scans outbound USDC from its own settlement wallet and flags every transfer the published ledger does not explain.</p>
+  <div id="outflow"><div class="sk sk-line" style="width:70%"></div><div class="sk sk-line" style="width:52%"></div></div>
+
+  <h2>Read the memo inside a payment</h2>
+  <p class="lede">Merit's payouts go through Arc's predeployed <span class="mono">Memo</span> contract, so the verdict travels <em>inside</em> the transaction rather than beside it. Paste a payout's transaction hash — or a <span class="mono">memoId</span> to find it from chain logs alone — and this reads Arc directly, then re-derives every claim the memo makes about itself.</p>
+  <div class="card">
+    <form class="row" id="memoform">
+      <label for="memoq" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">Transaction hash or memoId</label>
+      <input type="text" id="memoq" placeholder="0x… transaction hash, or a bytes32 memoId" spellcheck="false" autocomplete="off">
+      <button class="go" type="submit" id="memogo">Read from Arc</button>
+    </form>
+    <div id="memoout"></div>
+    <p class="note">Arc's RPC caps a log query at 10,000 blocks (~86 minutes at Arc's ~0.5s blocks), so a <span class="mono">memoId</span> search covers a bounded recent window and says so. Nothing found in a window is never proof that nothing exists.</p>
+  </div>
+  <div id="err"></div>
+  </main>
+
+  <footer class="foot">Every number on this page is re-derived from Arc, not read back from Merit's own records. <a href="/proof.html" style="text-decoration:underline">The ledger being audited →</a></footer>
+</div>
+
+<script>
+(function(){
+  var statsEl=document.getElementById('stats'),rowsEl=document.getElementById('rowswrap'),outEl=document.getElementById('outflow'),errEl=document.getElementById('err');
+  var form=document.getElementById('memoform'),q=document.getElementById('memoq'),goBtn=document.getElementById('memogo'),memoOut=document.getElementById('memoout');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function usd(n){return '$'+Number(n||0).toFixed(6);}
+  function short(h){h=String(h||'');return h.length>16?h.slice(0,10)+'…'+h.slice(-6):h;}
+  function stat(k,v,d){return '<div class="stat"><div class="k">'+esc(k)+'</div><div class="v">'+v+'</div>'+(d?'<div class="d">'+d+'</div>':'')+'</div>';}
+
+  fetch('/api/reconcile?limit=25&blocks=20000').then(function(r){return r.json();}).then(function(p){
+    if(p.error) throw new Error(p.error);
+    var l=p.ledgerToChain||{}, explorer=(p.chain&&p.chain.explorer)||'';
+    var clean = (l.failed||0)===0;
+    statsEl.removeAttribute('aria-busy');
+    statsEl.innerHTML =
+      stat('Settlements re-read from Arc', (l.matched||0)+' <span class="muted" style="font-weight:600;font-size:20px;">/</span> '+(l.settlementsChecked||0),
+           (l.rowsChecked||0)+' published rows · '+(l.unreadable||0)+' not on-chain claims')
+      + stat('Contradicted by the chain', '<span class="'+(clean?'ok':'bad')+'">'+(l.failed||0)+'</span>',
+           clean?'no published settlement disagrees with Arc':'a published settlement disagrees with Arc')
+      + '<div class="stat"><div class="k">Ledger vs chain</div><div class="v sm">'+usd(l.claimedUsdc)+' <span class="muted" style="font-weight:600;">=</span> '+usd(l.onchainUsdc)+'</div><div class="d">'+(l.emitterCrossChecks||0)+' confirmed by BOTH Arc emitters</div></div>';
+
+    var rows=l.rows||[];
+    rowsEl.removeAttribute('aria-busy');
+    if(!rows.length){ rowsEl.innerHTML='<div class="err">No on-chain settlement has been published yet, so there is nothing to reconcile. This page will fill in as soon as a payout lands on Arc.</div>'; }
+    else {
+      var h='<div class="tblwrap"><table><thead><tr><th>Settlement</th><th>Ledger</th><th>Chain</th><th class="hide-sm">Both emitters</th><th></th></tr></thead><tbody>';
+      rows.forEach(function(r){
+        var chip = r.status==='match' ? '<span class="chip m">match</span>' : (r.status==='mismatch'||r.status==='reverted') ? '<span class="chip x">'+esc(r.status)+'</span>' : '<span class="chip n">'+esc(r.status)+'</span>';
+        h+='<tr><td>'+chip+'<div class="muted" style="font-size:12px;margin-top:3px;max-width:34ch;overflow-wrap:anywhere;">'+esc((r.ids||[r.id]).join(', '))+(r.ids&&r.ids.length>1?' <em>(one batched transaction)</em>':'')+'</div></td>'
+          +'<td class="mono">'+usd(r.claimedUsdc)+'</td>'
+          +'<td class="mono">'+(r.onchainUsdc==null?'<span class="muted">—</span>':usd(r.onchainUsdc))+'</td>'
+          +'<td class="hide-sm">'+(r.emittersAgree===true?'<span class="ok">agree</span>':r.emittersAgree===false?'<span class="muted">no cross-check</span>':'<span class="muted">—</span>')+'</td>'
+          +'<td>'+(/^0x[0-9a-fA-F]{64}$/.test(r.tx)?'<a class="lnk" href="'+esc(explorer)+'/tx/'+esc(r.tx)+'" target="_blank" rel="noopener">'+short(r.tx)+' ↗</a>':'<span class="muted mono" style="font-size:12px">'+esc(short(r.tx))+'</span>')+'</td></tr>';
+      });
+      rowsEl.innerHTML=h+'</tbody></table></div>';
+    }
+
+    var c=p.chainToLedger;
+    if(!c){ outEl.innerHTML='<div class="err">'+esc(p.outflowError||'the outflow scan did not run')+'</div>'; }
+    else {
+      var un=c.unexplainedTransfers||[];
+      var head='<div class="card"><div style="font-size:15px;font-weight:700;margin-bottom:4px;">'
+        + (c.unexplained===0 ? '<span class="ok">Every outbound transfer in this window is accounted for</span>' : '<span class="flag">'+c.unexplained+' outbound transfer'+(c.unexplained===1?'':'s')+' with no published receipt</span>')
+        + '</div><div class="muted" style="font-size:13px;">'
+        + c.transfersSeen+' outbound USDC transfers from '+esc(short(c.wallet))+' across blocks '+c.window.fromBlock+'–'+c.window.toBlock
+        + ' (~'+Number(c.window.approxHours).toFixed(1)+'h) · '+usd(c.explainedUsdc)+' of '+usd(c.totalUsdc)+' matched to a published row'
+        + (c.truncated?' · window truncated':'') + '</div>';
+      if(un.length){
+        head+='<p class="note" style="margin-top:10px">Merit settles citations from the same wallet it uses for Gateway deposits, gas relays and test funding, so a transfer here is <strong>not</strong> a discrepancy by itself — it simply is not a citation settlement carrying a receipt. Every one is listed anyway: the point of scanning the chain is that nothing outbound can stay hidden.</p>';
+        head+='<div class="tblwrap"><table style="margin-top:6px"><thead><tr><th>To</th><th>Amount</th><th class="hide-sm">Block</th><th></th></tr></thead><tbody>';
+        un.slice(-10).reverse().forEach(function(t){
+          head+='<tr><td class="mono" style="font-size:12px">'+esc(short(t.to))+'</td><td class="mono">'+usd(t.usdc)+'</td><td class="mono hide-sm">'+t.block+'</td><td><a class="lnk" href="'+esc(t.explorerUrl)+'" target="_blank" rel="noopener">'+short(t.tx)+' ↗</a></td></tr>';
+        });
+        head+='</tbody></table></div>';
+        if(un.length>10) head+='<p class="note">Showing the 10 most recent of '+un.length+'. <a href="/api/reconcile?limit=25&amp;blocks=20000" style="text-decoration:underline">The full scan is the raw JSON →</a></p>';
+      }
+      outEl.innerHTML=head+'</div>';
+    }
+  }).catch(function(e){
+    statsEl.removeAttribute('aria-busy'); rowsEl.removeAttribute('aria-busy');
+    statsEl.innerHTML=''; rowsEl.innerHTML='';
+    outEl.innerHTML='';
+    errEl.innerHTML='<div class="err">Could not reconcile against Arc right now — '+esc(e.message||'the RPC did not answer')+'. This page reads the chain live, so it is unavailable rather than approximate when Arc is unreachable.</div>';
+  });
+
+  function renderMemos(list, ctx){
+    if(!list.length) return '<div class="err">No Arc memo was found'+(ctx?' '+esc(ctx):'')+'.</div>';
+    return list.map(function(m){
+      var a=m.audit||{ok:null,checks:[]};
+      var head='<div style="margin-top:14px;padding-top:14px;border-top:1px solid #ECECEE;">'
+        +'<div style="font-weight:700;font-size:15px;">'+(a.ok===true?'<span class="ok">✓ this memo binds to its payment</span>':a.ok===false?'<span class="bad">✕ this memo does not check out</span>':'<span class="muted">memo</span>')+'</div>'
+        +'<div class="muted mono" style="font-size:12px;margin-top:3px;word-break:break-all;">memoId '+esc(m.memoId)+'</div>';
+      if(m.payload){
+        head+='<pre class="payload">'+esc(JSON.stringify(m.payload,null,2))+'</pre>';
+      } else if(m.text){
+        head+='<pre class="payload">'+esc(m.text)+'</pre><div class="note">This memo was written by another application, not by Merit.</div>';
+      }
+      (a.checks||[]).forEach(function(c){
+        head+='<div class="check"><span class="'+(c.ok?'ok':'bad')+'">'+(c.ok?'✓':'✕')+'</span><span><strong>'+esc(c.name)+'</strong><div class="m">'+esc(c.detail)+'</div></span></div>';
+      });
+      if(m.tx){ head+='<div style="margin-top:8px"><a class="lnk" href="'+esc(m.explorerUrl||'')+'" target="_blank" rel="noopener">'+short(m.tx)+' on Arcscan ↗</a></div>'; }
+      return head+'</div>';
+    }).join('');
+  }
+
+  form.addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var v=(q.value||'').trim();
+    if(!/^0x[0-9a-fA-F]{64}$/.test(v)){ memoOut.innerHTML='<div class="err">Enter a 0x-prefixed 32-byte value: either a transaction hash or a memoId.</div>'; return; }
+    goBtn.disabled=true; goBtn.textContent='Reading Arc…';
+    memoOut.innerHTML='<div class="sk sk-line" style="width:80%"></div><div class="sk sk-line" style="width:60%"></div>';
+    // A 32-byte value is ambiguous: try it as a transaction first, then as a memoId.
+    fetch('/api/memo?tx='+encodeURIComponent(v)).then(function(r){return r.json().then(function(b){return {status:r.status,body:b};});}).then(function(res){
+      if(res.status===200 && (res.body.memos||[]).length){
+        var t=res.body.transfers||{};
+        var senders=(t.erc20||[]).map(function(x){return x.from;});
+        var pre='<div style="font-size:13px;margin-top:12px;" class="muted">Transaction '+esc(short(v))+' · status '+esc(res.body.status)
+          +(senders.length?' · USDC <span class="mono">Transfer.from</span> = <span class="mono">'+esc(short(senders[0]))+'</span> (the operator wallet, preserved through the Memo wrapper)':'')+'</div>';
+        memoOut.innerHTML=pre+renderMemos(res.body.memos.map(function(m){return Object.assign({},m,{tx:v,explorerUrl:res.body.explorerUrl});}),'in that transaction');
+        return null;
+      }
+      return fetch('/api/memo?id='+encodeURIComponent(v)+'&blocks=10000').then(function(r){return r.json();}).then(function(f){
+        if(f.error){ memoOut.innerHTML='<div class="err">'+esc(f.error)+'</div>'; return; }
+        var w=f.window||{};
+        var pre='<div style="font-size:13px;margin-top:12px;" class="muted">Searched blocks '+w.fromBlock+'–'+w.toBlock+' ('+w.blocks+' blocks, ~'+Number(w.approxHours||0).toFixed(1)+'h) for memoId '+esc(short(v))+'.</div>';
+        memoOut.innerHTML=pre+renderMemos((f.memos||[]).map(function(m){return Object.assign({},m,{audit:null});}),'for that memoId in the searched window');
+      });
+    }).catch(function(e){
+      memoOut.innerHTML='<div class="err">Arc did not answer — '+esc(e.message||'network error')+'.</div>';
+    }).finally(function(){ goBtn.disabled=false; goBtn.textContent='Read from Arc'; });
+  });
+
+  // Deep-link support: /reconcile.html#0x… reads that payment straight away. Also on hashchange, so arriving
+  // at a second payment from an already-open page works the same as a fresh load.
+  function fromHash(){
+    if(!/^#0x[0-9a-fA-F]{64}$/.test(location.hash)) return;
+    q.value=location.hash.slice(1);
+    form.dispatchEvent(new Event('submit',{cancelable:true}));
+  }
+  window.addEventListener('hashchange',fromHash);
+  fromHash();
+})();
+</script>
+</body>
+</html>

@@ -34,6 +34,9 @@ export async function GET(req: Request) {
     ...balanceStatus(g.principal.id),
     depositTo: depositReady ? depositAddressFor(g.principal.id) : null,
     depositsEnabled: depositReady,
+    // Gas on Arc is USDC, so a wallet holding exactly what it means to spend cannot send it. The EIP-3009
+    // route removes that cold start: sign an authorization, Merit broadcasts it and pays the gas.
+    gaslessDeposit: depositReady ? { endpoint: "/api/relay", how: "GET /api/relay for the EIP-712 domain and types, sign TransferWithAuthorization, POST it back — you never send a transaction and need no gas" } : null,
     ...(depositReady ? {} : { note: "deposits are not configured on this deployment (MERIT_WALLET_SEED unset)" }),
     asset: "USDC",
     chain: "Arc testnet 5042002",

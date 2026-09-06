@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { normalizeDomain, verifyDomainClaim } from "@/lib/passport";
-import { claimCustody, custodyAddress, custodyByDomain, refreshCustodyFromMirror } from "@/lib/custody";
+import { claimCustody, claimCustodyBatch, custodyAddress, custodyByDomain, refreshCustodyFromMirror } from "@/lib/custody";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
@@ -51,18 +51,56 @@ export async function POST(req: Request) {
 
   const claims: Array<Record<string, unknown>> = [];
   let totalClaimed = 0;
+
+  // A domain usually holds more than one balance (the source, plus a `split:` entry per co-author). Pay them in
+  // ONE Arc transaction via Multicall3From — one gas fee, one explorer page, and every line still carrying its
+  // own memo. All-or-nothing, so a failure leaves every balance untouched and the caller can simply retry.
+  if (creators.length > 1) {
+    const batch = await claimCustodyBatch(creators.map((c) => c.id), passport.wallet);
+    if (batch && !("error" in batch)) {
+      return NextResponse.json({
+        domain: passport.domain,
+        wallet: passport.wallet,
+        totalClaimed: batch.total,
+        batched: true,
+        tx: batch.tx,
+        explorerUrl: batch.explorerUrl,
+        memoed: batch.memoed,
+        memoNote: batch.memoNote,
+        memoUrl: batch.memoed ? `/api/memo?tx=${batch.tx}` : null,
+        claims: batch.lines.map((l) => ({ id: l.id, name: l.name, ok: true, amount: l.amount, tx: batch.tx, explorerUrl: batch.explorerUrl, memoed: batch.memoed, memoId: l.memoId })),
+      });
+    }
+    // A batch that could not go (compliance, pre-flight, revert) falls through to the per-creator path, which
+    // reports each line's own outcome rather than failing the whole claim on one bad line.
+  }
+
   for (const c of creators) {
     const res = await claimCustody(c.id, passport.wallet);
     if ("error" in res) {
       claims.push({ id: c.id, name: c.name, ok: false, error: res.error });
     } else {
-      claims.push({ id: c.id, name: c.name, ok: true, amount: res.amount, tx: res.tx, explorerUrl: res.explorerUrl });
+      claims.push({
+        id: c.id,
+        name: c.name,
+        ok: true,
+        amount: res.amount,
+        tx: res.tx,
+        explorerUrl: res.explorerUrl,
+        // The Arc transaction memo written INSIDE the payment: `memoId` is the bytes32 anyone can use to look
+        // this disbursement up by `Memo` event and read which verified work it settled — no Merit server in the
+        // loop. `memoNote` is non-null only when the memo could NOT be written, and says why.
+        memoed: res.memoed,
+        memoId: res.memoId,
+        memoNote: res.memoNote,
+        memoUrl: res.memoed ? `/api/memo?tx=${res.tx}` : null,
+      });
       totalClaimed = r6(totalClaimed + res.amount);
     }
   }
   const anyOk = claims.some((c) => c.ok);
   return NextResponse.json(
-    { domain: passport.domain, wallet: passport.wallet, totalClaimed, claims },
+    { domain: passport.domain, wallet: passport.wallet, totalClaimed, batched: false, claims },
     { status: anyOk ? 200 : 502 },
   );
 }

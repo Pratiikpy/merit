@@ -270,7 +270,7 @@ async function releaseEscrow(
   // Accrue the worker's claimable balance (real, withdrawable on-chain — never an IOU).
   try {
     await refreshCustodyFromMirror();
-    accrueCustody(workerId, submission.worker, amount);
+    accrueCustody(workerId, submission.worker, amount, { verificationId });
   } catch {
     /* accrual is best-effort; the on-chain proof below still runs */
   }

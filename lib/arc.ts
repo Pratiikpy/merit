@@ -15,6 +15,16 @@ export const ARC = {
   reputationRegistry: "0x8004B663056A597Dffe9eCcC1965A193B7388713",
   validationRegistry: "0x8004Cb1BF31DAf7788923b405b754f57acEB4272",
   multicall3: "0xcA11bde05977b3631167028862bE2a173976CA11",
+  // Arc transaction extensions — predeployed contracts that route subcalls through the CallFrom precompile, so
+  // the ORIGINAL EOA stays `msg.sender` in each subcall (a USDC Transfer still reads `from = your wallet`, not
+  // the wrapper). `memo` attaches application metadata to a call and emits it as an event; `multicall3From`
+  // batches calls with the same sender preservation. Both verified deployed on Arc testnet (eth_getCode).
+  memo: "0x5294E9927c3306DcBaDb03fe70b92e01cCede505",
+  multicall3From: "0x522fAf9A91c41c443c66765030741e4AaCe147D0",
+  // Arc's native USDC system emitter (EIP-7708). It logs a Transfer for EVERY USDC movement at 18 decimals —
+  // including the ones behind the 6-decimal ERC-20 interface, so a single ERC-20 transfer() emits BOTH. Match on
+  // the emitter address or the same movement is counted twice, and never mix the two precisions.
+  systemTransferEmitter: "0xfffffffffffffffffffffffffffffffffffffffe",
 } as const;
 
 /** True when we should simulate the chain (no keys/funds needed). */

@@ -593,7 +593,7 @@ export async function runAgent(
           // can't spend from — HOLD the earnings in Merit custody, claimable on-chain once they prove domain
           // ownership (lib/custody + POST /api/claim). It still counts as released — they earned it.
           const held = round6(price * v.nano);
-          accrueCustody(s.id, s.name, held, { domain: s.domain });
+          accrueCustody(s.id, s.name, held, { domain: s.domain, runId });
           paid = held;
           settled = v.nano;
           onchain = false;

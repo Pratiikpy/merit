@@ -125,8 +125,19 @@
       var res=await fetch('/api/claim',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({domain:d})});
       var r=await res.json();
       if(!res.ok){cshow('<div class="err">'+esc(r.error||('claim failed ('+res.status+')'))+'</div>');return;}
-      var rows=(r.claims||[]).filter(function(c){return c.ok;}).map(function(c){return '<div class="kv"><span>'+esc(c.name)+'</span><span class="v">$'+Number(c.amount).toFixed(4)+' · <a href="'+esc(c.explorerUrl||'#')+'" target="_blank" rel="noopener">tx ↗</a></span></div>';}).join('');
-      cshow('<div class="ok"><h3>✓ Claimed $'+Number(r.totalClaimed).toFixed(4)+' to your wallet</h3><div class="kv"><span>wallet</span><span class="v">'+esc(r.wallet)+'</span></div>'+rows+'</div>');
+      var rows=(r.claims||[]).filter(function(c){return c.ok;}).map(function(c){
+        var memo = c.memoId ? ' · <a href="/reconcile.html#'+esc(c.tx||'')+'" target="_blank" rel="noopener">memo ↗</a>' : '';
+        return '<div class="kv"><span>'+esc(c.name)+'</span><span class="v">$'+Number(c.amount).toFixed(4)+' · <a href="'+esc(c.explorerUrl||'#')+'" target="_blank" rel="noopener">tx ↗</a>'+memo+'</span></div>';
+      }).join('');
+      // Two facts worth stating plainly, because they are what make this payment different from a bank transfer:
+      // a batched claim settles every balance in ONE Arc transaction, and each line carries an on-chain memo
+      // naming the verified work it paid for.
+      var extra = '';
+      if(r.batched) extra += '<div class="kv"><span>settled in</span><span class="v">one Arc transaction ('+(r.claims||[]).length+' balances, batched)</span></div>';
+      if((r.claims||[]).some(function(c){return c.memoed;})) extra += '<div class="kv"><span>on-chain memo</span><span class="v">each payment names the verifications behind it — <a href="/reconcile.html" target="_blank" rel="noopener">read it from Arc ↗</a></span></div>';
+      var note = (r.claims||[]).map(function(c){return c.memoNote;}).filter(Boolean)[0];
+      if(note) extra += '<div class="kv"><span>memo</span><span class="v">not written — '+esc(note)+'</span></div>';
+      cshow('<div class="ok"><h3>✓ Claimed $'+Number(r.totalClaimed).toFixed(4)+' to your wallet</h3><div class="kv"><span>wallet</span><span class="v">'+esc(r.wallet)+'</span></div>'+extra+rows+'</div>');
     }catch(e){cshow('<div class="err">Could not reach Merit.</div>');}
     finally{cg.disabled=false;cg.textContent='Check & claim';}
   }

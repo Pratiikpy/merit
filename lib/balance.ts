@@ -6,18 +6,16 @@
  * you $0 — $1.20 still yours." The unused remainder is withdrawable on-chain. No IOU: deposits are proven from
  * chain logs and withdrawals are real transfers; the off-chain ledger only accounts, it holds no keys itself.
  */
-import { createPublicClient, createWalletClient, encodeFunctionData, getAddress, http, parseEventLogs } from "viem";
+import { createPublicClient, getAddress, http, parseEventLogs } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { ARC, explorerTx, isStub, round6 } from "./arc";
 import { loadDocFresh, loadDocFromMirror, saveDoc } from "./store";
 import { deriveWallet, derivePrivateKey, walletSeedConfigured } from "./wallet";
 import { serialize } from "./locks";
+import { buildPayoutMemo, sendMemoedTransfer, type MemoRef } from "./memo";
 
 const USDC_TRANSFER_EVENT = [
   { type: "event", name: "Transfer", inputs: [{ indexed: true, name: "from", type: "address" }, { indexed: true, name: "to", type: "address" }, { indexed: false, name: "value", type: "uint256" }] },
-] as const;
-const ERC20_TRANSFER = [
-  { type: "function", name: "transfer", stateMutability: "nonpayable", inputs: [{ name: "to", type: "address" }, { name: "amount", type: "uint256" }], outputs: [{ type: "bool" }] },
 ] as const;
 
 export interface BalanceEntry {
@@ -29,6 +27,12 @@ export interface BalanceEntry {
   refusedNoCharge: number; // count of refused citations that cost nothing (the refund-to-balance story)
   wallet?: string; // last withdrawal destination
   depositTxs: string[]; // credited deposit tx hashes (idempotency — never double-credit)
+  /** Provenance of the funds: one ref per credited deposit (tx hash + the amount it credited). A withdrawal
+   *  returns the UNSPENT part of these, and its Arc transaction memo names them on chain. */
+  refs?: MemoRef[];
+  lastMemoId?: string; // the bytes32 memoId of the last on-chain withdrawal memo, when one was written
+  /** Every on-chain withdrawal made from this balance — the settlement rows the chain reconciler checks. */
+  withdrawals?: Array<{ tx: string; amount: number; to: string; at: string; memoId?: string; memoed: boolean }>;
   lastAt: string;
 }
 interface BalanceLog {
@@ -127,6 +131,8 @@ export async function creditDeposit(id: string, txHash: string): Promise<{ credi
       const e = entry(id);
       e.funded = round6(e.funded + amount);
       if (!e.depositTxs.includes(key)) e.depositTxs.push(key);
+      (e.refs ||= []).push({ v: key, a: amount, at: Date.now() });
+      if (e.refs.length > 200) e.refs.splice(0, e.refs.length - 200);
       e.lastAt = new Date().toISOString();
       log.credited[key] = id; // mark this tx globally credited
       persist();
@@ -216,7 +222,7 @@ export function noteRefused(id: string): void {
 /** Withdraw the unused balance on-chain: the principal's OWN derived deposit address → their wallet (real USDC
  *  transfer, signed with the Merit-derived key for that address). Only `available` moves; the spent portion (the
  *  fees Merit earned on verified citations) stays in the derived address. */
-export async function withdrawBalance(id: string, toWallet: string): Promise<{ tx: string; amount: number; explorerUrl: string } | { error: string; status: number }> {
+export async function withdrawBalance(id: string, toWallet: string): Promise<{ tx: string; amount: number; explorerUrl: string; memoed: boolean; memoId: string | null; memoNote: string | null } | { error: string; status: number }> {
   if (isStub()) return { error: "on-chain withdrawal is unavailable on this deployment (stub)", status: 503 };
   if (!walletSeedConfigured()) return { error: "withdrawals require MERIT_WALLET_SEED", status: 503 };
   let to: `0x${string}`;
@@ -237,30 +243,46 @@ export async function withdrawBalance(id: string, toWallet: string): Promise<{ t
     try {
       const account = privateKeyToAccount(derivePrivateKey(id)); // the principal's own deposit-address key
       const rpc = process.env.ARC_RPC_URL || ARC.rpcUrl;
-      const wallet = createWalletClient({ account, transport: http(rpc) });
       const pub = createPublicClient({ transport: http(rpc) });
       const atomic = BigInt(Math.round(amount * 1e6));
-      const hash = await wallet.sendTransaction({
-        to: ARC.usdc as `0x${string}`,
-        data: encodeFunctionData({ abi: ERC20_TRANSFER, functionName: "transfer", args: [to, atomic] }),
-        chain: null,
+      // The memo makes the refund self-explaining on chain: which deposits funded it, and the verified/refused
+      // split that decided how much of them survived. That split is the whole product claim — a refused
+      // citation costs nothing — so it belongs in the payment, not only on Merit's own status page.
+      const memo = buildPayoutMemo({
+        kind: "balance-withdrawal",
+        id,
+        amount,
+        refs: (e.refs || []).slice(),
+        note: `unspent prepaid balance: ${e.charges} verified citations burned $${round6(e.spent)}, ${e.refusedNoCharge} refused cost $0`,
       });
-      const rc = await pub.waitForTransactionReceipt({ hash });
+      const sent = await sendMemoedTransfer({ account, to, atomic, memo: { memoId: memo.memoId, memoData: memo.memoData } });
+      const rc = await pub.waitForTransactionReceipt({ hash: sent.hash });
       if (rc.status !== "success") {
         e.withdrawn = round6(e.withdrawn - amount); // roll back the reservation
         persist();
         return { error: "the USDC withdrawal reverted on-chain", status: 502 };
       }
       e.wallet = to;
+      if (sent.memoed) e.lastMemoId = sent.memoId || undefined;
       e.lastAt = new Date().toISOString();
+      const ws = (e.withdrawals ||= []);
+      ws.push({ tx: sent.hash, amount, to, at: e.lastAt, memoId: sent.memoId || undefined, memoed: sent.memoed });
+      if (ws.length > 100) ws.splice(0, ws.length - 100);
       persist();
-      return { tx: hash, amount, explorerUrl: explorerTx(hash) };
+      return { tx: sent.hash, amount, explorerUrl: explorerTx(sent.hash), memoed: sent.memoed, memoId: sent.memoId, memoNote: sent.fallbackReason };
     } catch (err) {
       e.withdrawn = round6(e.withdrawn - amount); // roll back the reservation on any failure
       persist();
       return { error: (err as Error).message.slice(0, 160), status: 502 };
     }
   });
+}
+
+/** Every on-chain withdrawal Merit has made from a prepaid balance, newest last. */
+export function allBalanceWithdrawals(): Array<{ id: string; tx: string; amount: number; to: string; at: string; memoId?: string; memoed: boolean }> {
+  const out: Array<{ id: string; tx: string; amount: number; to: string; at: string; memoId?: string; memoed: boolean }> = [];
+  for (const e of Object.values(load().entries)) for (const w of e.withdrawals || []) out.push({ id: e.id, ...w });
+  return out.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
 }
 
 /** Test seam. */

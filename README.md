@@ -120,6 +120,44 @@ Most Arc and agent-economy projects gate payment on identity, a reputation score
 execution. None gate on whether the work is correct. Gating settlement on citation correctness is
 where Merit differs.
 
+### The verdict travels inside the payment
+
+A signed verdict served by `onmerit.xyz` still asks a reader to trust `onmerit.xyz`. Arc's predeployed
+`Memo` contract removes that step. Merit wraps every payout in it, so the transaction itself carries
+which verified work it settled:
+
+- **`memoId`** is derived from the payout's own settlement digest — a `bytes32` anyone can query
+  `Memo` events by, with no Merit server in the loop.
+- **`memoData`** is compact JSON naming the `verificationId`s (or run id) behind the money, plus the
+  amount and a digest covering the full set even when the id list is truncated to fit.
+- **`callDataHash`** binds the memo to *that exact* `transfer(to, amount)` — a memo cannot be stapled
+  onto a different payment.
+- The **`CallFrom`** precompile preserves the operator EOA as `msg.sender`, so each creator's USDC
+  `Transfer.from` reads as Merit's wallet, never a wrapper contract.
+
+A domain claiming several balances (its source plus each co-author split) settles them in **one** Arc
+transaction via `Multicall3From`, all-or-nothing, each line carrying its own memo. Read any payment
+back at [`/reconcile.html`](https://onmerit.xyz/reconcile.html) or `GET /api/memo?tx=…`.
+
+### The ledger is audited against the chain
+
+`/proof` is Merit's account of what Merit settled. [`/reconcile.html`](https://onmerit.xyz/reconcile.html)
+is the audit of that account, run against Arc in both directions: every published settlement is re-read
+from chain logs and checked against **both** of Arc's USDC emitters — the 18-decimal native system log
+(EIP-7708) and the 6-decimal ERC-20 log — and a bounded scan of outbound USDC flags anything the ledger
+does not explain. Arc's RPC caps a log query at 10,000 blocks, so the scan always states the window it
+covered; a clean scan means "nothing unexplained in this window", never "nothing unexplained ever".
+
+### Funding without holding gas (EIP-3009)
+
+Gas on Arc is USDC, so a wallet holding exactly what it means to spend cannot spend it. `POST /api/relay`
+takes a signed `TransferWithAuthorization` and broadcasts it from Merit's relayer, which pays the gas —
+the payer signs and never sends a transaction. Verified end to end on Arc testnet with a wallet whose
+nonce stayed at zero across the transfer. Replay is blocked by `authorizationState`, and a redirected or
+over-value authorization is refused before any gas is spent.
+
+Run the whole layer against real Arc testnet USDC with `npm run verify-arc-native`.
+
 ### Deployed contracts
 
 Arc testnet, chain `5042002`:
@@ -427,6 +465,9 @@ Every route an agent or integrator can call, same-origin, no SDK required.
 | `/api/card/[id]` | GET | one receipt plus its offline-recoverable `signed` object |
 | `/api/reputation/[id]` | GET | an agent's or creator's reputation, recomputed from chain |
 | `/api/benchmark` · `/api/honesty` | GET | the gold-set benchmark and the Citation Honesty Index |
+| `/api/memo` | GET | read the Arc memo inside a payment (`?tx=`) or find payments by `memoId` (`?id=`) |
+| `/api/reconcile` | GET | the published ledger re-checked against Arc, both directions |
+| `/api/relay` | GET · POST | the EIP-712 domain to sign, and gasless (EIP-3009) funding of a prepaid balance |
 | `/.well-known/x402` | GET | service discovery for the paid endpoints |
 
 ## MCP integration
@@ -486,6 +527,9 @@ Two tools, dependency-free stdio JSON-RPC, no SDK:
 Arc testnet, chain `5042002`. USDC
 [`0x3600…0000`](https://testnet.arcscan.app/address/0x3600000000000000000000000000000000000000).
 ERC-8004 registries: Identity `0x8004A8…BD9e`, Reputation `0x8004B6…8713`, Validation `0x8004Cb…4272`.
+Arc transaction extensions: `Memo` [`0x5294…d505`](https://testnet.arcscan.app/address/0x5294E9927c3306DcBaDb03fe70b92e01cCede505),
+`Multicall3From` [`0x522f…47D0`](https://testnet.arcscan.app/address/0x522fAf9A91c41c443c66765030741e4AaCe147D0);
+native USDC system emitter (EIP-7708) `0xffff…fffe`.
 Agent payments, creator settlements, identity mints, feedback, and validation writes are all verifiable
 on [`testnet.arcscan.app`](https://testnet.arcscan.app). Built on `circlefin/arc-nanopayments` and
 `arc-escrow`.
