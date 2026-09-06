@@ -6,6 +6,7 @@ import { effectivePrice } from "@/lib/pricing";
 import { isVerifyError, verifyCitation } from "@/lib/verify/engine";
 import { cardFromVerdict, refreshCardsFromMirror, saveCard } from "@/lib/cards";
 import { mintFulfillment } from "@/lib/fulfillment";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
   const out = await verifyCitation(claim, content, { useNLI: true, useJudge: true });
   if (isVerifyError(out)) return NextResponse.json({ error: out.error, ...(out.numericOnly ? { numericOnly: true } : {}) }, { status: out.status });
   const v = out.verdict;
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
 
   await refreshCardsFromMirror().catch(() => {});
   const card = saveCard(

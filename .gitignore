@@ -116,3 +116,6 @@ personas.env
 
 # rendered from docs/ARCHITECTURE.md by scripts/build-diagrams.mjs
 public/diagrams/*.mmd
+
+# AI pentest run artifacts (produced by `strix`; findings are triaged into docs/, not committed raw)
+strix_runs/

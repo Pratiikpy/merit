@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { authGate, refreshAuthFromMirror } from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { scoreEndpoint, listScorecards, leaderboard, getScorecard, scorecardCount, refreshScorecardsFromMirror } from "@/lib/scorecard";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
   await refreshScorecardsFromMirror().catch(() => {});
   const sc = await scoreEndpoint({ url, claim, maxPriceUsdc: maxPrice, allowPay });
 
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
   return NextResponse.json({
     scorecard: sc,
     shareUrl: `${origin}/scorecard.html?id=${sc.id}`,

@@ -17,6 +17,7 @@ import { cappedDepth, depthLayers, effectivePrice } from "@/lib/pricing";
 import { isStub, round6 } from "@/lib/arc";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { randomBytes } from "node:crypto";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -184,7 +185,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ handle: string
     }),
   );
 
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
   const receiptUrl = `${origin}/v/${card.id}`;
 
   // Emit a SIGNED, verdict-carrying webhook so an integrator reacts to WHY money did or didn't move. Public

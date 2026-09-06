@@ -1,6 +1,7 @@
 import { chainLabel } from "@/lib/arc";
 import { NextResponse } from "next/server";
 import { verifyTiers } from "@/lib/pricing";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 
@@ -8,7 +9,7 @@ export const runtime = "nodejs";
 // DEPTH (numeric screen < NLI < full adversarial judge), never with retrieval. An agent reads this, picks a
 // depth-vs-cost tier, then calls the free/metered/prepaid verify endpoints with { depth }.
 export async function GET(req: Request) {
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
   return NextResponse.json(
     {
       schema: "merit.pricing/v1",

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { authGate, refreshAuthFromMirror } from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { createMarket, resolveMarket, listMarkets, getMarket, marketStats, refreshMarketsFromMirror, marketOnchainEnabled } from "@/lib/market";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
     const canSeed = gate.ok && !!gate.principal;
     const res = await createMarket({ claim: body.claim || "", source: body.source || "", seedSide: canSeed ? body.seedSide : undefined, seedUsdc: canSeed ? body.seedUsdc : 0 });
     if ("error" in res) return NextResponse.json({ error: res.error }, { status: res.status });
-    const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+    const origin = publicOrigin(req);
     return NextResponse.json({
       market: res.market,
       shareUrl: `${origin}/market.html?id=${res.market.id}`,

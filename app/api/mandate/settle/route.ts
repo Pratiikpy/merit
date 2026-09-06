@@ -6,6 +6,7 @@ import { cardFromVerdict, refreshCardsFromMirror, saveCard } from "@/lib/cards";
 import { recordAuditVerdict, refreshAuditFromMirror } from "@/lib/audit";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { round6 } from "@/lib/arc";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -87,7 +88,7 @@ export async function POST(req: Request) {
   await refreshCardsFromMirror().catch(() => {});
   // A VERIFY card (the verdict receipt) — never a settlement card with paidUsdc, because no USDC moved here.
   const card = saveCard(cardFromVerdict(v, { kind: "verify", source, createdAt: new Date().toISOString() }));
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
 
   return NextResponse.json({
     authorized: true,

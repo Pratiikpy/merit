@@ -9,6 +9,7 @@ import { recordSettlement } from "@/lib/history";
 import { cardFromVerdict, refreshCardsFromMirror, saveCard } from "@/lib/cards";
 import { mintFulfillment, type FulfillmentCredential } from "@/lib/fulfillment";
 import { round6 } from "@/lib/arc";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
   if (!sources.length) return NextResponse.json({ error: "no buyable sources are indexed yet" }, { status: 404 });
   const ranked = rankCandidates(sources); // best verified-quality-per-dollar first
   const byId = new Map(sources.map((s) => [s.id, s]));
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
 
   const compared: Array<{ source: string; price: number; verifiedQuality: number; valuePerDollar: number; verdict: string; verificationId?: string }> = [];
   let bought: { source: string; price: number; verdict: string; verificationId?: string; receiptId: string; receiptUrl: string } | null = null;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ARC, chainLabel } from "@/lib/arc";
 import { verifyDepthPrice } from "@/lib/pricing";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic";
  * 402 challenge quotes, so a buyer can budget before it ever sends a request.
  */
 export async function GET(req: Request) {
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
   const cvoPrice = verifyDepthPrice("full");
   const payTo = process.env.MERIT_CVO_WALLET || process.env.BUYER_ADDRESS || "";
 

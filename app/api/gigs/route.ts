@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { authGate, refreshAuthFromMirror } from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { postGig, submitToGig, cancelGig, listGigs, getGig, gigStats, refreshGigsFromMirror } from "@/lib/gigs";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
   if (action === "post") {
     const res = postGig({ title: body.title || "", brief: body.brief || "", requirements: body.requirements, bountyUsdc: Number(body.bountyUsdc), poster: (body.poster || gate.principal?.name || "").trim() });
     if ("error" in res) return NextResponse.json({ error: res.error }, { status: res.status });
-    const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+    const origin = publicOrigin(req);
     return NextResponse.json({ gig: res.gig, shareUrl: `${origin}/gigs.html?id=${res.gig.id}`, note: "Post is live. A worker submits a deliverable; Merit's real grader scores it against the requirements and releases the bounty only if it passes. In this demo Merit custodies the escrow (release = a real claimable payout + an on-chain gate proof); the ERC-8183 MeritJob path lets a real poster fund their own escrow." });
   }
 

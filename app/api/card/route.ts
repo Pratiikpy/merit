@@ -6,6 +6,7 @@ import { extractSourceFromUrl } from "@/lib/extract";
 import { cardFromVerdict, listCards, refreshCardsFromMirror, saveCard } from "@/lib/cards";
 import { recordAuditVerdict, refreshAuditFromMirror } from "@/lib/audit";
 import { checkChallengeLimit } from "@/lib/ratelimit";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -70,7 +71,7 @@ export async function POST(req: Request) {
   await refreshCardsFromMirror().catch(() => {});
   const card = saveCard(cardFromVerdict(v, { kind: "verify", source, sourceUrl, createdAt: new Date().toISOString() }));
 
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
   const receiptUrl = `${origin}/v/${card.id}`;
 
   // Signed, verdict-carrying webhook — an integrator learns a citation was machine-verified SUPPORTED/REFUSED

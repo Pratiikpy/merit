@@ -4,6 +4,7 @@ import { verifyCitation, isVerifyError } from "@/lib/verify/engine";
 import { verifyWithCache, refreshVcacheFromMirror } from "@/lib/vcache";
 import { cardFromVerdict, refreshCardsFromMirror, saveCard } from "@/lib/cards";
 import { recordAuditVerdict, refreshAuditFromMirror } from "@/lib/audit";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,7 +48,7 @@ async function handler(req: NextRequest): Promise<NextResponse> {
   // verdict — the "pay and get the signed receipt inline" the metered oracle is meant to deliver.
   await refreshCardsFromMirror().catch(() => {});
   const card = saveCard(cardFromVerdict(v, { kind: "verify", source, createdAt: new Date().toISOString() }));
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
   return NextResponse.json({
     ...v,
     paid: true,

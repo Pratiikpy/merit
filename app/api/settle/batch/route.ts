@@ -6,6 +6,7 @@ import { effectivePrice } from "@/lib/pricing";
 import { refreshCustodyFromMirror } from "@/lib/custody";
 import { refreshCardsFromMirror } from "@/lib/cards";
 import { settleVerifiedBatch, summarize, type BatchItemResolved, type BatchLine } from "@/lib/netsettle";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
   await refreshCardsFromMirror().catch(() => {});
   const result = await settleVerifiedBatch(resolved);
 
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
   const lines = [...result.lines, ...preLines].map((l) => ({ ...l, receiptUrl: l.receiptId ? `${origin}/v/${l.receiptId}` : undefined }));
   const totals = summarize(lines);
 

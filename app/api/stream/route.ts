@@ -6,6 +6,7 @@ import { available, balanceStatus, chargeVerified, depositAddressFor, noteRefuse
 import { cardFromVerdict, refreshCardsFromMirror, saveCard } from "@/lib/cards";
 import { recordAuditVerdict, refreshAuditFromMirror } from "@/lib/audit";
 import { openStream, getStream, recordPass, recordFail, rollbackTick, closeStream, streamView, listStreams, refreshStreamsFromMirror } from "@/lib/stream";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -105,7 +106,7 @@ export async function POST(req: Request) {
     }
     await refreshCardsFromMirror().catch(() => {});
     const card = saveCard(cardFromVerdict(v, { kind: "verify", source, depth: "nli", createdAt: new Date().toISOString() }));
-    const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+    const origin = publicOrigin(req);
 
     if (v.verdict === "SUPPORTED") {
       // recordPass is the atomic cap gate; then charge the balance; roll back + halt if the balance raced empty.

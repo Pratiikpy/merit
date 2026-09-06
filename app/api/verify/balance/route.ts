@@ -8,6 +8,7 @@ import { cardFromVerdict, refreshCardsFromMirror, saveCard } from "@/lib/cards";
 import { recordAuditVerdict, refreshAuditFromMirror } from "@/lib/audit";
 import { asDepth, depthLayers, verifyDepthPrice } from "@/lib/pricing";
 import { round6 } from "@/lib/arc";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -96,7 +97,7 @@ export async function POST(req: Request) {
   }
   await refreshCardsFromMirror().catch(() => {});
   const card = saveCard(cardFromVerdict(v, { kind: "verify", source, depth, createdAt: new Date().toISOString() }));
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
   const bal = balanceStatus(pid);
 
   return NextResponse.json({

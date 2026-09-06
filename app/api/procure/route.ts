@@ -3,6 +3,7 @@ import { authGate , refreshAuthFromMirror} from "@/lib/auth";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { procure } from "@/lib/procure";
 import { cardFromVerdict, refreshCardsFromMirror, saveCard } from "@/lib/cards";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
 
   await refreshCardsFromMirror().catch(() => {});
   const card = saveCard(cardFromVerdict(result.verdictObj, { kind: "verify", source: result.content, sourceUrl: body.url, sourceName: result.host, createdAt: new Date().toISOString() }));
-  const origin = process.env.MERIT_ORIGIN || new URL(req.url).origin;
+  const origin = publicOrigin(req);
 
   return NextResponse.json({
     host: result.host,

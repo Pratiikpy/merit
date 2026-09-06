@@ -43,6 +43,8 @@ recompute without trusting a Merit server.
 > Anyone can send money. Merit decides who earned it. Settlement is gated on whether the cited
 > work is correct — the check most agent-payment stacks skip.
 
+**[ETHOnline 2026 · Arc submission →](SUBMISSION.md)** — which prizes, and the evidence for each.
+
 **[Architecture diagram →](docs/ARCHITECTURE.md)** · **[live](https://www.onmerit.xyz/architecture.html)** — the system, the money path, the verification engine, and where every Circle and Arc product is used.
 
 ## Contents
