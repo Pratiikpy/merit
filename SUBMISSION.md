@@ -111,7 +111,7 @@ only when an oracle says the delivered work was correct — plus:
 | **Functional MVP — frontend** | https://www.onmerit.xyz — 22 pages. Try the hero verifier, [`/verify.html`](https://www.onmerit.xyz/verify.html), [`/break.html`](https://www.onmerit.xyz/break.html) (try to fool it), [`/proof.html`](https://www.onmerit.xyz/proof.html), [`/reconcile.html`](https://www.onmerit.xyz/reconcile.html). |
 | **Functional MVP — backend** | 73 API routes; the contract is at [`/api/openapi`](https://www.onmerit.xyz/api/openapi). |
 | **Architecture diagram** | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system, money path, verification engine, network configuration. [Rendered](https://www.onmerit.xyz/architecture.html). |
-| **Video demonstration** | https://youtu.be/MuV-c3yaQwY |
+| **Video demonstration** | https://youtu.be/MuV-c3yaQwY — covers the core loop: verify a citation, refuse a bad one, settle USDC on Arc. Recorded before the Arc-native settlement layer landed, so the on-chain memo, the chain reconciliation and the gasless relay are best seen live at [`/reconcile.html`](https://www.onmerit.xyz/reconcile.html) and [`/architecture.html`](https://www.onmerit.xyz/architecture.html). |
 | **Documentation** | [`README.md`](README.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`BENCHMARK.md`](BENCHMARK.md), [`docs/NEXT-BUILD.md`](docs/NEXT-BUILD.md), [`SECURITY.md`](SECURITY.md) |
 | **GitHub repo** | https://github.com/Pratiikpy/merit |
 
