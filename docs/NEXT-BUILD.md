@@ -4,7 +4,7 @@ Four Arc primitives Merit was not using. All four are now shipped, and each was 
 Arc testnet with real (testnet) USDC rather than by reading the docs. Reproduce the whole thing with:
 
 ```
-npm run verify-arc-native            # 30 checks, real payouts, real chain reads
+npm run verify-arc-native            # 32 checks, real payouts, real chain reads
 ```
 
 Merit already used: x402, ERC-8004 (all three registries), ERC-8183 + hook-gated escrow, Circle Gateway,
@@ -107,14 +107,14 @@ The relay costs Merit ~0.0023 USDC of gas per transfer, reported in the response
 
 ## What was verified, and what was not
 
-Verified on Arc testnet on 2026-09-06, 30/30 checks (`npm run verify-arc-native`): batched claim through the
+Verified on Arc testnet on 2026-09-06, 32/32 checks (`npm run verify-arc-native`): batched claim through the
 real `POST /api/claim` route with a real domain passport; the payee's real USDC balance rising by exactly the
 claimed amount; both memos auditing clean; sender preservation through two wrappers; both emitters agreeing;
 memoId lookup from chain logs; the single-claim path; reconciliation in both directions; gasless funding with
 a zero-nonce payer, plus replay, redirect, over-value and expiry rejections.
 
-Also green: 617 unit tests, 30 Playwright checks across 5 viewports, 0 axe violations across all 19 public
-pages.
+Also green: 659 unit tests, 50 Playwright checks across 5 viewports, and 0 axe violations across the 20
+public pages the accessibility sweep covers.
 
 **Not covered.** Arc mainnet (this is testnet only). The Circle DCW payout path is not memoed — it is a
 smart-contract wallet, which `CallFrom` rejects by design; that path falls back to a plain transfer and says

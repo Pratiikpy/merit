@@ -129,7 +129,7 @@ only when an oracle says the delivered work was correct — plus:
    every published settlement from Arc, cross-checks both USDC emitters, and scans for outbound USDC the ledger
    does not explain.
 5. **Reproduce the benchmark.** `npm run bench-judge` — 275 adversarial cases, 14 failure modes.
-6. **Run the Arc-native proof.** `npm run verify-arc-native` — 30 checks against real testnet USDC.
+6. **Run the Arc-native proof.** `npm run verify-arc-native` — 32 checks against real testnet USDC.
 7. **Buy a verification as an outside agent.** `npm run verify-x402-buyer` — reads the 402 the way a generic
    x402 client does, settles the toll over Circle Gateway from a wallet independent of the payee, and asserts
    the payload is the signed verdict that was sold. 12/12 against production, with a real 0.005 USDC
@@ -141,10 +141,10 @@ only when an oracle says the delivered work was correct — plus:
 
 | | |
 |---|---|
-| Unit tests | **641 passing** (81 files) |
+| Unit tests | **659 passing** (83 files) |
 | Browser E2E | **50 passing** across 5 viewports, run against the deployed site |
 | Accessibility | **0 axe violations** (WCAG 2.1 A/AA) across all public pages |
-| Arc-native settlement | **30/30** against real Arc testnet USDC (`npm run verify-arc-native`) |
+| Arc-native settlement | **32/32** against real Arc testnet USDC (`npm run verify-arc-native`) |
 | Gasless relay on production | **9/9**, including a payer whose nonce never left 0 |
 | x402 buyer against production | **12/12** — an independent wallet paid 0.005 USDC over Circle Gateway and received a signed verdict |
 | API sweep against production | **58 pass / 0 warn / 0 fail** — every route's happy path and negative statuses, IDOR probes, offline signature recovery, audit hash-chain |
