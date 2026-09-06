@@ -46,6 +46,10 @@ a shell and let it run `circle services pay`. Two concrete things were fixed and
   Merit's own buyer settled fine and the gap stayed invisible — but the x402 protocol carries the requirements
   in the **body**, which is what a generic client reads. Found by inspecting the live response; fixed to emit
   both; regression-tested in `tests/x402-challenge.test.ts`.
+- **Proven, not asserted.** `npm run verify-x402-buyer` pays the live endpoint from a wallet that is *not* the
+  payee — the way an outside agent would — and checks the deliverable is the signed verdict that was sold.
+  12/12 against production. (Paying from the payee's own wallet is rejected by Circle as a `self_transfer`,
+  which is why the buyer has to be independent, and why this is a real test rather than Merit paying itself.)
 - **An OpenAPI spec and a marketplace-shaped discovery document**, which are Circle's stated prerequisites for
   an Agent Marketplace listing. `/api/openapi` is generated from live configuration — price, chain and payee —
   so it cannot drift from the service. `/.well-known/x402` now also publishes the Discovery API `items[]`
@@ -117,6 +121,10 @@ only when an oracle says the delivered work was correct — plus:
    does not explain.
 5. **Reproduce the benchmark.** `npm run bench-judge` — 275 adversarial cases, 14 failure modes.
 6. **Run the Arc-native proof.** `npm run verify-arc-native` — 30 checks against real testnet USDC.
+7. **Buy a verification as an outside agent.** `npm run verify-x402-buyer` — reads the 402 the way a generic
+   x402 client does, settles the toll over Circle Gateway from a wallet independent of the payee, and asserts
+   the payload is the signed verdict that was sold. 12/12 against production, with a real 0.005 USDC
+   settlement.
 
 ---
 
@@ -129,6 +137,7 @@ only when an oracle says the delivered work was correct — plus:
 | Accessibility | **0 axe violations** (WCAG 2.1 A/AA) across all public pages |
 | Arc-native settlement | **30/30** against real Arc testnet USDC (`npm run verify-arc-native`) |
 | Gasless relay on production | **9/9**, including a payer whose nonce never left 0 |
+| x402 buyer against production | **12/12** — an independent wallet paid 0.005 USDC over Circle Gateway and received a signed verdict |
 | Adversarial benchmark | **100% recall**, 90.4% precision, 94.9% F1 over 275 cases |
 
 **Not covered, stated plainly:** Arc mainnet (not published — testnet only). Merit is **not yet listed** on
