@@ -36,7 +36,7 @@ nothing**, and the proof of that decision travels *inside* the payment as an on-
 | **Nanopayments** | Circle Gateway batched nanopayments via `@circle-fin/x402-batching`, both directions — Merit is a **seller** (`lib/seller.ts`) and a **buyer** (`lib/pay.ts`). |
 | **Circle Wallets** | Circle Developer-Controlled Wallets for the KMS-custodied payout wallet (`circle-dcw/`, `lib/wallet.ts`) — no plaintext key on the server. |
 | **Paymaster-class gas sponsorship** | On Arc, gas *is* USDC, so a wallet holding exactly what it means to spend cannot spend it. `POST /api/relay` takes a signed EIP-3009 `TransferWithAuthorization` and broadcasts it, paying the gas: **verified on production with a payer whose transaction count stayed at 0.** `lib/relay.ts` |
-| **Risk management** | Circle Compliance Engine KYT + denylist screen before any payout (**fails closed**), transaction simulation pre-flight (fails open), per-principal budget caps, spend-velocity auto-abort and a kill switch. |
+| **Risk management** | Circle Compliance Engine KYT + denylist screen before any payout (**fails closed**), transaction simulation pre-flight (fails open), per-principal budget caps, spend-velocity auto-abort and a kill switch. The gasless relay is separately hardened against gas-griefing — see below. |
 
 **Agent Stack compatibility, done as engineering rather than a claim.** Circle's six starter kits give an agent
 a shell and let it run `circle services pay`. Two concrete things were fixed and built so that path works:
@@ -54,6 +54,15 @@ a shell and let it run `circle services pay`. Two concrete things were fixed and
   an Agent Marketplace listing. `/api/openapi` is generated from live configuration — price, chain and payee —
   so it cannot drift from the service. `/.well-known/x402` now also publishes the Discovery API `items[]`
   shape, listing only genuinely x402-priced endpoints.
+
+**Risk work is adversarial, not decorative.** The gasless relay is asymmetric by construction: the payer
+spends nothing and Merit spends real gas (~0.0023 USDC per relay, measured). As first written it had no rate
+limit, no minimum and no destination restriction — and a Merit API key is free from self-serve onboarding — so
+anyone could mint a key and drain the relayer one dust transfer at a time, moving $0.000001 for every $0.0023
+of ours. Found by reviewing the route against every other money-touching route, all of which were rate-limited
+while this one was not. Three guards now, cheapest first: a floor an order of magnitude above the fee, a
+destination Merit can actually credit, and the same rate limit the rest carry — 10 unit tests plus 32/32
+against real Arc testnet USDC.
 
 ### 2 · Launch on Arc Testnet & Push to Mainnet
 
@@ -138,6 +147,8 @@ only when an oracle says the delivered work was correct — plus:
 | Arc-native settlement | **30/30** against real Arc testnet USDC (`npm run verify-arc-native`) |
 | Gasless relay on production | **9/9**, including a payer whose nonce never left 0 |
 | x402 buyer against production | **12/12** — an independent wallet paid 0.005 USDC over Circle Gateway and received a signed verdict |
+| API sweep against production | **58 pass / 0 warn / 0 fail** — every route's happy path and negative statuses, IDOR probes, offline signature recovery, audit hash-chain |
+| Autonomous pentest (Strix) | **No vulnerability found in what it covered** — semgrep across 536 rules / 381 files, plus prompt-injection of the payment verdict, hardcoded keys, command injection, path traversal and committed secrets each explicitly ruled out. The run did **not** complete (it exhausted its model budget), so this is coverage of those areas, not a clean bill of health for the whole codebase. |
 | Adversarial benchmark | **100% recall**, 90.4% precision, 94.9% F1 over 275 cases |
 
 **Not covered, stated plainly:** Arc mainnet (not published — testnet only). Merit is **not yet listed** on
