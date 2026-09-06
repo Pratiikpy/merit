@@ -136,9 +136,23 @@
            clean?'no published settlement disagrees with Arc':'a published settlement disagrees with Arc')
       + '<div class="stat"><div class="k">Ledger vs chain</div><div class="v sm">'+usd(l.claimedUsdc)+' <span class="muted" style="font-weight:600;">=</span> '+usd(l.onchainUsdc)+'</div><div class="d">'+(l.emitterCrossChecks||0)+' confirmed by BOTH Arc emitters</div></div>';
 
+    // What this audit cannot check line by line, and why — stated before the table, so the counts above are
+    // never read as the whole ledger.
+    var nc=p.notChainCheckable||{}, gw=nc.gatewayBatched||{}, ac=nc.custodyAccruals||{};
+    var caveats=[];
+    if(gw.count) caveats.push('<strong>'+gw.count+'</strong> nanopayments worth '+usd(gw.usdc)+' were '+esc(gw.why||'batched'));
+    if(ac.count) caveats.push('<strong>'+ac.count+'</strong> settlements worth '+usd(ac.usdc)+' are '+esc(ac.why||'accruals'));
+
     var rows=l.rows||[];
     rowsEl.removeAttribute('aria-busy');
-    if(!rows.length){ rowsEl.innerHTML='<div class="err">No on-chain settlement has been published yet, so there is nothing to reconcile. This page will fill in as soon as a payout lands on Arc.</div>'; }
+    if(!rows.length){
+      var why = caveats.length
+        ? '<div class="err"><strong>Nothing here is reconcilable line by line yet — and that is a fact about how these settlements were made, not a gap.</strong><ul style="margin:10px 0 0 18px;padding:0;">'
+          + caveats.map(function(c){return '<li style="margin-bottom:6px">'+c+'</li>';}).join('')
+          + '</ul><p style="margin:10px 0 0">A direct payout — a creator claiming custody, or a prepaid balance withdrawal — carries a real transaction hash and appears here the moment one happens. The outflow scan below still covers every real USDC movement from the settlement wallet regardless.</p></div>'
+        : '<div class="err">No on-chain settlement has been published yet, so there is nothing to reconcile. This page will fill in as soon as a payout lands on Arc.</div>';
+      rowsEl.innerHTML=why;
+    }
     else {
       var h='<div class="tblwrap"><table><thead><tr><th>Settlement</th><th>Ledger</th><th>Chain</th><th class="hide-sm">Both emitters</th><th></th></tr></thead><tbody>';
       rows.forEach(function(r){
@@ -149,7 +163,8 @@
           +'<td class="hide-sm">'+(r.emittersAgree===true?'<span class="ok">agree</span>':r.emittersAgree===false?'<span class="muted">no cross-check</span>':'<span class="muted">—</span>')+'</td>'
           +'<td>'+(/^0x[0-9a-fA-F]{64}$/.test(r.tx)?'<a class="lnk" href="'+esc(explorer)+'/tx/'+esc(r.tx)+'" target="_blank" rel="noopener">'+short(r.tx)+' ↗</a>':'<span class="muted mono" style="font-size:12px">'+esc(short(r.tx))+'</span>')+'</td></tr>';
       });
-      rowsEl.innerHTML=h+'</tbody></table></div>';
+      rowsEl.innerHTML=h+'</tbody></table></div>'
+        + (caveats.length ? '<p class="note">Not shown above, because the chain cannot check them line by line: '+caveats.join('; ')+'.</p>' : '');
     }
 
     var c=p.chainToLedger;

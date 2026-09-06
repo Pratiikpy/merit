@@ -36,13 +36,31 @@ export async function GET(req: Request) {
   }
   await Promise.all([refreshCardsFromMirror(), refreshCustodyFromMirror(), refreshBalanceFromMirror()].map((p) => p.catch(() => {})));
 
-  // Everything Merit has published that claims real USDC moved on Arc, from all three settlement surfaces.
+  // Everything Merit has published that moved money, classified by whether the chain can check it.
+  //
+  // Two settlement shapes exist and conflating them would misreport both. A direct payout carries a real
+  // transaction hash and is reconcilable line by line. A nanopayment settled through Circle Gateway's
+  // batching carries a TRANSFER ID — the batch lands on chain later, under a hash Merit never sees — so it
+  // cannot be re-read from a receipt. Those are counted and disclosed here rather than dropped, because a
+  // ledger audit that silently omits most of the ledger is not an audit.
   const rows: LedgerClaim[] = [];
+  let gatewayCount = 0;
+  let gatewayUsdc = 0;
+  let accrualCount = 0;
+  let accrualUsdc = 0;
   for (const c of listCards(500)) {
-    if (!c.tx || !/^0x[0-9a-fA-F]{64}$/.test(c.tx)) continue; // Gateway transfer-ids and accruals aren't txs
-    if (!c.explorerUrl) continue; // a card without an explorer link never claimed to be on-chain
     if (!(typeof c.paidUsdc === "number" && c.paidUsdc > 0)) continue;
-    rows.push({ id: c.id, tx: c.tx, usdc: c.paidUsdc });
+    const isTx = !!c.tx && /^0x[0-9a-fA-F]{64}$/.test(c.tx) && !!c.explorerUrl;
+    if (isTx) {
+      rows.push({ id: c.id, tx: c.tx as string, usdc: c.paidUsdc });
+    } else if (c.custody) {
+      // A custody accrual moved no USDC yet — it becomes on-chain only when the creator claims it.
+      accrualCount += 1;
+      accrualUsdc = round6(accrualUsdc + c.paidUsdc);
+    } else {
+      gatewayCount += 1;
+      gatewayUsdc = round6(gatewayUsdc + c.paidUsdc);
+    }
   }
   for (const p of allCustodyPayouts()) rows.push({ id: `custody:${p.id}`, tx: p.tx, usdc: p.amount, to: p.to });
   for (const w of allBalanceWithdrawals()) rows.push({ id: `withdraw:${w.id}`, tx: w.tx, usdc: w.amount, to: w.to });
@@ -89,6 +107,12 @@ export async function GET(req: Request) {
       // Both Arc emitters agreeing is an independent second witness to every row, not a restatement of the first.
       emitterCrossChecks: checked.filter((c) => c.emittersAgree === true).length,
       rows: checked,
+    },
+    // The published settlements this audit CANNOT check line by line, and why. Stated so the counts above are
+    // never mistaken for the whole ledger.
+    notChainCheckable: {
+      gatewayBatched: { count: gatewayCount, usdc: gatewayUsdc, why: "settled through Circle Gateway batching, which returns a transfer id; the batch lands on chain later under a hash Merit never observes" },
+      custodyAccruals: { count: accrualCount, usdc: accrualUsdc, why: "earned and held for a wallet-less creator — no USDC has moved yet, so there is nothing on chain to check until it is claimed" },
     },
     // Direction 2 — did anything leave without a published receipt?
     chainToLedger: outflow
