@@ -29,6 +29,7 @@
     "verify-all": "node scripts/verify-all.mjs",
     "verify-attestation": "node scripts/verify-attestation.mjs",
     "verify-arc-native": "node scripts/verify-arc-native.mjs",
+    "build-diagrams": "node scripts/build-diagrams.mjs",
     "deploy-local": "node scripts/deploy-local.mjs",
     "daemon": "node scripts/daemon.mjs",
     "canteen-push": "node scripts/canteen-push.mjs",

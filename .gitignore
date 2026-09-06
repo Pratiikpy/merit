@@ -113,3 +113,6 @@ personas.env
 # scratch harness scripts
 .*.tmp.mjs
 *.tmp.mjs
+
+# rendered from docs/ARCHITECTURE.md by scripts/build-diagrams.mjs
+public/diagrams/*.mmd
