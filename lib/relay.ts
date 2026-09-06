@@ -80,6 +80,49 @@ const EIP3009_ABI = [
 /** Arc's minimum accepted `maxFeePerGas`. A transaction priced under this may sit pending forever. */
 export const ARC_MIN_MAX_FEE_PER_GAS = BigInt(20_000_000_000); // 20 Gwei
 
+/**
+ * The smallest transfer worth relaying, in USDC.
+ *
+ * Relaying is asymmetric by construction: the payer spends nothing and Merit spends real gas (~0.0023 USDC
+ * per relay, measured on Arc). Without a floor, anyone holding a self-serve API key — which is free and
+ * unlimited — can sign an endless stream of one-atomic-unit authorizations and drain the relayer's balance a
+ * fee at a time, moving $0.000001 for every $0.0023 of ours. A floor an order of magnitude above the gas cost
+ * makes the griefing strictly unprofitable while leaving every real top-up unaffected.
+ */
+export function relayMinUsdc(): number {
+  const v = Number(process.env.MERIT_RELAY_MIN_USDC);
+  return Number.isFinite(v) && v > 0 ? v : 0.01;
+}
+
+/** The decision about whether a relay is worth Merit's gas — pure, so every branch is testable without a
+ *  chain. Separated from the I/O for the same reason `decideSim` is. */
+export function decideRelayAllowed(input: { valueUsdc: number; minUsdc: number; to: string; depositAddress: string | null; openRelay: boolean }):
+  | { allowed: true }
+  | { allowed: false; error: string; status: number } {
+  if (input.valueUsdc + 1e-9 < input.minUsdc) {
+    return {
+      allowed: false,
+      status: 400,
+      error: `a relayed transfer must be at least ${input.minUsdc} USDC — Merit pays the gas for this transaction, and below that floor the fee exceeds the transfer`,
+    };
+  }
+  // The documented purpose of this endpoint is funding YOUR OWN prepaid balance. Relaying to an arbitrary
+  // address turns it into a gas faucet for strangers, so it is refused unless an operator opts in.
+  if (!input.openRelay) {
+    if (!input.depositAddress) {
+      return { allowed: false, status: 503, error: "gasless funding needs a deposit address, which this deployment has not configured (MERIT_WALLET_SEED unset)" };
+    }
+    if (input.to.toLowerCase() !== input.depositAddress.toLowerCase()) {
+      return {
+        allowed: false,
+        status: 403,
+        error: `this endpoint relays funding into your own deposit address (${input.depositAddress}), not arbitrary transfers — Merit pays the gas, so it only does so for a deposit it can credit`,
+      };
+    }
+  }
+  return { allowed: true };
+}
+
 export interface Authorization {
   from: string;
   to: string;

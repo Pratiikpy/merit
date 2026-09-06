@@ -248,13 +248,16 @@ async function main() {
     const payer = privateKeyToAccount(payerKey);
     const funder = privateKeyToAccount(FUNDER_KEY.startsWith("0x") ? FUNDER_KEY : `0x${FUNDER_KEY}`);
     const funderWallet = createWalletClient({ account: funder, transport: http(RPC) });
-    const seedAmount = BigInt(30); // 0.00003 USDC — enough that the transfer is not a full drain
+    // Above Merit's relay floor (MERIT_RELAY_MIN_USDC, default 0.01): the relay refuses dust because Merit
+    // pays the gas, so a test that relays dust would be testing the guard rather than the feature. Seeded
+    // above the relayed amount so the transfer is not a full drain, which Arc currently reverts.
+    const seedAmount = BigInt(30_000); // 0.03 USDC
     const fundTx = await funderWallet.sendTransaction({ to: USDC, data: encodeFunctionData({ abi: ERC20, functionName: "transfer", args: [payer.address, seedAmount] }), chain: null });
     await pub.waitForTransactionReceipt({ hash: fundTx });
     ok("seeded a brand-new payer wallet", `${payer.address} ← ${Number(seedAmount) / 1e6} USDC (tx ${fundTx.slice(0, 14)}…)`);
 
     const nonce = keccak256(toHex(`merit-relay-test-${Date.now()}-${Math.random()}`));
-    const value = BigInt(10); // 0.00001 USDC
+    const value = BigInt(10_000); // 0.01 USDC — at Merit's relay floor
     const validBefore = BigInt(Math.floor(Date.now() / 1000) + 3600);
     const signature = await payer.signTypedData({
       domain: { name: "USDC", version: "2", chainId: CHAIN_ID, verifyingContract: USDC },
@@ -287,20 +290,30 @@ async function main() {
       if (replay.status === 409) ok("a replayed authorization is refused", replay.body.error);
       else bad("a replayed authorization is refused", `${replay.status} ${JSON.stringify(replay.body).slice(0, 200)}`);
 
-      // A REDIRECTED authorization must not verify. Same signer, same affordable amount, fresh nonce — the only
-      // change is the recipient, so nothing but the signature itself can reject it. That is the point: this must
-      // fail on cryptography, not on a balance check that would have caught it anyway.
+      // ANTI-GRIEFING: Merit pays the gas, so it refuses to relay a transfer to somebody else's address —
+      // otherwise a free API key turns the relayer into a gas faucet for strangers. This is the cheap guard,
+      // and it fires before any chain work.
       const attacker = privateKeyToAccount(generatePrivateKey()).address;
       const redirected = await api("/api/relay", {
         method: "POST",
         headers: { authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({ from: payer.address, to: attacker, value: value.toString(), validAfter: "0", validBefore: validBefore.toString(), nonce: keccak256(toHex(`t-${Date.now()}`)), signature }),
       });
-      if (redirected.status >= 400 && /revert/i.test(redirected.body.error || "")) {
-        ok("an authorization redirected to another payee is refused on the signature alone", `${redirected.status} — ${redirected.body.error}`);
-      } else {
-        bad("an authorization redirected to another payee is refused on the signature alone", `${redirected.status} ${JSON.stringify(redirected.body).slice(0, 250)}`);
-      }
+      redirected.status === 403 && /own deposit address/i.test(redirected.body.error || "")
+        ? ok("relaying to a stranger's address is refused before any gas is spent", `403 — ${redirected.body.error.slice(0, 110)}…`)
+        : bad("relaying to a stranger's address is refused before any gas is spent", `${redirected.status} ${JSON.stringify(redirected.body).slice(0, 200)}`);
+
+      // …and the SIGNATURE is still what ultimately authorises the transfer. Everything here passes the guards
+      // — same payer, same destination, an amount above the floor, a fresh unused nonce — so the only thing
+      // left that can reject it is the cryptography, and the token itself does.
+      const wrongNonce = await api("/api/relay", {
+        method: "POST",
+        headers: { authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ from: payer.address, to: depositTo, value: value.toString(), validAfter: "0", validBefore: validBefore.toString(), nonce: keccak256(toHex(`n-${Date.now()}-${Math.random()}`)), signature }),
+      });
+      wrongNonce.status === 400 && /invalid signature/i.test(wrongNonce.body.error || "")
+        ? ok("a signature that does not match the request is rejected by the token", String(wrongNonce.body.error).replace(/\s+/g, " ").slice(0, 130))
+        : bad("a signature that does not match the request is rejected by the token", `${wrongNonce.status} ${JSON.stringify(wrongNonce.body).slice(0, 200)}`);
 
       // And an over-value tamper is caught before any gas is spent.
       const tampered = await api("/api/relay", {
@@ -311,11 +324,21 @@ async function main() {
       if (tampered.status >= 400) ok("a tampered amount is refused before any gas is spent", `${tampered.status} — ${tampered.body.error}`);
       else bad("a tampered amount is refused before any gas is spent", JSON.stringify(tampered.body).slice(0, 200));
 
+      // The dust floor: relaying $0.000001 while Merit spends $0.0023 of gas is the griefing vector.
+      const dust = await api("/api/relay", {
+        method: "POST",
+        headers: { authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ from: payer.address, to: depositTo, value: "1", validAfter: "0", validBefore: validBefore.toString(), nonce: keccak256(toHex(`d-${Date.now()}`)), signature }),
+      });
+      dust.status === 400 && /at least/i.test(dust.body.error || "")
+        ? ok("a dust relay is refused, so the relayer cannot be drained a fee at a time", dust.body.error.slice(0, 120))
+        : bad("a dust relay is refused", `${dust.status} ${JSON.stringify(dust.body).slice(0, 200)}`);
+
       // An expired authorization is refused against the CHAIN's clock, not the server's.
       const expired = await api("/api/relay", {
         method: "POST",
         headers: { authorization: `Bearer ${apiKey}` },
-        body: JSON.stringify({ from: payer.address, to: depositTo, value: "1", validAfter: "0", validBefore: String(Math.floor(Date.now() / 1000) - 60), nonce: keccak256(toHex(`t3-${Date.now()}`)), signature }),
+        body: JSON.stringify({ from: payer.address, to: depositTo, value: value.toString(), validAfter: "0", validBefore: String(Math.floor(Date.now() / 1000) - 60), nonce: keccak256(toHex(`t3-${Date.now()}`)), signature }),
       });
       if (expired.status === 400 && /expired/i.test(expired.body.error || "")) ok("an expired authorization is refused", expired.body.error);
       else bad("an expired authorization is refused", `${expired.status} ${JSON.stringify(expired.body).slice(0, 200)}`);

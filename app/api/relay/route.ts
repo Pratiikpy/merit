@@ -4,8 +4,11 @@ import { isSessionKey } from "@/lib/session";
 import { creditDeposit, balanceStatus, depositAddressFor, refreshBalanceFromMirror } from "@/lib/balance";
 import { ARC, isStub } from "@/lib/arc";
 import { walletSeedConfigured } from "@/lib/wallet";
+import { checkChallengeLimit } from "@/lib/ratelimit";
 import {
   ARC_MIN_MAX_FEE_PER_GAS,
+  decideRelayAllowed,
+  relayMinUsdc,
   TRANSFER_WITH_AUTHORIZATION_TYPES,
   USDC_EIP712_DOMAIN,
   domainMatchesChain,
@@ -65,6 +68,8 @@ export async function GET(req: Request) {
     depositTo: depositReady ? depositAddressFor(g.principal.id) : null,
     depositsEnabled: depositReady,
     token: { address: ARC.usdc, decimals: 6, chainId: ARC.chainId },
+    minimumUsdc: relayMinUsdc(),
+    relaysTo: "your own deposit address — Merit pays the gas, so it relays funding it can credit, not arbitrary transfers",
     gas: {
       paidBy: "Merit's relayer, in USDC",
       minMaxFeePerGasWei: ARC_MIN_MAX_FEE_PER_GAS.toString(),
@@ -79,6 +84,13 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const limit = checkChallengeLimit(Date.now());
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "busy — try again in a moment" },
+      { status: limit.status, headers: { "Retry-After": String(Math.ceil((limit.retryMs ?? 3000) / 1000)) } },
+    );
+  }
   const g = await principalOr401(req);
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
 
@@ -95,6 +107,18 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
+
+  // Merit pays the gas for whatever it relays, so the request is gated on being worth that gas BEFORE any
+  // chain work happens: a floor above the fee, and a destination Merit can actually credit.
+  const depositReadyPre = isStub() || walletSeedConfigured();
+  const gate = decideRelayAllowed({
+    valueUsdc: Number(body.value) / 1e6,
+    minUsdc: relayMinUsdc(),
+    to: String(body.to),
+    depositAddress: depositReadyPre ? depositAddressFor(g.principal.id) : null,
+    openRelay: process.env.MERIT_RELAY_OPEN === "1",
+  });
+  if (!gate.allowed) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
   const res = await relayTransferWithAuthorization(body as Authorization);
   if ("error" in res) return NextResponse.json({ error: res.error }, { status: res.status });
