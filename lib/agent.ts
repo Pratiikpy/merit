@@ -128,6 +128,13 @@ export async function runAgent(
     // repeat mis-citer sinks, beyond static merit. Neutral (0.5) for an unseen source → ranking unchanged.
     const eligible = [...sources]
       .filter((s) => sourceAllowed(policy, s.id, s.name))
+      // A source with nothing to read can never be cited and can never pass verification, so
+      // escrowing against it only burns budget and crowds real sources out of the ranked pool.
+      // Production hit exactly this: onboarded smoke-test rows carried merit 50 with empty content
+      // and outranked every seeded source (merit 0), so the writer saw an unreadable pool, honestly
+      // answered NO_RELEVANT_SOURCES, and every run refunded 100%. A provider-backed source is kept
+      // even when empty here — its content is fetched live a few lines below.
+      .filter((s) => s.provider || (s.content && s.content.trim().length > 0))
       .sort((a, b) => b.merit * (0.5 + learnedTrust(b.id)) - a.merit * (0.5 + learnedTrust(a.id)));
     // #9: provider-backed sources fetch their content LIVE (pay-per-call API access) before the run reads it —
     // a shallow copy so the registry's static content is never mutated; on failure the static content stands.
