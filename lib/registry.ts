@@ -146,6 +146,15 @@ function patchSeedFields(list: Source[]): boolean {
       row.splits = sd.splits;
       changed = true;
     }
+    // Restore a seed source's CONTENT when the persisted row has none. Content is the material the
+    // writer reads and the verifier checks against; a mirrored row that lost it makes every seed
+    // source look empty, so the writer honestly answers NO_RELEVANT_SOURCES and the whole run pays
+    // $0 — which is exactly what production was doing. Seed ids only, so an onboarded creator's
+    // real (possibly deliberately empty) content is never overwritten.
+    if (sd?.content && !row.content) {
+      row.content = sd.content;
+      changed = true;
+    }
   }
   return changed;
 }
