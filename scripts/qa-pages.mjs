@@ -5,12 +5,14 @@
 import { chromium } from "playwright";
 import fs from "node:fs";
 const BASE = process.env.QA_BASE || "https://www.onmerit.xyz";
+const W = Number(process.env.QA_WIDTH) || 1280;   // QA_WIDTH=390 to sweep at phone width
+const H = Number(process.env.QA_HEIGHT) || 900;
 const pages = fs.readdirSync("public").filter(f => f.endsWith(".html")).map(f => "/" + f);
 pages.unshift("/");                       // the rewritten landing page
 const browser = await chromium.launch();
 let bad = 0;
 for (const p of pages) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const ctx = await browser.newContext({ viewport: { width: W, height: H } });
   const page = await ctx.newPage();
   const errs = [], failed = [];
   page.on("console", m => { if (m.type() === "error") errs.push(m.text().slice(0, 120)); });
@@ -27,5 +29,6 @@ for (const p of pages) {
   await ctx.close();
 }
 await browser.close();
-console.log(`\n=== ${pages.length} pages · ${bad} with problems ===`);
+console.log(`
+=== ${pages.length} pages @ ${W}x${H} · ${bad} with problems ===`);
 process.exit(bad ? 1 : 0);
