@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authGate, keyFromRequest , refreshAuthFromMirror} from "@/lib/auth";
+import { authGate, keyFromRequest , refreshAuthFromMirror, MISSING_KEY_ERROR } from "@/lib/auth";
 import { chargeSession, isSessionKey, refundSession, resolveSession, refreshSessionsFromMirror } from "@/lib/session";
 import { isVerifyError, verifyCitation } from "@/lib/verify/engine";
 import { verifyWithCache, refreshVcacheFromMirror } from "@/lib/vcache";
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     await refreshAuthFromMirror().catch(() => {});
     const gate = authGate(req);
     if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
-    if (!gate.principal) return NextResponse.json({ error: "a prepaid balance requires an API key (Authorization: Bearer <key>)" }, { status: 401 });
+    if (!gate.principal) return NextResponse.json({ error: `a prepaid balance requires an API key — ${MISSING_KEY_ERROR}` }, { status: 401 });
     pid = gate.principal.id;
   }
 

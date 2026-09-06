@@ -193,3 +193,35 @@ describe("EIP-3009 relay primitives", () => {
     expect(a).toMatch(/^0x[0-9a-f]{64}$/);
   });
 });
+
+describe("the missing-key message", () => {
+  /**
+   * Found on production: a valid, freshly-minted key returned 401 from every keyed route. The cause was not
+   * auth at all — the apex domain 308-redirects to `www`, and HTTP clients drop the Authorization header
+   * across a cross-host redirect, so the request arrived genuinely keyless. Server-side that is
+   * indistinguishable from an anonymous call, so the only honest fix is for the message to name it.
+   */
+  it("tells a caller whose key vanished in a redirect what actually happened", async () => {
+    const { MISSING_KEY_ERROR } = await import("../lib/auth");
+    expect(MISSING_KEY_ERROR).toMatch(/Authorization: Bearer/);
+    expect(MISSING_KEY_ERROR).toMatch(/cross-host redirect/i);
+    expect(MISSING_KEY_ERROR).toMatch(/canonical host/i);
+    // It must not accuse the caller of forgetting a key they did send.
+    expect(MISSING_KEY_ERROR).not.toMatch(/you forgot|invalid key/i);
+  });
+
+  it("is what authGate returns when enforcement is on and no key is present", async () => {
+    const prev = process.env.MERIT_REQUIRE_AUTH;
+    process.env.MERIT_REQUIRE_AUTH = "1";
+    try {
+      const { authGate, MISSING_KEY_ERROR } = await import("../lib/auth");
+      const gate = authGate(new Request("https://example.test/api/balance"));
+      expect(gate.ok).toBe(false);
+      expect(gate.status).toBe(401);
+      expect(gate.error).toBe(MISSING_KEY_ERROR);
+    } finally {
+      if (prev === undefined) delete process.env.MERIT_REQUIRE_AUTH;
+      else process.env.MERIT_REQUIRE_AUTH = prev;
+    }
+  });
+});

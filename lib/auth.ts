@@ -153,11 +153,21 @@ export interface Guard {
 /** The fail-closed key gate (no budget check — the caller does that once the run's budget is known). When
  *  auth is required, a missing or invalid key is rejected; otherwise an anonymous request passes (the global
  *  rate limit still bounds it), but a PROVIDED-yet-invalid key is always rejected. */
+/**
+ * The message for a request that carried no key at all. It names the single failure that looks identical to a
+ * genuine anonymous call from inside the app and is almost never the caller's fault: HTTP clients drop the
+ * Authorization header across a cross-host redirect (curl -L, fetch, most SDKs), so an agent that calls an
+ * apex domain which 308s to `www` arrives here with the header stripped and a perfectly valid key. There is no
+ * way to detect that server-side — the header is simply gone — so the only honest fix is to say so here.
+ */
+export const MISSING_KEY_ERROR =
+  "API key required (Authorization: Bearer <key>). If your key IS set, check you are calling the canonical host directly: HTTP clients drop the Authorization header across a cross-host redirect, so a request to a domain that redirects arrives here with no key.";
+
 export function authGate(req: Request): Guard {
   const key = keyFromRequest(req);
   const principal = key ? verifyKey(key) : null;
   if (authRequired()) {
-    if (!key) return { ok: false, status: 401, error: "API key required (Authorization: Bearer <key>)" };
+    if (!key) return { ok: false, status: 401, error: MISSING_KEY_ERROR };
     if (!principal) return { ok: false, status: 401, error: "invalid or disabled API key" };
   } else if (key && !principal) {
     return { ok: false, status: 401, error: "invalid or disabled API key" };

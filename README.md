@@ -455,6 +455,10 @@ Every claim Merit makes is recomputable from Arc with no Merit server.
 
 Every route an agent or integrator can call, same-origin, no SDK required.
 
+> **Keyed calls: use `https://www.onmerit.xyz`.** The apex domain 308-redirects to `www`, and HTTP clients
+> (curl -L, fetch, most SDKs) drop the `Authorization` header across a cross-host redirect — so a valid key
+> sent to the apex arrives with no key and gets a 401. Unkeyed endpoints work on either host.
+
 | Endpoint | Method | Purpose |
 |---|---|---|
 | `/api/verify` | POST | verify a `(claim, source)` pair; returns a signed verdict plus a `signed` receipt |
