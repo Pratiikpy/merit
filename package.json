@@ -31,6 +31,7 @@
     "verify-arc-native": "node scripts/verify-arc-native.mjs",
     "build-diagrams": "node scripts/build-diagrams.mjs",
     "verify-x402-buyer": "node scripts/verify-x402-buyer.mjs",
+    "qa-pages": "node scripts/qa-pages.mjs",
     "deploy-local": "node scripts/deploy-local.mjs",
     "daemon": "node scripts/daemon.mjs",
     "canteen-push": "node scripts/canteen-push.mjs",
