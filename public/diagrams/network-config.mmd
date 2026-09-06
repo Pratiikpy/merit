@@ -1,0 +1,9 @@
+flowchart LR
+    ENV["ARC_NETWORK"] --> T["testnet (default)<br/>chain 5042002 · every address<br/>verified on the live chain"]
+    ENV --> M["mainnet<br/>ARC_MAINNET_* env values"]
+    M --> RDY["mainnetReadiness()<br/>names every missing value<br/>and what it gates"]
+    RDY --> |"core: chainId + RPC + USDC"| GO["settlementReady"]
+    RDY --> |"absent"| HONEST["feature degrades honestly —<br/>NEVER a testnet address<br/>substituted for a mainnet one"]
+
+    classDef warn fill:#FEF3C7,stroke:#B45309
+    class HONEST warn

@@ -25,7 +25,7 @@ import { canonicalize, signReceipt, verificationId } from "./receipt";
 import { ledgerHistory, ledgerTotals, type LedgerEntry } from "./ledger";
 import { auditStats } from "./audit";
 import { snapshotMetrics } from "./metrics";
-import { round6 } from "./arc";
+import { ARC, round6  } from "./arc";
 
 // ---- Merkle module (the primitive everything else depends on) ---------------------------------------------
 
@@ -77,7 +77,9 @@ export interface CreditSubject {
 export interface CreditFile {
   schema: "merit.credit-file/v1";
   asOf: string; // staleness watermark — self-describing freshness, no side-channel needed
-  network: "arc-testnet-5042002";
+  /** The chain these numbers were settled on, as `arc-<network>-<chainId>`. Part of the SIGNED body:
+   *  a credit file from testnet can never be read as a mainnet one. */
+  network: string;
   // Cumulative counters are MONOTONIC over all time; the merkleized entry export is the retained tail.
   cumulative: { settledUsdc: number; settlements: number; distinctPayees: number; runs: number };
   // No-survivorship-bias context: refused obligations stay on the record.
@@ -145,7 +147,7 @@ export async function buildCreditFile(opts: { sign?: boolean } = {}): Promise<Cr
   const body: CreditFile = {
     schema: "merit.credit-file/v1",
     asOf: now,
-    network: "arc-testnet-5042002",
+    network: `arc-${ARC.name}-${ARC.chainId}`,
     cumulative: {
       settledUsdc: totals.totalSettledUsdc,
       settlements: totals.settlementCount,

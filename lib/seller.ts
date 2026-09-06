@@ -64,7 +64,20 @@ export function withGatewaySeller(
         },
         accepts: [requirements],
       };
-      return new NextResponse(JSON.stringify({}), {
+      // The requirements go in BOTH places, and that is deliberate.
+      //
+      // Circle's batching client reads the base64 `PAYMENT-REQUIRED` header, and this wrapper (adapted from
+      // arc-nanopayments) originally sent ONLY that, with an empty `{}` body. Merit's own buyer worked, so the
+      // gap never surfaced — but the x402 protocol carries the requirements in the 402 BODY, which is what a
+      // generic client (x402-fetch, the Bazaar, Circle's Agent Marketplace discovery) actually reads. Those
+      // clients saw `{}` and had nothing to pay with, so Merit was unpayable by every agent except its own.
+      // Emitting both is strictly additive: the header keeps Circle's client working byte-for-byte, and the
+      // body makes the endpoint payable by any x402 client.
+      const body = {
+        ...paymentRequired,
+        error: "payment required",
+      };
+      return new NextResponse(JSON.stringify(body), {
         status: 402,
         headers: {
           "Content-Type": "application/json",

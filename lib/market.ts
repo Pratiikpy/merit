@@ -14,10 +14,9 @@
  * recorded only when it actually lands; the resolution always carries the signed verificationId that decided it.
  */
 import { createWalletClient, createPublicClient, http, parseAbi, keccak256, toHex } from "viem";
-import { arcTestnet } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { randomBytes } from "node:crypto";
-import { ARC, isStub, round6 } from "./arc";
+import { ARC, isStub, round6, arcChain } from "./arc";
 import { serialize } from "./locks";
 import { verifyCitation, isVerifyError } from "./verify/engine";
 import { loadDocFresh, loadDocFromMirror, saveDoc } from "./store";
@@ -48,10 +47,10 @@ export function marketOnchainEnabled(): boolean {
 }
 
 const transport = () => http(ARC.rpcUrl);
-const pub = () => createPublicClient({ chain: arcTestnet, transport: transport() });
+const pub = () => createPublicClient({ chain: arcChain(), transport: transport() });
 function signer(envKey: string) {
   const account = privateKeyToAccount(process.env[envKey] as `0x${string}`);
-  return { account, wallet: createWalletClient({ account, chain: arcTestnet, transport: transport() }) };
+  return { account, wallet: createWalletClient({ account, chain: arcChain(), transport: transport() }) };
 }
 
 export interface Market {
@@ -180,11 +179,11 @@ export async function createMarket(input: CreateMarketInput): Promise<{ market: 
       const buyer = signer("BUYER_PRIVATE_KEY");
       const atomic = BigInt(Math.round(seedUsdc * 1e6));
       const approveHash = await serialize("buyer", () =>
-        buyer.wallet.writeContract({ address: ARC.usdc as `0x${string}`, abi: USDC_APPROVE, functionName: "approve", args: [marketAddress(), atomic], account: buyer.account, chain: arcTestnet }),
+        buyer.wallet.writeContract({ address: ARC.usdc as `0x${string}`, abi: USDC_APPROVE, functionName: "approve", args: [marketAddress(), atomic], account: buyer.account, chain: arcChain() }),
       );
       await pub().waitForTransactionReceipt({ hash: approveHash });
       const stakeHash = await serialize("buyer", () =>
-        buyer.wallet.writeContract({ address: marketAddress(), abi: MARKET_ABI, functionName: "stake", args: [marketId, seedSide === "yes", atomic], account: buyer.account, chain: arcTestnet }),
+        buyer.wallet.writeContract({ address: marketAddress(), abi: MARKET_ABI, functionName: "stake", args: [marketId, seedSide === "yes", atomic], account: buyer.account, chain: arcChain() }),
       );
       await pub().waitForTransactionReceipt({ hash: stakeHash });
       market.seedSide = seedSide;
@@ -230,7 +229,7 @@ export async function resolveMarket(id: string): Promise<{ market: Market } | { 
     try {
       const oracle = signer("OPERATOR_PRIVATE_KEY");
       const resolveHash = await serialize("operator", () =>
-        oracle.wallet.writeContract({ address: marketAddress(), abi: MARKET_ABI, functionName: "resolve", args: [market.marketId, yesWon], account: oracle.account, chain: arcTestnet }),
+        oracle.wallet.writeContract({ address: marketAddress(), abi: MARKET_ABI, functionName: "resolve", args: [market.marketId, yesWon], account: oracle.account, chain: arcChain() }),
       );
       await pub().waitForTransactionReceipt({ hash: resolveHash });
       market.txs = market.txs || [];
@@ -241,7 +240,7 @@ export async function resolveMarket(id: string): Promise<{ market: Market } | { 
         try {
           const buyer = signer("BUYER_PRIVATE_KEY");
           const redeemHash = await serialize("buyer", () =>
-            buyer.wallet.writeContract({ address: marketAddress(), abi: MARKET_ABI, functionName: "redeem", args: [market.marketId], account: buyer.account, chain: arcTestnet }),
+            buyer.wallet.writeContract({ address: marketAddress(), abi: MARKET_ABI, functionName: "redeem", args: [market.marketId], account: buyer.account, chain: arcChain() }),
           );
           await pub().waitForTransactionReceipt({ hash: redeemHash });
           market.txs.push({ step: "redeem(winnings)", hash: redeemHash, explorerUrl: explorerTx(redeemHash) });

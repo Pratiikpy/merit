@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ARC, isStub, llmConfig } from "@/lib/arc";
+import { ARC, chainLabel, isStub, llmConfig, mainnetReadiness } from "@/lib/arc";
 import { getSources } from "@/lib/registry";
 
 export const runtime = "nodejs";
@@ -15,6 +15,10 @@ export async function GET() {
     mode: isStub() ? "stub" : "live",
     chain: ARC.chainId,
     network: ARC.network,
+    // Which Arc this deployment is pointed at, and — since Arc mainnet is not published yet — exactly what
+    // would still have to be supplied to point it at mainnet. Configuration, not a code change.
+    arcNetwork: { name: ARC.name, label: chainLabel(), isTestnet: ARC.isTestnet },
+    mainnetReadiness: mainnetReadiness(),
     sources: getSources().length,
     reputationOnchain: process.env.REPUTATION_ONCHAIN === "1",
     llm: {

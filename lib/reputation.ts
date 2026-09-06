@@ -23,9 +23,8 @@ import {
   keccak256,
   toHex,
 } from "viem";
-import { arcTestnet } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { ARC, isStub, fakeTxHash } from "./arc";
+import { ARC, isStub, fakeTxHash, arcChain } from "./arc";
 import { serialize } from "./locks";
 import { getPublisherAgentId, setPublisherAgentId } from "./registry";
 import { randomBytes } from "node:crypto";
@@ -59,17 +58,17 @@ function onchainEnabled(): boolean {
 
 const transport = () => http(ARC.rpcUrl);
 function pub() {
-  return createPublicClient({ chain: arcTestnet, transport: transport() });
+  return createPublicClient({ chain: arcChain(), transport: transport() });
 }
 function registrar() {
   // OPERATOR mints + owns agent identities.
   const account = privateKeyToAccount(process.env.OPERATOR_PRIVATE_KEY as `0x${string}`);
-  return { account, wallet: createWalletClient({ account, chain: arcTestnet, transport: transport() }) };
+  return { account, wallet: createWalletClient({ account, chain: arcChain(), transport: transport() }) };
 }
 function validator() {
   // BUYER (the Merit agent) records feedback — distinct from the owner.
   const account = privateKeyToAccount(process.env.BUYER_PRIVATE_KEY as `0x${string}`);
-  return { account, wallet: createWalletClient({ account, chain: arcTestnet, transport: transport() }) };
+  return { account, wallet: createWalletClient({ account, chain: arcChain(), transport: transport() }) };
 }
 
 const ID_OWNER_ABI = parseAbi(["function ownerOf(uint256 tokenId) view returns (address)"]);

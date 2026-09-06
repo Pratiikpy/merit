@@ -7,9 +7,8 @@
  * BUYER agent is also the validator (it pays AND audits), so it both locks and releases/refunds.
  */
 import { createWalletClient, createPublicClient, http, parseAbi } from "viem";
-import { arcTestnet } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { ARC, isStub } from "./arc";
+import { ARC, isStub, arcChain } from "./arc";
 
 const ESCROW_ABI = parseAbi([
   "function lock(bytes32 jobId, address payee, address validator, uint256 amount)",
@@ -31,7 +30,7 @@ export function escrowEnabled(): boolean {
 const transport = () => http(ARC.rpcUrl);
 function buyer() {
   const account = privateKeyToAccount(process.env.BUYER_PRIVATE_KEY as `0x${string}`);
-  return { account, wallet: createWalletClient({ account, chain: arcTestnet, transport: transport() }) };
+  return { account, wallet: createWalletClient({ account, chain: arcChain(), transport: transport() }) };
 }
 
 /** Read a job's escrow state (0=None,1=Locked,2=Released,3=Refunded,4=Disputed). Null if unconfigured/STUB. */
@@ -39,7 +38,7 @@ export async function escrowStateOf(jobId: `0x${string}`): Promise<number | null
   const addr = escrowAddress();
   if (!addr || isStub()) return null;
   try {
-    const s = await createPublicClient({ chain: arcTestnet, transport: transport() }).readContract({
+    const s = await createPublicClient({ chain: arcChain(), transport: transport() }).readContract({
       address: addr,
       abi: ESCROW_ABI,
       functionName: "stateOf",
@@ -63,7 +62,7 @@ async function write(fn: "lock" | "release" | "refund", args: readonly unknown[]
       // viem validates args against the ABI at the call site; the callers below pass the right shapes.
       args: args as never,
       account,
-      chain: arcTestnet,
+      chain: arcChain(),
     });
   } catch (e) {
     console.error(`[escrow] ${fn} failed:`, (e as Error).message);

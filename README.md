@@ -43,6 +43,8 @@ recompute without trusting a Merit server.
 > Anyone can send money. Merit decides who earned it. Settlement is gated on whether the cited
 > work is correct — the check most agent-payment stacks skip.
 
+**[Architecture diagram →](docs/ARCHITECTURE.md)** · **[live](https://www.onmerit.xyz/architecture.html)** — the system, the money path, the verification engine, and where every Circle and Arc product is used.
+
 ## Contents
 
 - [What it is](#what-it-is)
@@ -472,6 +474,7 @@ Every route an agent or integrator can call, same-origin, no SDK required.
 | `/api/memo` | GET | read the Arc memo inside a payment (`?tx=`) or find payments by `memoId` (`?id=`) |
 | `/api/reconcile` | GET | the published ledger re-checked against Arc, both directions |
 | `/api/relay` | GET · POST | the EIP-712 domain to sign, and gasless (EIP-3009) funding of a prepaid balance |
+| `/api/openapi` | GET | the OpenAPI 3.1 contract, generated from live config (price, chain, payee) |
 | `/.well-known/x402` | GET | service discovery for the paid endpoints |
 
 ## MCP integration
@@ -537,6 +540,21 @@ native USDC system emitter (EIP-7708) `0xffff…fffe`.
 Agent payments, creator settlements, identity mints, feedback, and validation writes are all verifiable
 on [`testnet.arcscan.app`](https://testnet.arcscan.app). Built on `circlefin/arc-nanopayments` and
 `arc-escrow`.
+
+## Running on Arc mainnet
+
+Arc mainnet is not published yet: the Arc docs state that mainnet addresses are unavailable, and Circle's
+Gateway SDK ships `arcTestnet` with no mainnet counterpart. So Merit does not guess. The network is
+configuration, not a constant — `ARC_NETWORK=testnet` (the default) is the exact chain, RPC and addresses every
+verified transaction in this repo used, and `ARC_NETWORK=mainnet` assembles the profile from `ARC_MAINNET_*`
+environment values.
+
+The safety property is that a **missing mainnet value is never filled in with a testnet one**. Point Merit at
+mainnet with nothing configured and it reports empty values that fail loudly, rather than quietly sending real
+money to the wrong chain's contracts. `GET /api/health` returns `mainnetReadiness`: which values are set, which
+are missing, the env var for each, and what each one gates. Proven by `tests/arc-network.test.ts`.
+
+Moving this deployment to Arc mainnet is a set of environment variables. No code change.
 
 ## License
 

@@ -1,3 +1,4 @@
+import { chainLabel } from "@/lib/arc";
 import { NextResponse } from "next/server";
 import { verifyTiers } from "@/lib/pricing";
 
@@ -12,7 +13,7 @@ export async function GET(req: Request) {
     {
       schema: "merit.pricing/v1",
       asset: "USDC",
-      chain: "Arc testnet 5042002",
+      chain: chainLabel(),
       model:
         "Price scales with verification DEPTH — you pay for how hard the check tries, not for retrieval. The 'nli' and 'full' tiers return a SUPPORTED/REFUSED verdict; the cheapest 'numeric' tier is a deterministic fabrication screen (REFUSED on a contradicted figure, otherwise 'needs a model'). On a prepaid balance a REFUSED citation costs nothing.",
       verify: verifyTiers(),

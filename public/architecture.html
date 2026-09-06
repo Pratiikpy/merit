@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture — Merit</title>
+<meta name="description" content="How Merit works: the verification engine that gates settlement, the money path where the verdict travels inside the payment, and exactly where each Circle and Arc product is used.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Architecture — Merit">
+<meta property="og:description" content="The verification engine, the money path, and where every Circle and Arc product is used.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  nav a.back{font-size:14px;color:#6B7280;text-decoration:none;font-weight:600;}
+  nav a.back:hover{color:#0A0A0A;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 12px;font-weight:800;}
+  h2{font-size:22px;letter-spacing:-.02em;margin:44px 0 6px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 12px;max-width:72ch;}
+  .lede{font-size:14.5px;color:#4B5563;margin:0 0 16px;max-width:76ch;}
+  figure{margin:0 0 8px;border:1px solid #ECECEE;border-radius:14px;padding:18px;overflow-x:auto;background:#fff;}
+  figure img{display:block;max-width:100%;height:auto;margin:0 auto;}
+  figcaption{font-size:12.5px;color:#6B7280;margin-top:10px;text-align:center;}
+  /* A muted caption colour on the code chip's grey ground fell to 4.39:1. Darken the chip text inside a
+     caption only, so the caption stays quiet while the code inside it clears AA. */
+  figcaption code{color:#3F3F46;}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;}
+  thead th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;padding:10px;border-bottom:1px solid #ECECEE;}
+  tbody td{padding:11px 10px;border-bottom:1px solid #F3F4F6;vertical-align:top;}
+  tbody tr:hover{background:#FAFAFA;}
+  .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  code{font-family:'IBM Plex Mono',monospace;font-size:12.5px;background:#F4F4F5;padding:1px 5px;border-radius:5px;}
+  .note{font-size:13px;color:#4B5563;border-left:3px solid #ECECEE;padding:2px 0 2px 14px;margin:14px 0;max-width:76ch;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:40px;}
+  @media(max-width:640px){h1{font-size:30px;}figure{padding:10px;}}
+</style>
+<link rel="stylesheet" href="/touch.css">
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <a class="back" href="/">← back to demo</a>
+  </nav>
+
+  <main>
+  <h1>Architecture</h1>
+  <p class="sub">x402 settles <em>how</em> an agent pays. x401 settles <em>who</em> authorized it. Neither checks whether the work was <strong>correct</strong>. Merit verifies that a cited source actually supports the claim made from it, and makes that verdict the settlement switch.</p>
+  <p class="lede">Everything below is deployed and exercised on Arc testnet. Every address and behaviour was verified against the live chain, not read off a datasheet. The source for these diagrams is <a href="https://github.com/Pratiikpy/merit/blob/main/app/docs/ARCHITECTURE.md" style="text-decoration:underline">docs/ARCHITECTURE.md</a>.</p>
+
+  <h2>1 · System</h2>
+  <p class="lede">Who calls Merit, what happens inside it, and which Circle and Arc primitives carry the money.</p>
+  <figure>
+    <img src="/diagrams/system.svg" alt="System diagram. Buyers — AI agents on six frameworks, the Circle Agent Stack CLI, humans on onmerit.xyz, and MCP clients — discover Merit through its x402 discovery document, OpenAPI spec and price ladder. Requests enter a four-stage verification engine: a deterministic numeric gate, an NLI factual-consistency check, an adversarial LLM judge, and a premium 0G TEE-attested consensus jury, producing a signed verdict. The verdict drives a settlement decision: release, or refuse with zero USDC moved. A release passes compliance screening, transaction simulation and spend caps, then settles through Circle Gateway nanopayments or an Arc Memo-wrapped USDC transfer, optionally batched through Multicall3From, alongside ERC-8004 registry writes and ERC-8183 hook-gated escrow. Both of Arc's USDC emitters feed the public reconciliation surface.">
+    <figcaption>Merit end to end. Green is the verification engine — the part no other payment rail has.</figcaption>
+  </figure>
+
+  <h2>2 · The money path</h2>
+  <p class="lede">The sequence that distinguishes Merit from every other rail: the payment is conditional on the work being right, and the proof of that condition travels <em>inside</em> the transaction.</p>
+  <figure>
+    <img src="/diagrams/money-path.svg" alt="Sequence diagram. An agent posts a claim and source to the metered oracle and receives a 402 carrying payment requirements in both the response body and a header. It retries with an EIP-3009 authorization, which Merit settles through Circle Gateway. The verification engine returns a signed verdict. If SUPPORTED, Merit screens the payee for compliance, then sends the USDC transfer wrapped in Arc's Memo contract, so the memo id derives from the payout digest, the memo data names the verification ids, and the calldata hash binds the memo to that exact transfer; the creator receives USDC with the sender preserved as Merit's EOA, and reputation and validation are written to ERC-8004. If REFUSED, nothing is paid and the refusal is recorded in the public ledger. The agent can then reconcile the ledger against both of Arc's USDC emitters.">
+    <figcaption>SUPPORTED pays and leaves an on-chain memo naming the verifications. REFUSED moves $0 — and is still recorded.</figcaption>
+  </figure>
+
+  <h2>3 · Verification engine</h2>
+  <p class="lede">Price scales with how hard the check tries, never with retrieval. The first gate uses no model at all — which is why a fabricated figure is still caught when every LLM provider is down.</p>
+  <figure>
+    <img src="/diagrams/verification-engine.svg" alt="Flowchart of the verification engine. A claim and source enter a deterministic numeric gate; a figure that contradicts the source is refused immediately with zero settlement. Otherwise an NLI factual-consistency check runs, refusing anything below the entailment floor. Surviving claims reach an injection-resistant adversarial judge, and on the premium tier a 0G TEE-attested consensus jury. Any gate can refuse. Both SUPPORTED and REFUSED outcomes produce a signed verdict recoverable offline.">
+    <figcaption>Four gates, any one of which can refuse. Both outcomes are signed — a refusal is as checkable as an approval.</figcaption>
+  </figure>
+  <p class="note"><strong>Measured, not asserted.</strong> A forkable 275-case adversarial benchmark across 14 failure modes: <strong>100% recall</strong> — every adversarial case caught, 197 held, 0 slipped — at 90.4% precision / 94.9% F1. The verifier is conservative by design: it over-refuses roughly 30% of genuinely-supported claims rather than risk paying for one that is not. That is the safe direction when the output is money. Reproduce with <code>npm run bench-judge</code>.</p>
+
+  <h2>4 · Network configuration</h2>
+  <p class="lede">Arc mainnet is not published yet — the Arc docs say mainnet addresses are unavailable, and Circle's Gateway SDK ships <code>arcTestnet</code> with no mainnet counterpart. So Merit treats the network as configuration and invents nothing.</p>
+  <figure>
+    <img src="/diagrams/network-config.svg" alt="Flowchart of network configuration. The ARC_NETWORK environment variable selects either testnet — the default, chain 5042002, with every address verified on the live chain — or mainnet, assembled from ARC_MAINNET environment values. A readiness check names every missing value and what it gates. When chain id, RPC and USDC are all present the deployment is settlement-ready; when a value is absent the feature degrades honestly and a testnet address is never substituted for a mainnet one.">
+    <figcaption>Moving to Arc mainnet is environment variables, not a code change — proven by <code>tests/arc-network.test.ts</code>.</figcaption>
+  </figure>
+
+  <h2>5 · Where each Circle and Arc product is used</h2>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th>Product</th><th>Where</th><th>What it does here</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Arc</strong></td><td class="mono">everywhere</td><td>Settlement chain. USDC-native gas, sub-second finality.</td></tr>
+      <tr><td><strong>USDC</strong></td><td class="mono">lib/pay.ts · lib/custody.ts · lib/balance.ts</td><td>The unit of account for every toll, payout and refund.</td></tr>
+      <tr><td><strong>Circle Gateway / Nanopayments</strong></td><td class="mono">lib/seller.ts · lib/pay.ts</td><td>x402 batched sub-cent tolls — Merit is both seller and buyer.</td></tr>
+      <tr><td><strong>Circle Developer-Controlled Wallets</strong></td><td class="mono">circle-dcw/ · lib/wallet.ts</td><td>KMS-custodied payout wallet; no plaintext key on the server.</td></tr>
+      <tr><td><strong>Circle Compliance Engine</strong></td><td class="mono">lib/compliance.ts</td><td>KYT + denylist screen before any payout. Fails <strong>closed</strong>.</td></tr>
+      <tr><td><strong>CCTP</strong></td><td class="mono">lib/crosschain.ts</td><td>A creator takes verified earnings to Base / Arbitrum / Optimism / Avalanche.</td></tr>
+      <tr><td><strong>Arc <code>Memo</code></strong></td><td class="mono">lib/memo.ts</td><td>The verdict travels inside the payment as an indexed on-chain event.</td></tr>
+      <tr><td><strong>Arc <code>Multicall3From</code></strong></td><td class="mono">lib/custody.ts</td><td>k creators paid in one transaction, <code>msg.sender</code> preserved per line.</td></tr>
+      <tr><td><strong>EIP-7708 system emitter</strong></td><td class="mono">lib/reconcile.ts</td><td>Independent second witness for every USDC movement, at 18 decimals.</td></tr>
+      <tr><td><strong>EIP-3009</strong></td><td class="mono">lib/relay.ts</td><td>Gasless funding — the payer signs, Merit broadcasts and pays the gas.</td></tr>
+      <tr><td><strong>ERC-8004</strong></td><td class="mono">lib/reputation.ts</td><td>Identity, reputation and <strong>validation</strong> registry writes — Merit fills the empty third slot.</td></tr>
+      <tr><td><strong>ERC-8183 + IACPHook</strong></td><td class="mono">contracts/ · lib/job.ts</td><td>Escrow whose release is gated on the citation verdict, on-chain.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  </main>
+
+  <footer class="foot">Every claim on this page is checkable: <a href="/reconcile.html" style="text-decoration:underline">audit the ledger against Arc</a> · <a href="/api/openapi" style="text-decoration:underline">the OpenAPI contract</a> · <a href="/proof.html" style="text-decoration:underline">the live ledger</a></footer>
+</div>
+</body>
+</html>

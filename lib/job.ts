@@ -11,9 +11,8 @@
  * deployed addresses + not STUB — so the default run is byte-identical and never depends on the contracts.
  */
 import { createWalletClient, createPublicClient, http, parseAbi, keccak256, toHex, decodeEventLog } from "viem";
-import { arcTestnet } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { ARC, isStub } from "./arc";
+import { ARC, isStub, arcChain } from "./arc";
 
 const JOB_ABI = parseAbi([
   "function createJob(address provider, address evaluator, uint256 expiredAt, string description, address hook) returns (uint256)",
@@ -47,10 +46,10 @@ export function jobHookEnabled(): boolean {
 }
 
 const transport = () => http(ARC.rpcUrl);
-const pub = () => createPublicClient({ chain: arcTestnet, transport: transport() });
+const pub = () => createPublicClient({ chain: arcChain(), transport: transport() });
 function signer(envKey: string) {
   const account = privateKeyToAccount(process.env[envKey] as `0x${string}`);
-  return { account, wallet: createWalletClient({ account, chain: arcTestnet, transport: transport() }) };
+  return { account, wallet: createWalletClient({ account, chain: arcChain(), transport: transport() }) };
 }
 
 export interface HookGateResult {
@@ -90,7 +89,7 @@ export async function settleViaHook(opts: {
   ) => {
     // viem infers functionName as the ABI's union; this helper is generic over 3 ABIs, so cast the
     // discriminating fields (same pattern as lib/escrow.ts). The callers below pass matching shapes.
-    const hash = await s.wallet.writeContract({ address, abi: abi as never, functionName: functionName as never, args: args as never, account: s.account, chain: arcTestnet });
+    const hash = await s.wallet.writeContract({ address, abi: abi as never, functionName: functionName as never, args: args as never, account: s.account, chain: arcChain() });
     txs.push({ step, hash });
     await pub().waitForTransactionReceipt({ hash });
     return hash;
@@ -104,7 +103,7 @@ export async function settleViaHook(opts: {
     const createHash = await client.wallet.writeContract({
       address: job, abi: JOB_ABI, functionName: "createJob",
       args: [provider.account.address, evaluator.account.address, expiredAt, opts.description || "merit proof-of-citation settlement", hook],
-      account: client.account, chain: arcTestnet,
+      account: client.account, chain: arcChain(),
     });
     txs.push({ step: "createJob", hash: createHash });
     const rcpt = await pub().waitForTransactionReceipt({ hash: createHash });

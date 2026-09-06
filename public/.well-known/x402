@@ -12,13 +12,31 @@
       "description": "Pay-per-call citation-faithfulness verification. POST {claim, source} and receive a signed, tamper-evident verdict (SUPPORTED / REFUSED) that an ERC-8183 settlement hook — or any payment — can consume BEFORE paying a citation. Layered engine: deterministic numeric verifier (catches fabricated figures with no LLM) -> pluggable NLI/factual-consistency -> adversarial LLM judge. Price scales with verification DEPTH (numeric < NLI < full judge) — see /api/pricing. Signed with schema merit.cvo/v2 so a third party can recover the signer offline without trusting Merit.",
       "endpoint": "/api/verify/paid",
       "method": "POST",
-      "input": { "claim": "string", "source": "string", "depth": "numeric | nli | full (optional)" },
+      "input": {
+        "claim": "string",
+        "source": "string",
+        "depth": "numeric | nli | full (optional)"
+      },
       "output": "signed Verdict { verdict, score, reason, methods[], grounded, gates, signature } + a shareable /v/<id> receipt",
-      "price": { "amount": "0.005", "currency": "USDC", "network": "arc-testnet", "note": "full-depth default; the 402 response carries the live price; numeric/nli tiers cost less" },
+      "price": {
+        "amount": "0.005",
+        "currency": "USDC",
+        "network": "arc-testnet",
+        "note": "full-depth default; the 402 response carries the live price; numeric/nli tiers cost less"
+      },
       "settlement": "x402 (Circle Gateway) on Arc testnet 5042002",
-      "free_tier": { "endpoint": "/api/verify", "note": "rate-limited, same signed verdict, no metering — for adoption + demos" },
-      "prepaid_tier": { "endpoint": "/api/verify/balance", "note": "fund a balance once; billed ONLY for citations that verify — a refused citation costs nothing" },
-      "roi_preflight": { "endpoint": "/api/opportunity", "note": "free: see what you'd pay on a pay-on-retrieval rail vs Merit (refused citations are free) before committing" }
+      "free_tier": {
+        "endpoint": "/api/verify",
+        "note": "rate-limited, same signed verdict, no metering — for adoption + demos"
+      },
+      "prepaid_tier": {
+        "endpoint": "/api/verify/balance",
+        "note": "fund a balance once; billed ONLY for citations that verify — a refused citation costs nothing"
+      },
+      "roi_preflight": {
+        "endpoint": "/api/opportunity",
+        "note": "free: see what you'd pay on a pay-on-retrieval rail vs Merit (refused citations are free) before committing"
+      }
     },
     {
       "id": "creator-citation-toll",
@@ -26,7 +44,9 @@
       "description": "Cite a creator and settle real USDC to them — but ONLY if the citation passes the same three-gate verifier. A cited-but-unsupported claim pays nothing. Each settlement is a shareable, signed receipt.",
       "endpoint": "/api/link/{handle}",
       "method": "POST",
-      "input": { "claim": "string" },
+      "input": {
+        "claim": "string"
+      },
       "output": "verdict + settlement (real USDC on Arc when SUPPORTED) + a /v/<id> receipt",
       "settlement": "x402 (Circle Gateway) on Arc testnet 5042002"
     },
@@ -36,7 +56,10 @@
       "description": "Verify the work, not just pay for it: check that what an external seller DELIVERED supports the claim it was procured for, and firewall sellers that keep delivering unsupported content. See /api/sellers for the reputation ledger.",
       "endpoint": "/api/procure",
       "method": "POST",
-      "input": { "url or content": "string", "claim": "string" }
+      "input": {
+        "url or content": "string",
+        "claim": "string"
+      }
     },
     {
       "id": "verified-buy-agent",
@@ -44,7 +67,10 @@
       "description": "Give it a claim it needs backed; it ranks every buyable source by VERIFIED-QUALITY-PER-DOLLAR — each source's measured citation-faithfulness (a signal a price/latency directory can't produce), per dollar of price — then buys them in ranked order and PAYS ONLY the first whose delivered content actually supports the claim, skipping (never paying for) the rest. Settles the winner to its creator and returns the full comparison plus what a pay-on-delivery rail would have wasted on content that didn't verify.",
       "endpoint": "/api/buy",
       "method": "POST",
-      "input": { "claim": "string", "maxTry": "number (optional, default 3)" },
+      "input": {
+        "claim": "string",
+        "maxTry": "number (optional, default 3)"
+      },
       "output": "{ bought: { source, price, verificationId, receiptUrl } | null, compared[], skippedCount, wastedOnDeliveryRail }",
       "auth": "requires an API key (Authorization: Bearer <key>) — it settles value and runs verification"
     },
@@ -54,7 +80,9 @@
       "description": "Pay a whole basket of cited lines in one call, netted to the VERIFIED subset: Merit verifies every line and settles only the ones whose delivered content actually supports its claim, quarantining (never paying for) the rest. The buyer authorizes N lines and pays only the k that verify — a pay-on-delivery rail would move the full amount, including for unverified work. Each settled line is a signed /v/<id> receipt.",
       "endpoint": "/api/settle/batch",
       "method": "POST",
-      "input": { "items": "[{ claim, sourceRef | source, amount?, sourceName? }] (<= 20)" },
+      "input": {
+        "items": "[{ claim, sourceRef | source, amount?, sourceName? }] (<= 20)"
+      },
       "output": "{ count, settledCount, quarantinedCount, totalAuthorized, totalSettled, totalQuarantined, lines[] }",
       "auth": "requires an API key (Authorization: Bearer <key>) — it settles value and verifies each line"
     },
@@ -64,7 +92,12 @@
       "description": "The AP2 POST-condition to the mandate PRE-condition. Merit verifies delivered work and, only if it supports the claim, mints a signed, offline-recoverable fulfillment credential (merit.fulfillment/v1) attesting the obligation was satisfied — carrying the verificationId that ties back to the exact verdict that gated the payment. A downstream AP2/x402 rail gates its next step on this credential without trusting Merit (recover the signer from the canonical body + signature). A refused obligation yields no credential. Every verified /api/buy also returns one inline.",
       "endpoint": "/api/fulfillment",
       "method": "POST",
-      "input": { "claim": "string", "source or sourceRef": "string", "amount": "number (optional)", "mandate": "{ authorizer, nonce } (optional — binds the AP2 loop)" },
+      "input": {
+        "claim": "string",
+        "source or sourceRef": "string",
+        "amount": "number (optional)",
+        "mandate": "{ authorizer, nonce } (optional — binds the AP2 loop)"
+      },
       "output": "{ fulfilled: true, credential } | { fulfilled: false, verdict }",
       "auth": "requires an API key (Authorization: Bearer <key>)"
     }
@@ -79,5 +112,91 @@
     "auditChain": "/api/audit?verify=1 — keccak256 hash chain over every verdict (EU AI Act Art. 12)"
   },
   "docs": "https://onmerit.xyz",
-  "mcp": { "server": "server.json", "tools": ["verify_citation", "merit_research"], "run": "node scripts/mcp-server.mjs" }
+  "mcp": {
+    "server": "server.json",
+    "tools": [
+      "verify_citation",
+      "merit_research"
+    ],
+    "run": "node scripts/mcp-server.mjs"
+  },
+  "openapi": "https://onmerit.xyz/api/openapi",
+  "discovery": {
+    "note": "Circle Agent Marketplace / x402 Discovery API shape. Only x402-priced endpoints are listed; the other services above are free or API-keyed.",
+    "x402Version": 2,
+    "items": [
+      {
+        "resource": "https://onmerit.xyz/api/verify/paid",
+        "type": "http",
+        "x402Version": 2,
+        "accepts": [
+          {
+            "scheme": "exact",
+            "network": "eip155:5042002",
+            "asset": "0x3600000000000000000000000000000000000000",
+            "payTo": "0x415Fb8814084bDBC7B6964620Ba5Be5939aD2333",
+            "amount": "5000",
+            "maxTimeoutSeconds": 691200,
+            "extra": {
+              "name": "GatewayWalletBatched",
+              "version": "1",
+              "verifyingContract": "0x0077777d7EBA4688BDeF3E311b846F25870A19B9",
+              "verificationGated": true
+            }
+          }
+        ],
+        "metadata": {
+          "provider": {
+            "name": "Merit",
+            "website": "https://onmerit.xyz",
+            "docsUrl": "https://onmerit.xyz/api/openapi",
+            "description": "Proof-of-citation verification for the agent economy: check that a source actually supports the claim made from it, and gate the payment on the verdict.",
+            "category": "INFRASTRUCTURE",
+            "tags": [
+              "x402",
+              "arc",
+              "verification",
+              "citations",
+              "hallucination",
+              "settlement",
+              "usdc",
+              "nanopayments"
+            ]
+          },
+          "path": "/api/verify/paid",
+          "method": "POST",
+          "description": "Pay-per-call citation verification. POST {claim, source}; receive a signed SUPPORTED/REFUSED verdict a settlement gate can act on.",
+          "mimeType": "application/json",
+          "input": {
+            "body": {
+              "type": "object",
+              "required": [
+                "claim",
+                "source"
+              ],
+              "properties": {
+                "claim": {
+                  "type": "string",
+                  "description": "The assertion made from the source."
+                },
+                "source": {
+                  "type": "string",
+                  "description": "The source text the claim cites."
+                },
+                "depth": {
+                  "type": "string",
+                  "enum": [
+                    "numeric",
+                    "nli",
+                    "full"
+                  ],
+                  "default": "full"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
 }

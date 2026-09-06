@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { authGate, keyFromRequest, refreshAuthFromMirror, MISSING_KEY_ERROR } from "@/lib/auth";
 import { isSessionKey } from "@/lib/session";
 import { balanceStatus, creditDeposit, depositAddressFor, refreshBalanceFromMirror, simulateDeposit, withdrawBalance } from "@/lib/balance";
-import { isStub } from "@/lib/arc";
+import { isStub, chainLabel } from "@/lib/arc";
 import { walletSeedConfigured } from "@/lib/wallet";
 
 export const runtime = "nodejs";
@@ -39,7 +39,7 @@ export async function GET(req: Request) {
     gaslessDeposit: depositReady ? { endpoint: "/api/relay", how: "GET /api/relay for the EIP-712 domain and types, sign TransferWithAuthorization, POST it back — you never send a transaction and need no gas" } : null,
     ...(depositReady ? {} : { note: "deposits are not configured on this deployment (MERIT_WALLET_SEED unset)" }),
     asset: "USDC",
-    chain: "Arc testnet 5042002",
+    chain: chainLabel(),
     stub: isStub(),
   });
 }

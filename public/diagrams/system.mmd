@@ -1,0 +1,35 @@
+flowchart TB
+    classDef moat fill:#DCFCE7,stroke:#047857,stroke-width:2px,color:#052e1c
+    classDef refuse fill:#FEE2E2,stroke:#BE123C,stroke-width:2px,color:#4c0519
+    classDef circle fill:#EFF6FF,stroke:#1D4ED8,color:#0b224e
+    classDef arc fill:#F5F3FF,stroke:#6D28D9,color:#2a1065
+    classDef plain fill:#FFFFFF,stroke:#D4D4D8,color:#18181b
+
+    BUY["<b>Buyers</b><br/>AI agents on 6 frameworks · Circle Agent Stack CLI<br/>humans on onmerit.xyz · MCP clients"]:::plain
+    DISC["<b>Discovery</b><br/>/.well-known/x402 · /api/openapi · /api/pricing"]:::plain
+    PAY402["<b>x402 toll</b><br/>402 → pay → retry<br/>Circle Gateway nanopayments"]:::circle
+
+    ENGINE["<b>Verification engine</b><br/>1 numeric (no model) → 2 NLI<br/>3 adversarial judge → 4 consensus jury (0G TEE)"]:::moat
+    VERDICT["<b>Signed verdict</b><br/>verificationId = keccak256(canonical body)<br/>recoverable offline, without Merit"]:::moat
+    DEC{"grounded?"}:::moat
+
+    REFUSE["<b>REFUSED</b><br/>$0 moves — and the refusal<br/>is still recorded and signed"]:::refuse
+
+    GUARDS["<b>Pre-flight guards</b><br/>Circle Compliance KYT (fails closed)<br/>tx simulation · spend caps · kill switch"]:::circle
+    RAILS["<b>Settlement</b><br/>Gateway nanopayment · custody accrual<br/>ERC-8183 escrow released by the hook"]:::circle
+    PAYOUT["<b>Payout on Arc</b><br/>Memo-wrapped USDC transfer<br/>Multicall3From for a batch"]:::arc
+    REG["<b>ERC-8004 registries</b><br/>identity · reputation · validation"]:::arc
+    EMIT["<b>Both USDC emitters</b><br/>ERC-20 6dp + EIP-7708 system 18dp"]:::arc
+    OUT["<b>CCTP</b><br/>take earnings to Base / Arb / OP / AVAX"]:::circle
+
+    PROOF["<b>Proof surfaces</b><br/>/proof ledger · /api/reconcile<br/>/api/memo · /v/[id] receipts"]:::plain
+
+    BUY --> DISC --> PAY402 --> ENGINE --> VERDICT --> DEC
+    DEC -->|no| REFUSE
+    DEC -->|yes| GUARDS --> RAILS --> PAYOUT
+    RAILS --> REG
+    PAYOUT --> EMIT
+    PAYOUT --> OUT
+    EMIT --> PROOF
+    REFUSE --> PROOF
+    VERDICT --> PROOF

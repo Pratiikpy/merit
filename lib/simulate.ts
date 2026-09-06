@@ -13,8 +13,7 @@
  * "it will succeed".
  */
 import { createPublicClient, http, parseAbi, getAddress } from "viem";
-import { arcTestnet } from "viem/chains";
-import { ARC, isStub, round6 } from "./arc";
+import { ARC, isStub, round6, arcChain } from "./arc";
 
 const ERC20 = parseAbi([
   "function transfer(address to, uint256 amount) returns (bool)",
@@ -74,7 +73,7 @@ export async function simulateUsdcTransfer(input: { from: string; to: string; am
   const from = getAddress(input.from);
   const to = getAddress(input.to);
   try {
-    const pub = createPublicClient({ chain: arcTestnet, transport: http(ARC.rpcUrl) });
+    const pub = createPublicClient({ chain: arcChain(), transport: http(ARC.rpcUrl) });
     const atomic = BigInt(Math.round(input.amount * 1e6)); // USDC 6 decimals
     // Read the sender's USDC balance and native (gas) balance in parallel.
     const [rawBal, native] = await Promise.all([

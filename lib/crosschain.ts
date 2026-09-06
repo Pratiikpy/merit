@@ -13,19 +13,34 @@
  */
 import { GatewayClient } from "@circle-fin/x402-batching/client";
 import { getAddress } from "viem";
-import { isStub, round6 } from "./arc";
+import { ARC, isStub, round6 } from "./arc";
 import { assertPayeeCompliant } from "./compliance";
 import { ensureDeposit } from "./pay";
 import { loadDoc, saveDoc } from "./store";
 
-/** The Gateway chains Merit can settle a cross-chain payout to (Circle testnet domains), with a human label and
- *  the block explorer that shows the DESTINATION mint tx. Arc is included so a same-chain payout also works. */
-export const PAYOUT_CHAINS: Record<string, { label: string; explorer: string }> = {
+/** The Gateway chains Merit can settle a cross-chain payout to, with a human label and the block explorer that
+ *  shows the DESTINATION mint tx. The set follows Arc's network: a testnet Arc pays out to Circle's TESTNET
+ *  Gateway domains, a mainnet Arc to the mainnet ones. Mixing the two is not a degraded experience but a failed
+ *  transfer — Gateway will not burn on a testnet domain and mint on a mainnet one. Chain keys are Circle's own
+ *  (`GATEWAY_DOMAINS` in @circle-fin/x402-batching). Arc itself is included so a same-chain payout also works. */
+const TESTNET_PAYOUT_CHAINS: Record<string, { label: string; explorer: string }> = {
   baseSepolia: { label: "Base Sepolia", explorer: "https://sepolia.basescan.org/tx/" },
   arbitrumSepolia: { label: "Arbitrum Sepolia", explorer: "https://sepolia.arbiscan.io/tx/" },
   optimismSepolia: { label: "Optimism Sepolia", explorer: "https://sepolia-optimism.etherscan.io/tx/" },
   avalancheFuji: { label: "Avalanche Fuji", explorer: "https://testnet.snowtrace.io/tx/" },
-  arcTestnet: { label: "Arc Testnet", explorer: "https://testnet.arcscan.app/tx/" },
+};
+const MAINNET_PAYOUT_CHAINS: Record<string, { label: string; explorer: string }> = {
+  base: { label: "Base", explorer: "https://basescan.org/tx/" },
+  arbitrum: { label: "Arbitrum One", explorer: "https://arbiscan.io/tx/" },
+  optimism: { label: "Optimism", explorer: "https://optimistic.etherscan.io/tx/" },
+  avalanche: { label: "Avalanche C-Chain", explorer: "https://snowtrace.io/tx/" },
+};
+
+export const PAYOUT_CHAINS: Record<string, { label: string; explorer: string }> = {
+  ...(ARC.isTestnet ? TESTNET_PAYOUT_CHAINS : MAINNET_PAYOUT_CHAINS),
+  // The Arc row follows the active network, so a same-chain payout links to the right explorer. Omitted when
+  // Circle has published no Gateway chain key for this Arc network — an unnamed chain cannot be settled to.
+  ...(ARC.gatewayChainName ? { [ARC.gatewayChainName]: { label: ARC.label, explorer: `${ARC.explorer}/tx/` } } : {}),
 };
 
 export function supportedPayoutChains(): Array<{ chain: string; label: string }> {
@@ -35,8 +50,14 @@ export function supportedPayoutChains(): Array<{ chain: string; label: string }>
 let gateway: GatewayClient | null = null;
 function client(): GatewayClient {
   if (gateway) return gateway;
+  const chainName = ARC.gatewayChainName;
+  if (!chainName) {
+    // Circle's Gateway SDK ships no chain key for this network yet. Fail with the reason rather than guessing a
+    // name, which would surface as an opaque settlement error much later.
+    throw new Error(`Circle Gateway has no chain key configured for ${ARC.label} — set ${"ARC_MAINNET_GATEWAY_CHAIN"} once Circle publishes it`);
+  }
   gateway = new GatewayClient({
-    chain: "arcTestnet",
+    chain: chainName as "arcTestnet",
     privateKey: process.env.BUYER_PRIVATE_KEY as `0x${string}`,
     rpcUrl: process.env.ARC_RPC_URL,
   });
@@ -135,7 +156,7 @@ export async function crossChainPayout(input: { amount: number; chain: string; r
     // from the caller's wallet, so a cross-chain payout needs native gas on that chain; map that revert to an
     // actionable message (a same-chain Arc payout needs only Arc gas, which is why arcTestnet settles here).
     const msg = (e as Error).message || "";
-    if (/gas required exceeds allowance|insufficient funds for gas|exceeds allowance \(0\)/i.test(msg) && chain !== "arcTestnet") {
+    if (/gas required exceeds allowance|insufficient funds for gas|exceeds allowance \(0\)/i.test(msg) && chain !== ARC.gatewayChainName) {
       return {
         ok: false,
         status: 502,

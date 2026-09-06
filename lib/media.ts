@@ -16,7 +16,7 @@
  */
 import { randomBytes } from "node:crypto";
 import { keccak256, toHex } from "viem";
-import { round6 } from "./arc";
+import { round6, explorerTx } from "./arc";
 import { verifyCitation, isVerifyError } from "./verify/engine";
 import { signReceipt, verificationId } from "./receipt";
 import { accrueCustody, refreshCustodyFromMirror } from "./custody";
@@ -266,7 +266,7 @@ async function releaseLicense(media: MediaItem, vId: string | undefined): Promis
         const rel = hookRes.txs.find((t) => t.step.startsWith("complete"));
         if (rel) {
           settlement.tx = rel.hash;
-          settlement.explorerUrl = `https://testnet.arcscan.app/tx/${rel.hash}`;
+          settlement.explorerUrl = explorerTx(rel.hash);
         }
       }
     } catch {

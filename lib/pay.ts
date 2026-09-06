@@ -3,7 +3,7 @@
  * real sub-cent x402 nanopayments to each cited+verified source. Stub-safe.
  */
 import { GatewayClient } from "@circle-fin/x402-batching/client";
-import { isStub, fakeTxHash, explorerTx, round6 } from "./arc";
+import { ARC, isStub, fakeTxHash, explorerTx, round6 } from "./arc";
 import { serialize } from "./locks";
 
 export interface SettleResult {
@@ -21,8 +21,12 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 function client(): GatewayClient {
   if (gateway) return gateway;
   const pk = process.env.BUYER_PRIVATE_KEY as `0x${string}`;
+  const chainName = ARC.gatewayChainName;
+  if (!chainName) {
+    throw new Error(`Circle Gateway has no chain key configured for ${ARC.label} — set ARC_MAINNET_GATEWAY_CHAIN once Circle publishes it`);
+  }
   gateway = new GatewayClient({
-    chain: "arcTestnet",
+    chain: chainName as "arcTestnet",
     privateKey: pk,
     rpcUrl: process.env.ARC_RPC_URL,
   });

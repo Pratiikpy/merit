@@ -7,7 +7,7 @@ import { chromium } from "playwright";
 const require = createRequire(import.meta.url);
 const axeSource = fs.readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
 const BASE = process.env.QA_BASE || "https://onmerit.xyz";
-const PAGES = ["/", "/verify.html", "/proof.html", "/reconcile.html", "/statement.html", "/jury.html", "/compliance.html", "/inference.html", "/scorecard.html", "/gigs.html", "/crosschain.html", "/market.html", "/media.html", "/break.html", "/honesty.html", "/benchmark.html", "/onboard.html", "/passport.html", "/brandkit"];
+const PAGES = ["/", "/verify.html", "/proof.html", "/reconcile.html", "/architecture.html", "/statement.html", "/jury.html", "/compliance.html", "/inference.html", "/scorecard.html", "/gigs.html", "/crosschain.html", "/market.html", "/media.html", "/break.html", "/honesty.html", "/benchmark.html", "/onboard.html", "/passport.html", "/brandkit"];
 
 const browser = await chromium.launch();
 const all = [];

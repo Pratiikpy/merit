@@ -14,7 +14,7 @@
  * worker address is compliance-screened before any release. Store-backed (+ mirror); holds no private keys.
  */
 import { randomBytes } from "node:crypto";
-import { round6 } from "./arc";
+import { round6, explorerTx } from "./arc";
 import { gradeDeliverable, isGradeError, type RubricItem } from "./grade";
 import { accrueCustody, refreshCustodyFromMirror } from "./custody";
 import { assertPayeeCompliant } from "./compliance";
@@ -292,7 +292,7 @@ async function releaseEscrow(
         const release = hookRes.txs.find((t) => t.step.startsWith("complete"));
         if (release) {
           settlement.tx = release.hash;
-          settlement.explorerUrl = `https://testnet.arcscan.app/tx/${release.hash}`;
+          settlement.explorerUrl = explorerTx(release.hash);
         }
       }
     } catch {

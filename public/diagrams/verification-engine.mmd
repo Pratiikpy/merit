@@ -1,0 +1,26 @@
+flowchart LR
+    IN["claim + source"] --> N
+
+    N{"1 · Numeric gate<br/><i>deterministic</i>"}
+    N --> |"figure contradicts source"| REF["REFUSED<br/>$0 settles"]
+    N --> |"no numeric conflict"| NLI
+
+    NLI{"2 · NLI<br/>factual consistency"}
+    NLI --> |"entailment below floor"| REF
+    NLI --> |"passes"| J
+
+    J{"3 · Adversarial judge<br/>injection-resistant"}
+    J --> |"unsupported"| REF
+    J --> |"supported"| JURY
+
+    JURY{"4 · Consensus jury<br/><i>premium tier</i><br/>0G TEE-attested panel"}
+    JURY --> |"panel disagrees"| REF
+    JURY --> |"panel agrees"| SUP["SUPPORTED<br/>payment may settle"]
+
+    SUP --> SIG["Signed verdict<br/>EIP-191 over canonical JSON<br/>recoverable offline"]
+    REF --> SIG
+
+    classDef ok fill:#DCFCE7,stroke:#047857
+    classDef no fill:#FEE2E2,stroke:#BE123C
+    class SUP ok
+    class REF no
