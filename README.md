@@ -545,18 +545,24 @@ on [`testnet.arcscan.app`](https://testnet.arcscan.app). Built on `circlefin/arc
 
 ## Running on Arc mainnet
 
-Arc mainnet is not published yet: the Arc docs state that mainnet addresses are unavailable, and Circle's
-Gateway SDK ships `arcTestnet` with no mainnet counterpart. So Merit does not guess. The network is
-configuration, not a constant — `ARC_NETWORK=testnet` (the default) is the exact chain, RPC and addresses every
-verified transaction in this repo used, and `ARC_NETWORK=mainnet` assembles the profile from `ARC_MAINNET_*`
-environment values.
+Arc mainnet launched (chain 5042, live 2026-09). Merit does not guess: the network is configuration, not a
+constant — `ARC_NETWORK=testnet` (the default) is the exact chain, RPC and addresses every verified transaction
+in this repo used, and `ARC_NETWORK=mainnet` assembles the profile from `ARC_MAINNET_*` environment values,
+every one of which (bar two exceptions below) is read live off Arc mainnet with `eth_chainId` / `eth_getCode`,
+never invented.
+
+Two things are still genuinely missing, not guessed around: the **ERC-8004 identity/reputation/validation
+registries have no published mainnet address** anywhere in Arc's docs, and **Merit's own 7 contracts**
+(MeritJob, MeritVerificationHook, Escrow, Stake, Insurance, PredictionMarket, AttestationVerifier) exist on
+testnet only until redeployed — see `contracts/DEPLOY-MAINNET.md`.
 
 The safety property is that a **missing mainnet value is never filled in with a testnet one**. Point Merit at
 mainnet with nothing configured and it reports empty values that fail loudly, rather than quietly sending real
 money to the wrong chain's contracts. `GET /api/health` returns `mainnetReadiness`: which values are set, which
 are missing, the env var for each, and what each one gates. Proven by `tests/arc-network.test.ts`.
 
-Moving this deployment to Arc mainnet is a set of environment variables. No code change.
+Moving this deployment to Arc mainnet is a set of environment variables plus redeploying Merit's own contracts.
+No code change.
 
 ## License
 

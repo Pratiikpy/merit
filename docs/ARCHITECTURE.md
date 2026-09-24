@@ -156,8 +156,8 @@ one that is not — the safe direction when the output is money. Reproduce with 
 
 ## 5. Network configuration
 
-Arc mainnet is not published yet — the Arc docs state that mainnet addresses are unavailable, and Circle's
-Gateway SDK ships `arcTestnet` with no mainnet counterpart. So Merit treats the network as configuration, and
+Arc mainnet launched (chain 5042); most addresses Merit needs are published and verified live, but the ERC-8004
+registries and Merit's own 7 contracts are not yet on mainnet. So Merit treats the network as configuration, and
 invents nothing:
 
 ```mermaid

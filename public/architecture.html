@@ -82,7 +82,7 @@
   <p class="note"><strong>Measured, not asserted.</strong> A forkable 275-case adversarial benchmark across 14 failure modes: <strong>100% recall</strong> — every adversarial case caught, 197 held, 0 slipped — at 90.4% precision / 94.9% F1. The verifier is conservative by design: it over-refuses roughly 30% of genuinely-supported claims rather than risk paying for one that is not. That is the safe direction when the output is money. Reproduce with <code>npm run bench-judge</code>.</p>
 
   <h2>4 · Network configuration</h2>
-  <p class="lede">Arc mainnet is not published yet — the Arc docs say mainnet addresses are unavailable, and Circle's Gateway SDK ships <code>arcTestnet</code> with no mainnet counterpart. So Merit treats the network as configuration and invents nothing.</p>
+  <p class="lede">Arc mainnet launched (chain 5042) — most addresses Merit needs are published and verified live, but the ERC-8004 registries and Merit's own 7 contracts are not yet on mainnet. So Merit treats the network as configuration and invents nothing.</p>
   <figure>
     <img src="/diagrams/network-config.svg" alt="Flowchart of network configuration. The ARC_NETWORK environment variable selects either testnet — the default, chain 5042002, with every address verified on the live chain — or mainnet, assembled from ARC_MAINNET environment values. A readiness check names every missing value and what it gates. When chain id, RPC and USDC are all present the deployment is settlement-ready; when a value is absent the feature degrades honestly and a testnet address is never substituted for a mainnet one.">
     <figcaption>Moving to Arc mainnet is environment variables, not a code change — proven by <code>tests/arc-network.test.ts</code>.</figcaption>
