@@ -1,0 +1,48 @@
+{
+  "network": "arc-mainnet",
+  "chainId": 5042,
+  "rpc": "https://rpc.mainnet.arc.io",
+  "explorer": "https://explorer.arc.io",
+  "deployedAt": "2026-09-24",
+  "usdc": "0x3600000000000000000000000000000000000000",
+  "deployer": "0x240b90DeD3aCa4728faAdC5123080F0fcBb4bE72",
+  "deployCostUsdc": "0.091142",
+  "contracts": {
+    "Escrow": "0x809E1DF72d1025E363dCCa05C8C72D7E5F6f6095",
+    "Stake": "0xbb2b10e7ec2cEF15C1321330F6ef14cC06D7260F",
+    "Insurance": "0x58ae3ae7D9c149aF207Ead8E66D1268e58A55197",
+    "PredictionMarket": "0x54976F395277c2f4d3C80e68b8253920cac73673",
+    "AttestationVerifier": "0xA3ff04B82F10fd55E77856A6759E1dBF02ef6655",
+    "MeritVerificationHook": "0xB498e0459389E1941F0FEf178430d8e49B855dd5",
+    "MeritJob": "0x0A76d7De3a855b137BAb96B7A9eEdfA49880E554"
+  },
+  "explorerLinks": {
+    "Escrow": "https://explorer.arc.io/address/0x809E1DF72d1025E363dCCa05C8C72D7E5F6f6095",
+    "Stake": "https://explorer.arc.io/address/0xbb2b10e7ec2cEF15C1321330F6ef14cC06D7260F",
+    "Insurance": "https://explorer.arc.io/address/0x58ae3ae7D9c149aF207Ead8E66D1268e58A55197",
+    "PredictionMarket": "https://explorer.arc.io/address/0x54976F395277c2f4d3C80e68b8253920cac73673",
+    "AttestationVerifier": "https://explorer.arc.io/address/0xA3ff04B82F10fd55E77856A6759E1dBF02ef6655",
+    "MeritVerificationHook": "https://explorer.arc.io/address/0xB498e0459389E1941F0FEf178430d8e49B855dd5",
+    "MeritJob": "https://explorer.arc.io/address/0x0A76d7De3a855b137BAb96B7A9eEdfA49880E554"
+  },
+  "sourcifyVerification": {
+    "status": "exact_match on all 7 (source, constructor args and bytecode all match) — verified 2026-09-24",
+    "note": "Arc's own explorer.arc.io Blockscout API (both /api directly and via Sourcify's forward-to-blockscout step) returns a Cloudflare JS challenge page instead of JSON, so the verified-badge does not appear on explorer.arc.io itself yet. This was tried directly (forge verify-contract --verifier blockscout) and via Sourcify's own blockscout forwarding, both blocked the same way — a real external limitation of Arc's mainnet explorer, not a Merit-side gap. Source is genuinely verified and independently checkable at sourcify.dev regardless.",
+    "jobs": {
+      "AttestationVerifier": "https://sourcify.dev/server/v2/verify/e2549fc7-3ee5-420e-8543-5ced9c23be22",
+      "Escrow": "https://sourcify.dev/server/v2/verify/8647785b-515c-462f-96e5-0226c241be3a",
+      "Stake": "https://sourcify.dev/server/v2/verify/ad1291e6-8468-45ec-83ac-7179c644e7fc",
+      "Insurance": "https://sourcify.dev/server/v2/verify/78247b8a-4824-4e40-9bed-3a08a14acee1",
+      "PredictionMarket": "https://sourcify.dev/server/v2/verify/37962182-c4d8-47a1-b828-f427e9b33201",
+      "MeritVerificationHook": "https://sourcify.dev/server/v2/verify/b8a6d55d-f5d0-4611-85b5-6a573690b3df",
+      "MeritJob": "https://sourcify.dev/server/v2/verify/d38714b8-a77d-4270-814c-dbb6aff8ec04"
+    }
+  },
+  "roles": {
+    "operator_slasher_arbiter_oracle_verdictRecorder": "0x240b90DeD3aCa4728faAdC5123080F0fcBb4bE72",
+    "treasury": "0x240b90DeD3aCa4728faAdC5123080F0fcBb4bE72",
+    "attestationAuditor": "0x415Fb8814084bDBC7B6964620Ba5Be5939aD2333",
+    "stakeCooldownSeconds": 604800
+  },
+  "note": "Broadcast record in contracts/broadcast/Deploy.s.sol/5042/run-latest.json. Same DeployAll script, same roles/defaults as the Arc testnet deployment in deployments.json — chain 5042 (mainnet) vs 5042002 (testnet), separate state, separate addresses. ERC-8004 identity/reputation/validation registries have no published Arc mainnet address (checked docs.arc.io and eth_getCode) so Merit's ERC-8004 writes stay testnet-only until Circle/the registry deployer ships one."
+}
