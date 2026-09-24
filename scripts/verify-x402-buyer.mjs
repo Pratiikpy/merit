@@ -101,7 +101,19 @@ async function main() {
     );
   }
   ok("the buyer is independent of the payee", `paying as ${buyer.address} → ${quoted.payTo}`);
-  const gateway = new GatewayClient({ chain: "arcTestnet", privateKey: pk.startsWith("0x") ? pk : `0x${pk}`, rpcUrl: env.ARC_RPC_URL });
+  // Which Gateway chain key to sign against is read from what the SERVER just quoted (`quoted.network`,
+  // CAIP-2 eip155:<chainId>), not hard-coded — so this script proves whatever network the target server is
+  // actually running on, mainnet included, instead of always assuming testnet.
+  const NETWORK = (process.env.ARC_NETWORK || env.ARC_NETWORK || "testnet").trim().toLowerCase() === "mainnet" ? "mainnet" : "testnet";
+  const quotedChainId = Number(String(quoted.network || "").split(":")[1] || 0);
+  const expectedChainId = NETWORK === "mainnet" ? Number(process.env.ARC_MAINNET_CHAIN_ID || env.ARC_MAINNET_CHAIN_ID) || 5042 : 5042002;
+  if (quotedChainId && quotedChainId !== expectedChainId) {
+    return bad("the 402 quote is on the network this run targets", `quoted network=${quoted.network} (chain ${quotedChainId}), this run targets ${NETWORK} (chain ${expectedChainId}) — refusing to sign a Gateway payment against the wrong chain`);
+  }
+  ok("the 402 quote is on the network this run targets", `${quoted.network} matches ${NETWORK}`);
+  const gatewayChain = NETWORK === "mainnet" ? process.env.ARC_MAINNET_GATEWAY_CHAIN || env.ARC_MAINNET_GATEWAY_CHAIN || "arc" : "arcTestnet";
+  const rpcUrl = NETWORK === "mainnet" ? process.env.ARC_MAINNET_RPC_URL || env.ARC_MAINNET_RPC_URL : env.ARC_RPC_URL;
+  const gateway = new GatewayClient({ chain: gatewayChain, privateKey: pk.startsWith("0x") ? pk : `0x${pk}`, rpcUrl });
 
   const priceUsdc = Number(quoted.amount) / 1e6;
   let avail = Number((await gateway.getBalances()).gateway.available) / 1e6;

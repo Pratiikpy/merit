@@ -28,7 +28,7 @@ function client(): GatewayClient {
   gateway = new GatewayClient({
     chain: chainName as "arcTestnet",
     privateKey: pk,
-    rpcUrl: process.env.ARC_RPC_URL,
+    rpcUrl: ARC.rpcUrl,
   });
   return gateway;
 }

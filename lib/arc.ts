@@ -8,14 +8,18 @@
  * `ARC_NETWORK=testnet` (the default) reproduces the previous behaviour exactly — the same ids, addresses and
  * RPC that every verified transaction in this repo was produced against.
  *
- * `ARC_NETWORK=mainnet` reads its addresses from the environment and INVENTS NOTHING. Circle has not published
- * Arc mainnet contract addresses or RPC endpoints — the Arc docs say so plainly ("Mainnet addresses are not yet
- * available"), and Circle's own Gateway SDK ships `arcTestnet` with no mainnet counterpart. So the mainnet
- * profile is a set of required inputs, not a set of guesses: `mainnetReadiness()` reports exactly which values
- * are supplied and which are still missing, and the app says so rather than pretending. The moment Circle
- * publishes them, Merit runs on mainnet by setting environment variables — no code change.
+ * `ARC_NETWORK=mainnet` reads its addresses from the environment and INVENTS NOTHING. Arc mainnet launched
+ * (chain 5042, live 2026-09) and most of what Merit needs is published and verified against the live chain:
+ * USDC, the Memo/Multicall3From transaction extensions (same addresses as testnet), Gateway, CCTP. One piece
+ * is genuinely still missing — the ERC-8004 identity/reputation/validation registries have no mainnet address
+ * anywhere in Arc's docs, and `eth_getCode` at the testnet address returns nothing on mainnet — so the mainnet
+ * profile stays a set of required inputs rather than guesses: `mainnetReadiness()` reports exactly which values
+ * are supplied and which are still missing, and the app says so rather than pretending. Merit's own 7 contracts
+ * (MeritJob, MeritVerificationHook, etc.) are a separate requirement again — they exist on testnet only until
+ * redeployed to mainnet; see `contracts/DEPLOY-MAINNET.md`.
  */
-import { defineChain, type Chain } from "viem";
+import { defineChain, type Chain, type GetLogsParameters, type GetLogsReturnType, type PublicClient } from "viem";
+import type { AbiEvent } from "abitype";
 import { arcTestnet } from "viem/chains";
 
 export type ArcNetworkName = "testnet" | "mainnet";
@@ -326,4 +330,59 @@ export function fakeTxHash(): string {
 /** Round to 6-decimal USDC precision (dollar number). */
 export function round6(n: number): number {
   return Math.round(n * 1e6) / 1e6;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// eth_getLogs against Arc's RPC — TWO independent caps, confirmed by probing the live chain rather than
+// assumed from docs.
+// ---------------------------------------------------------------------------------------------------------
+
+/** Arc's RPC hard per-request BLOCK-RANGE cap, confirmed identical on testnet and mainnet by binary search
+ *  against both live chains: a `[fromBlock, toBlock]` span of exactly 10,000 blocks inclusive succeeds, and
+ *  10,001 is refused with `-32012 "requested range too large"`. (An earlier version of this constant was used
+ *  as `cursor + MAX_BLOCKS` for the chunk end — an off-by-one that produced a 10,001-block span and worked by
+ *  chance on testnet's more permissive node, then failed outright the first time it ran against mainnet.) */
+export const MAX_LOG_BLOCK_SPAN = 10_000;
+
+const LOG_CAP_ERROR = /range too large|exceeds max results|query returned more than|response size exceeded/i;
+
+/**
+ * `client.getLogs`, resilient to a SECOND cap Arc's RPC enforces independently of block range: a per-request
+ * RESULT-COUNT ceiling — confirmed at 2,000 on Arc mainnet by probing the live USDC contract's unfiltered
+ * Transfer log volume; never hit on testnet, whose lower real transaction volume happens not to fill a
+ * 10,000-block window that far. Assuming one network's traffic pattern forever is exactly how this broke:
+ * Merit's own outflow reconciliation scan and memoId lookup both went straight from "chunk by block count" to
+ * "throw" the first time a real chunk exceeded 2,000 logs, surfacing as a bare 502 with no partial result.
+ *
+ * A window wider than `MAX_LOG_BLOCK_SPAN` is split into <=10,000-block pieces up front (recursively); a piece
+ * that still comes back "too large" — real log volume, not a bug — is bisected and retried rather than dropped.
+ * Every log actually in `[fromBlock, toBlock]` is eventually returned; the caller owns its own request/wall-
+ * clock budget (how many top-level windows to scan at all), same as before this existed. Generic over the ABI
+ * event, exactly like viem's own `getLogs`, so a caller filtering on `event`/`args` keeps the same decoded,
+ * strongly-typed `args` on every returned log — this is a drop-in replacement, not a looser one.
+ */
+export async function getLogsResilient<const abiEvent extends AbiEvent | undefined = undefined>(
+  client: PublicClient,
+  params: GetLogsParameters<abiEvent> & { fromBlock: bigint; toBlock: bigint },
+  depth = 0,
+): Promise<GetLogsReturnType<abiEvent>> {
+  const span = params.toBlock - params.fromBlock + BigInt(1);
+  if (span > BigInt(MAX_LOG_BLOCK_SPAN)) {
+    const mid = params.fromBlock + BigInt(MAX_LOG_BLOCK_SPAN) - BigInt(1);
+    const left = await getLogsResilient(client, { ...params, toBlock: mid }, depth);
+    const right = await getLogsResilient(client, { ...params, fromBlock: mid + BigInt(1) }, depth);
+    return [...left, ...right] as GetLogsReturnType<abiEvent>;
+  }
+  try {
+    return (await client.getLogs(params)) as GetLogsReturnType<abiEvent>;
+  } catch (e) {
+    const msg = (e as Error)?.message || String(e);
+    // depth cap: a genuine single-block failure (span===1) or 14 levels of bisection (≈ a 10,000-block window
+    // split down to single blocks) must surface as a real error rather than recurse forever.
+    if (!LOG_CAP_ERROR.test(msg) || span <= BigInt(1) || depth >= 14) throw e;
+    const mid = params.fromBlock + span / BigInt(2);
+    const left = await getLogsResilient(client, { ...params, toBlock: mid }, depth + 1);
+    const right = await getLogsResilient(client, { ...params, fromBlock: mid + BigInt(1) }, depth + 1);
+    return [...left, ...right] as GetLogsReturnType<abiEvent>;
+  }
 }

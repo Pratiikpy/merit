@@ -117,7 +117,7 @@ export async function creditDeposit(id: string, txHash: string): Promise<{ credi
     if (log.credited[key]) return { error: "this deposit was already credited", status: 409 }; // global — never double-credit
     const addr = depositAddressFor(id); // this principal's unique deposit address
     try {
-      const pub = createPublicClient({ transport: http(process.env.ARC_RPC_URL || ARC.rpcUrl) });
+      const pub = createPublicClient({ transport: http(ARC.rpcUrl) });
       const rc = await pub.getTransactionReceipt({ hash: txHash as `0x${string}` });
       if (rc.status !== "success") return { error: "that deposit transaction did not succeed on-chain", status: 400 };
       const transfers = parseEventLogs({
@@ -242,7 +242,7 @@ export async function withdrawBalance(id: string, toWallet: string): Promise<{ t
     persist();
     try {
       const account = privateKeyToAccount(derivePrivateKey(id)); // the principal's own deposit-address key
-      const rpc = process.env.ARC_RPC_URL || ARC.rpcUrl;
+      const rpc = ARC.rpcUrl;
       const pub = createPublicClient({ transport: http(rpc) });
       const atomic = BigInt(Math.round(amount * 1e6));
       // The memo makes the refund self-explaining on chain: which deposits funded it, and the verified/refused

@@ -32,9 +32,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 const args = process.argv.slice(2);
 const BASE = (args[args.indexOf("--base") + 1] || "").startsWith("http") ? args[args.indexOf("--base") + 1] : "http://localhost:3011";
-const RPC = process.env.ARC_RPC_URL || "https://rpc.testnet.arc.network";
-const USDC = "0x3600000000000000000000000000000000000000";
-const CHAIN_ID = 5042002;
+const USDC = "0x3600000000000000000000000000000000000000"; // identical address on both Arc testnet and mainnet
 const DATA_DIR = process.env.MERIT_DATA_DIR || path.join(process.cwd(), ".data");
 // Two real domains that each serve /.well-known/merit.json, so the BATCH path (two balances on one domain)
 // and the SINGLE path (one balance on another) can both be driven through the real claim route in one run.
@@ -50,6 +48,18 @@ const env = Object.fromEntries(
 );
 const ADMIN = process.env.MERIT_ADMIN_TOKEN || env.MERIT_ADMIN_TOKEN;
 const FUNDER_KEY = (process.env.CUSTODY_KEY || process.env.BUYER_PRIVATE_KEY || env.CUSTODY_KEY || env.BUYER_PRIVATE_KEY || "").trim();
+
+// The network is configuration here too — this script is a separate process from the server it's testing, so
+// it reads the SAME ARC_NETWORK the server was started with (from .env.local, since this reads that file
+// directly rather than through Next.js's env loader) rather than hard-coding testnet. Getting this wrong would
+// silently sign EIP-3009 authorizations against the wrong chainId in step 6 — a guaranteed-wrong test, not a
+// real one — so it is asserted against the server's own reported chain, not just trusted.
+const NETWORK = (process.env.ARC_NETWORK || env.ARC_NETWORK || "testnet").trim().toLowerCase() === "mainnet" ? "mainnet" : "testnet";
+const RPC =
+  NETWORK === "mainnet"
+    ? process.env.ARC_MAINNET_RPC_URL || env.ARC_MAINNET_RPC_URL || "https://rpc.mainnet.arc.io"
+    : process.env.ARC_RPC_URL || env.ARC_RPC_URL || "https://rpc.testnet.arc.network";
+const CHAIN_ID = NETWORK === "mainnet" ? Number(process.env.ARC_MAINNET_CHAIN_ID || env.ARC_MAINNET_CHAIN_ID) || 5042 : 5042002;
 
 const pub = createPublicClient({ transport: http(RPC) });
 const results = [];
@@ -100,12 +110,14 @@ async function main() {
     console.log(`ARC_TEST_STAMP=${STAMP}`);
     return;
   }
-  console.log(`Merit · Arc-native settlement verification\nbase=${BASE}  rpc=${RPC}  store=${DATA_DIR}\n`);
+  console.log(`Merit · Arc-native settlement verification\nnetwork=${NETWORK}  base=${BASE}  rpc=${RPC}  store=${DATA_DIR}\n`);
 
   const health = await api("/api/health");
   if (health.status !== 200) return bad("server reachable", `GET /api/health → ${health.status}`);
   if (health.body.stub) return bad("server is live", "the server is in STUB mode — this test requires STUB=0 and real keys");
   ok("server is live", `mode=${health.body.mode || "live"} chain=${health.body.chainId || CHAIN_ID}`);
+  if (health.body.chain !== CHAIN_ID) return bad("server chain matches the network this script targets", `server reports chain ${health.body.chain}, this run targets ${NETWORK} (chain ${CHAIN_ID}) — refusing to sign EIP-3009 authorizations against the wrong chainId`);
+  else ok("server chain matches the network this script targets", `both report chain ${CHAIN_ID} (${NETWORK})`);
 
   // The domain must really serve a passport, because the claim route really fetches it.
   const passport = await fetch(`https://${DOMAIN}/.well-known/merit.json`, { redirect: "follow" }).then((r) => r.json()).catch(() => null);

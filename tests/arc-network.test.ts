@@ -3,10 +3,9 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 /**
  * Arc is a network, not a constant.
  *
- * Merit was written against Arc Testnet with chain 5042002 hard-coded in nine modules. Circle has not published
- * Arc mainnet addresses yet — the Arc docs say so, and Circle's own Gateway SDK ships `arcTestnet` with no
- * mainnet counterpart — so "mainnet-ready" cannot mean "we guessed the addresses". It has to mean two things,
- * and these tests hold both:
+ * Merit was written against Arc Testnet with chain 5042002 hard-coded in nine modules. Arc mainnet has since
+ * launched (chain 5042) and most addresses are published, but the ERC-8004 registries still are not — so
+ * "mainnet-ready" cannot mean "we guessed the addresses". It has to mean two things, and these tests hold both:
  *
  *   1. the default is byte-identical to the testnet Merit has always run on, and
  *   2. one environment switch moves the whole app, with every unset value reported rather than substituted.

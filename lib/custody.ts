@@ -169,7 +169,7 @@ export async function claimCustody(id: string, toWallet: string): Promise<{ tx: 
     if (sim.simulated && !sim.wouldSucceed) {
       return { error: `payout pre-flight predicts failure — ${sim.reason}`, status: 422 };
     }
-    const rpc = process.env.ARC_RPC_URL || ARC.rpcUrl;
+    const rpc = ARC.rpcUrl;
     const pub = createPublicClient({ transport: http(rpc) });
     const atomic = BigInt(Math.round(amount * 1e6)); // USDC has 6 decimals
     // The provenance behind this exact disbursement — the accruals that make up the unclaimed balance.
@@ -261,7 +261,7 @@ export async function claimCustodyBatch(ids: string[], toWallet: string): Promis
       memo: { memoId: memos[i].memoId, memoData: memos[i].memoData },
     }));
     const sent = await sendMemoedBatch({ account, lines });
-    const pub = createPublicClient({ transport: http(process.env.ARC_RPC_URL || ARC.rpcUrl) });
+    const pub = createPublicClient({ transport: http(ARC.rpcUrl) });
     const rc = await pub.waitForTransactionReceipt({ hash: sent.hash });
     if (rc.status !== "success") return { error: "the batched USDC payout reverted on-chain", status: 502 };
 

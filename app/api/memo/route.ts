@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPublicClient, getAddress, http, keccak256, type Hex } from "viem";
-import { ARC, explorerTx, round6 } from "@/lib/arc";
+import { ARC, explorerTx, getLogsResilient, round6 } from "@/lib/arc";
 import {
   MEMO_EVENTS,
   decodeMemoLogs,
@@ -28,11 +28,11 @@ export const dynamic = "force-dynamic";
  * memoId lookup scans a bounded, explicitly-reported window rather than pretending to search all history.
  */
 
-const MAX_BLOCKS = 10_000; // the RPC's hard per-request range limit, measured against Arc testnet
+const MAX_BLOCKS = 10_000; // the RPC's hard per-request range limit — confirmed identical on Arc testnet and mainnet
 const MAX_CHUNKS = 12; // ≈17 hours of history; keeps a public, unauthenticated read bounded
 
 function pub() {
-  return createPublicClient({ transport: http(process.env.ARC_RPC_URL || ARC.rpcUrl) });
+  return createPublicClient({ transport: http(ARC.rpcUrl) });
 }
 
 /** Re-derive everything the memo asserts about itself, from the receipt alone. */
@@ -132,9 +132,12 @@ export async function GET(req: Request) {
   let cursor = from;
   let scanned = 0;
   while (cursor <= head && scanned < MAX_CHUNKS) {
-    const end = cursor + BigInt(MAX_BLOCKS) > head ? head : cursor + BigInt(MAX_BLOCKS);
+    // end is INCLUSIVE and the cap is a 10,000-block SPAN — MAX_BLOCKS - 1 keeps the span at exactly MAX_BLOCKS
+    // blocks. Using MAX_BLOCKS directly produced a 10,001-block span, refused outright on Arc mainnet's RPC
+    // (testnet's node happened to tolerate it).
+    const end = cursor + BigInt(MAX_BLOCKS - 1) > head ? head : cursor + BigInt(MAX_BLOCKS - 1);
     try {
-      const logs = await client.getLogs({
+      const logs = await getLogsResilient(client, {
         address: ARC.memo as `0x${string}`,
         event: MEMO_EVENTS[0],
         args: { memoId: id as Hex },

@@ -135,7 +135,7 @@ export interface Authorization {
 }
 
 function pub() {
-  return createPublicClient({ transport: http(process.env.ARC_RPC_URL || ARC.rpcUrl) });
+  return createPublicClient({ transport: http(ARC.rpcUrl) });
 }
 
 /** The relayer EOA — the wallet whose USDC pays the gas. Distinct env var so it can be funded and rotated
@@ -304,7 +304,7 @@ export async function relayTransferWithAuthorization(auth: Authorization): Promi
 
     const fees = await client.estimateFeesPerGas().catch(() => null);
     const maxFeePerGas = fees?.maxFeePerGas && fees.maxFeePerGas > ARC_MIN_MAX_FEE_PER_GAS ? fees.maxFeePerGas : ARC_MIN_MAX_FEE_PER_GAS;
-    const wallet = createWalletClient({ account, transport: http(process.env.ARC_RPC_URL || ARC.rpcUrl) });
+    const wallet = createWalletClient({ account, transport: http(ARC.rpcUrl) });
     const hash = await wallet.sendTransaction({
       to: ARC.usdc as `0x${string}`,
       data,

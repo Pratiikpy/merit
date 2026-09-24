@@ -21,14 +21,14 @@
  * unexplained in this window", never "nothing unexplained ever".
  */
 import { createPublicClient, getAddress, http, type Hex } from "viem";
-import { ARC, explorerTx, round6 } from "./arc";
+import { ARC, explorerTx, getLogsResilient, round6, MAX_LOG_BLOCK_SPAN } from "./arc";
 import { TRANSFER_EVENT, decodeTransferLogs } from "./memo";
 
-const MAX_BLOCKS_PER_REQUEST = 10_000; // Arc RPC hard limit, confirmed empirically against rpc.testnet.arc.network
+const MAX_BLOCKS_PER_REQUEST = MAX_LOG_BLOCK_SPAN; // Arc RPC hard limit — confirmed identical on testnet and mainnet
 const AVG_BLOCK_SECONDS = 0.5162; // measured over 10,000 blocks on Arc testnet, 2026-09-06
 
 function pub() {
-  return createPublicClient({ transport: http(process.env.ARC_RPC_URL || ARC.rpcUrl) });
+  return createPublicClient({ transport: http(ARC.rpcUrl) });
 }
 
 function sameAddr(a?: string, b?: string): boolean {
@@ -180,8 +180,12 @@ export async function scanOutflows(input: { wallet: string; knownTxs: Set<string
       truncated = true;
       break;
     }
-    const end = cursor + BigInt(MAX_BLOCKS_PER_REQUEST) > head ? head : cursor + BigInt(MAX_BLOCKS_PER_REQUEST);
-    const logs = await client.getLogs({
+    // end is INCLUSIVE and the cap is a 10,000-block SPAN, so the offset is MAX_BLOCKS_PER_REQUEST - 1 — using
+    // MAX_BLOCKS_PER_REQUEST here produced a 10,001-block span, which Arc's mainnet RPC refuses outright
+    // (testnet's node happened to allow it, which is exactly how this went unnoticed until real money on
+    // mainnet hit it).
+    const end = cursor + BigInt(MAX_BLOCKS_PER_REQUEST - 1) > head ? head : cursor + BigInt(MAX_BLOCKS_PER_REQUEST - 1);
+    const logs = await getLogsResilient(client, {
       address: ARC.usdc as `0x${string}`,
       event: TRANSFER_EVENT[0],
       args: { from: getAddress(input.wallet) },

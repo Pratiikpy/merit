@@ -459,7 +459,7 @@ export interface MemoSendResult {
 }
 
 function rpcUrl(): string {
-  return process.env.ARC_RPC_URL || ARC.rpcUrl;
+  return ARC.rpcUrl;
 }
 
 /**
