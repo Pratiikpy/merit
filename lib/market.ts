@@ -30,18 +30,22 @@ const MARKET_ABI = parseAbi([
 ]);
 const USDC_APPROVE = parseAbi(["function approve(address spender, uint256 amount) returns (bool)"]);
 
-const DEPLOYED_MARKET = "0xb67C595d1F13E01fFF1a5690B938A249fE1eEE6e"; // contracts/deployments.json (oracle = OPERATOR)
-function marketAddress(): `0x${string}` {
-  const a = process.env.PREDICTION_MARKET_ADDRESS;
-  return (a && /^0x[0-9a-fA-F]{40}$/.test(a) ? a : DEPLOYED_MARKET) as `0x${string}`;
+/** The deployed PredictionMarket, from MARKET_ADDRESS — never a hard-coded fallback. A wrong-network address
+ *  silently misroutes real USDC (this exact class of bug cost a real tx on the wrong chain once already —
+ *  see tests/arc-rpc-source-of-truth.test.ts); better to disable on-chain seeding/resolution than guess one. */
+function marketAddress(): `0x${string}` | null {
+  const a = process.env.MARKET_ADDRESS;
+  return a && /^0x[0-9a-fA-F]{40}$/.test(a) ? (a as `0x${string}`) : null;
 }
 
-/** On-chain market ops are active with the flag + BOTH staker (BUYER) and oracle (OPERATOR) keys, not STUB. */
+/** On-chain market ops are active with the flag + BOTH staker (BUYER) and oracle (OPERATOR) keys + a configured
+ *  address for THIS network, not STUB. */
 export function marketOnchainEnabled(): boolean {
   return (
     process.env.MARKET_ONCHAIN === "1" &&
     !!process.env.BUYER_PRIVATE_KEY &&
     !!process.env.OPERATOR_PRIVATE_KEY &&
+    !!marketAddress() &&
     !isStub()
   );
 }
@@ -127,11 +131,19 @@ export function marketStats(): { total: number; open: number; resolved: number; 
 
 const explorerTx = (h: string) => `${ARC.explorer}/tx/${h}`;
 
+/** Every call site below is already gated by `marketOnchainEnabled()`, which checks this is non-null — this
+ *  throws rather than silently casting, so a guard that's ever removed fails loudly instead of misrouting. */
+function requireMarketAddress(): `0x${string}` {
+  const a = marketAddress();
+  if (!a) throw new Error("MARKET_ADDRESS is not configured for this network");
+  return a;
+}
+
 /** Read the live on-chain crowd probability (bps) for a market, or null off-chain. */
 async function readYesBps(marketId: `0x${string}`): Promise<number | null> {
   if (!marketOnchainEnabled()) return null;
   try {
-    const bps = (await pub().readContract({ address: marketAddress(), abi: MARKET_ABI, functionName: "yesProbabilityBps", args: [marketId] })) as bigint;
+    const bps = (await pub().readContract({ address: requireMarketAddress(), abi: MARKET_ABI, functionName: "yesProbabilityBps", args: [marketId] })) as bigint;
     return Number(bps);
   } catch {
     return null;
@@ -179,11 +191,11 @@ export async function createMarket(input: CreateMarketInput): Promise<{ market: 
       const buyer = signer("BUYER_PRIVATE_KEY");
       const atomic = BigInt(Math.round(seedUsdc * 1e6));
       const approveHash = await serialize("buyer", () =>
-        buyer.wallet.writeContract({ address: ARC.usdc as `0x${string}`, abi: USDC_APPROVE, functionName: "approve", args: [marketAddress(), atomic], account: buyer.account, chain: arcChain() }),
+        buyer.wallet.writeContract({ address: ARC.usdc as `0x${string}`, abi: USDC_APPROVE, functionName: "approve", args: [requireMarketAddress(), atomic], account: buyer.account, chain: arcChain() }),
       );
       await pub().waitForTransactionReceipt({ hash: approveHash });
       const stakeHash = await serialize("buyer", () =>
-        buyer.wallet.writeContract({ address: marketAddress(), abi: MARKET_ABI, functionName: "stake", args: [marketId, seedSide === "yes", atomic], account: buyer.account, chain: arcChain() }),
+        buyer.wallet.writeContract({ address: requireMarketAddress(), abi: MARKET_ABI, functionName: "stake", args: [marketId, seedSide === "yes", atomic], account: buyer.account, chain: arcChain() }),
       );
       await pub().waitForTransactionReceipt({ hash: stakeHash });
       market.seedSide = seedSide;
@@ -229,7 +241,7 @@ export async function resolveMarket(id: string): Promise<{ market: Market } | { 
     try {
       const oracle = signer("OPERATOR_PRIVATE_KEY");
       const resolveHash = await serialize("operator", () =>
-        oracle.wallet.writeContract({ address: marketAddress(), abi: MARKET_ABI, functionName: "resolve", args: [market.marketId, yesWon], account: oracle.account, chain: arcChain() }),
+        oracle.wallet.writeContract({ address: requireMarketAddress(), abi: MARKET_ABI, functionName: "resolve", args: [market.marketId, yesWon], account: oracle.account, chain: arcChain() }),
       );
       await pub().waitForTransactionReceipt({ hash: resolveHash });
       market.txs = market.txs || [];
@@ -240,7 +252,7 @@ export async function resolveMarket(id: string): Promise<{ market: Market } | { 
         try {
           const buyer = signer("BUYER_PRIVATE_KEY");
           const redeemHash = await serialize("buyer", () =>
-            buyer.wallet.writeContract({ address: marketAddress(), abi: MARKET_ABI, functionName: "redeem", args: [market.marketId], account: buyer.account, chain: arcChain() }),
+            buyer.wallet.writeContract({ address: requireMarketAddress(), abi: MARKET_ABI, functionName: "redeem", args: [market.marketId], account: buyer.account, chain: arcChain() }),
           );
           await pub().waitForTransactionReceipt({ hash: redeemHash });
           market.txs.push({ step: "redeem(winnings)", hash: redeemHash, explorerUrl: explorerTx(redeemHash) });
