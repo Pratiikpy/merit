@@ -380,9 +380,10 @@ merit-verify:0xYourWalletAddress
 From then on, every verified citation settles sub-cent USDC to that wallet on Arc. Hallucinated or
 unsupported citations pay nothing.
 
-Sixteen real publisher feeds are indexed as citable creators (HuggingFace, Vitalik, the Ethereum
-Foundation, OpenAI, CoinDesk, Cloudflare, GitHub, Krebs, Paul Graham, WIRED, Ars Technica, and more),
-each with a receive-only wallet and an ERC-8004 identity. The hosted demo serves a seven-source
+Fifteen real publisher feeds are indexed as citable creators (HuggingFace, Vitalik, the Ethereum
+Foundation, OpenAI, CoinDesk, Cloudflare, GitHub, Krebs, WIRED, Ars Technica, and more) — see
+[`PUBLISHERS.md`](PUBLISHERS.md) for the current list and a note on a 2026-10-11 re-onboarding.
+The hosted demo serves a seven-source
 curated pool. See [`PUBLISHERS.md`](PUBLISHERS.md); permissionless listings are honestly labeled, and
 an owner-verified creator via `merit-verify:` is the stronger signal.
 
