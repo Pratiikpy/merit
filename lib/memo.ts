@@ -143,8 +143,9 @@ export const MAX_MEMO_BYTES = 480;
 export interface MeritMemo {
   /** payload schema — bump if the field set ever changes */
   v: 1;
-  /** what this payment is: a custody disbursement, a prepaid withdrawal, a batch line, or a credit advance */
-  kind: "custody-claim" | "balance-withdrawal" | "batch-payout" | "credit-advance";
+  /** what this payment is: a custody disbursement, a prepaid withdrawal, a batch line, a credit advance, or a
+   *  EURC-denominated creator payout */
+  kind: "custody-claim" | "balance-withdrawal" | "batch-payout" | "credit-advance" | "eurc-payout";
   /** who is being paid, in Merit's own namespace (a creator/source id or a principal id) */
   id: string;
   /** the amount, in human USDC units, as an exact decimal string */
@@ -489,6 +490,42 @@ export async function sendMemoedTransfer(input: {
   if (!memoEnabled()) return plain("memos disabled (ARC_MEMO=0)");
 
   const memoData = encodeMemoCall({ target: ARC.usdc as `0x${string}`, data: transferData, memoId: input.memo.memoId, memoData: input.memo.memoData });
+  try {
+    const pub = createPublicClient({ transport: http(rpcUrl()) });
+    await pub.call({ account: input.account.address, to: ARC.memo as `0x${string}`, data: memoData });
+  } catch (e) {
+    return plain(`memo pre-flight reverted (${(e as Error).message.slice(0, 100)}) — sent as a plain transfer`);
+  }
+  const hash = await wallet.sendTransaction({ to: ARC.memo as `0x${string}`, data: memoData, chain: null });
+  return { hash, memoed: true, memoId: input.memo.memoId, fallbackReason: null };
+}
+
+/**
+ * Same shape as {@link sendMemoedTransfer}, for any ERC-20 that isn't USDC — EURC, for Merit's EURC-
+ * denominated payouts. A separate function rather than an optional parameter on `sendMemoedTransfer`: that
+ * function is real-money-proven exactly as written, and every existing call site (custody, insurance,
+ * autonomous, credit) should keep calling the USDC path it was tested against, unchanged.
+ */
+export async function sendMemoedTokenTransfer(input: {
+  account: PrivateKeyAccount;
+  token: `0x${string}`;
+  to: `0x${string}`;
+  atomic: bigint;
+  memo?: { memoId: Hex; memoData: Hex };
+}): Promise<MemoSendResult> {
+  const wallet = createWalletClient({ account: input.account, transport: http(rpcUrl()) });
+  const transferData = encodeUsdcTransfer(input.to, input.atomic);
+  const plain = async (reason: string | null): Promise<MemoSendResult> => ({
+    hash: await wallet.sendTransaction({ to: input.token, data: transferData, chain: null }),
+    memoed: false,
+    memoId: null,
+    fallbackReason: reason,
+  });
+
+  if (!input.memo) return plain("no memo payload supplied");
+  if (!memoEnabled()) return plain("memos disabled (ARC_MEMO=0)");
+
+  const memoData = encodeMemoCall({ target: input.token, data: transferData, memoId: input.memo.memoId, memoData: input.memo.memoData });
   try {
     const pub = createPublicClient({ transport: http(rpcUrl()) });
     await pub.call({ account: input.account.address, to: ARC.memo as `0x${string}`, data: memoData });

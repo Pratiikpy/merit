@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Global Payouts — Merit</title>
+<meta name="description" content="Pay creators in EURC, not just USDC — live, real, memo-wrapped on Arc today. Treasury-level conversion via Circle's StableFX RFQ exchange is code-complete, pending the one input only Circle hands out directly: an API key.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Global Payouts — Merit">
+<meta property="og:description" content="EURC payouts live on Arc today. StableFX treasury conversion wired end-to-end, pending a Circle-issued key.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:72ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:26px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  h2.lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;}
+  .section{border:1px solid #E4E4E7;border-radius:16px;padding:22px;margin-bottom:18px;}
+  .section h3{font-size:18px;font-weight:800;margin:0 0 6px;letter-spacing:-.01em;}
+  .section p.d{font-size:14px;color:#4B5563;margin:0 0 14px;max-width:68ch;}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:3px 11px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;}
+  .badge.live{background:#DCFCE7;color:#047857;}
+  .badge.pending{background:#FEF3C7;color:#92400E;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  .card{border:1px solid #E4E4E7;border-radius:14px;padding:16px;margin-bottom:12px;}
+  .row{display:flex;gap:16px;margin:6px 0;font-size:13px;color:#4B5563;flex-wrap:wrap;}
+  .row b{color:#0A0A0A;}
+  .txline a{text-decoration:underline;font-weight:600;color:#0A0A0A;font-size:12.5px;}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px;color:#4B5563;}
+  .kv b{color:#0A0A0A;font-weight:700;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}}
+</style>
+<link rel="stylesheet" href="/touch.css">
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/credit.html">Credit</a>
+      <a href="/company.html">Company</a>
+      <a href="/proof.html">Ledger</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Global Payouts</h1>
+  <p class="sub">Merit's creators get paid once a source actually verifies — that part doesn't change. What's new is the currency: pay in EURC instead of USDC, live on Arc today, or convert treasury surplus at a market-made rate through Circle's StableFX exchange.</p>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">Treasury (USDC)</div><div class="v" id="st-treasury">—</div></div>
+    <div class="stat"><div class="k">EURC payouts sent</div><div class="v" id="st-count">—</div></div>
+    <div class="stat"><div class="k">USDC converted</div><div class="v" id="st-owed">—</div></div>
+    <div class="stat"><div class="k">EURC delivered</div><div class="v" id="st-sent">—</div></div>
+  </div>
+
+  <div class="section">
+    <span class="badge live" id="eurc-badge">● live</span>
+    <h3>Direct EURC payouts</h3>
+    <p class="d">EURC is a real, Circle-issued stablecoin, natively deployed on Arc — not wrapped, not bridged. A creator who opts in gets paid in EURC through the same memo-wrapped transfer every Merit payout uses, converted at the live ECB reference rate (published free by the Frankfurter API), recorded with the exact rate and source used.</p>
+    <div class="kv" id="eurc-kv">
+      <span>EURC contract</span><b id="eurc-addr" class="mono">—</b>
+      <span>Live USD→EUR rate</span><b id="eurc-rate">—</b>
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="badge pending" id="fx-badge">● pending a key</span>
+    <h3>StableFX treasury conversion</h3>
+    <p class="d">Circle's real Arc-native RFQ exchange for USDC↔EURC — competitive market-maker rates, settled on-chain via the FxEscrow contract with Permit2. The full taker flow (quote → trade → sign → settle) is wired end-to-end against Circle's documented API. It needs one thing only Circle hands out directly: an API key from a Circle representative — there's no self-serve signup for this product.</p>
+    <div class="kv" id="fx-kv">
+      <span>Minimum trade</span><b>10 USDC</b>
+      <span>FxEscrow contract</span><b id="fx-escrow" class="mono">—</b>
+      <span>Status</span><b id="fx-status">—</b>
+    </div>
+  </div>
+
+  <h2 class="lbl">EURC payouts</h2>
+  <div id="payouts"></div>
+  </main>
+
+  <footer class="foot" id="foot-note">Both mechanisms settle on the same treasury Merit's whole ledger reads from — see the <a href="/proof.html" style="text-decoration:underline">live ledger</a>. <a href="/api/payouts" style="text-decoration:underline">Raw JSON →</a></footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function fmtDate(s){try{return new Date(s).toLocaleString();}catch(e){return '';}}
+  function fmtUsdc(n,sym){ if (n==null) return '—'; return (sym||'$')+Number(n).toFixed(4); }
+
+  function renderCard(p){
+    var when = p.at ? fmtDate(p.at) : '';
+    var body = '<div class="card">'
+      + '<div class="row" style="justify-content:space-between"><b>'+esc(p.sourceName)+'</b><span class="mono" style="font-size:11.5px;color:#6B7280">'+esc(when)+'</span></div>'
+      + '<div class="row"><span>'+fmtUsdc(p.usdcOwed)+' owed</span><span>→</span><span>'+fmtUsdc(p.eurcSent,'€')+' sent</span><span>rate '+esc(p.rate && p.rate.usdToEur)+'</span></div>';
+    if (p.rate && p.rate.source) body += '<div class="row" style="font-size:11.5px;color:#9CA3AF">'+esc(p.rate.source)+' · '+esc(p.rate.asOf)+'</div>';
+    if (p.tx && p.tx.explorerUrl) body += '<div class="txline"><a href="'+esc(p.tx.explorerUrl)+'" target="_blank" rel="noopener noreferrer nofollow">on-chain →</a></div>';
+    body += '</div>';
+    return body;
+  }
+
+  function renderPayouts(list){
+    var el = document.getElementById('payouts');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No EURC payouts yet.</div>'; return; }
+    el.innerHTML = list.map(renderCard).join('');
+  }
+
+  async function load(){
+    try{
+      var res = await fetch('/api/payouts', {cache:'no-store'});
+      var d = await res.json();
+
+      document.getElementById('st-treasury').textContent = d.treasury && d.treasury.usdcBalance != null ? fmtUsdc(d.treasury.usdcBalance) : '—';
+      document.getElementById('st-count').textContent = d.stats ? d.stats.count : '—';
+      document.getElementById('st-owed').textContent = d.stats ? fmtUsdc(d.stats.usdcOwedTotal) : '—';
+      document.getElementById('st-sent').textContent = d.stats ? fmtUsdc(d.stats.eurcSentTotal,'€') : '—';
+
+      var eurcBadge = document.getElementById('eurc-badge');
+      if (d.eurc && d.eurc.enabled) { eurcBadge.textContent = '● live'; eurcBadge.className = 'badge live'; }
+      else { eurcBadge.textContent = '● not configured on this network'; eurcBadge.className = 'badge pending'; }
+      document.getElementById('eurc-addr').textContent = (d.eurc && d.eurc.address) || 'not configured';
+      document.getElementById('eurc-rate').textContent = d.eurc && d.eurc.rate ? ('1 USD = ' + d.eurc.rate.usdToEur + ' EUR (' + d.eurc.rate.source + ')') : '—';
+
+      var fxBadge = document.getElementById('fx-badge');
+      if (d.stablefx && d.stablefx.enabled) { fxBadge.textContent = '● live'; fxBadge.className = 'badge live'; }
+      else { fxBadge.textContent = '● pending a Circle-issued API key'; fxBadge.className = 'badge pending'; }
+      document.getElementById('fx-escrow').textContent = (d.stablefx && d.stablefx.fxEscrow) || 'not configured';
+      document.getElementById('fx-status').textContent = d.stablefx && d.stablefx.enabled ? 'ready to trade' : 'code-complete, awaiting STABLEFX_API_KEY';
+
+      renderPayouts(d.payouts || []);
+    }catch(e){
+      document.getElementById('payouts').innerHTML = '<div class="empty">Could not load the payouts ledger.</div>';
+    }
+  }
+  load();
+})();
+</script>
+</body>
+</html>

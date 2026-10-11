@@ -34,6 +34,7 @@ export interface Source {
   balance: number; // lifetime earnings (leaderboard)
   trap?: boolean; // a demo source whose on-topic content CONTRADICTS the claim — only the Auditor catches it
   splits?: SplitRecipient[]; // #12: a multi-author source distributes a VERIFIED settlement across contributors
+  payoutCurrency?: "USDC" | "EURC"; // global verified payouts: pay this creator in EURC instead of USDC (lib/eurc.ts)
 }
 
 // Configurable so a deploy can mount a persistent disk (set MERIT_DATA_DIR); on serverless (Vercel) the cwd
@@ -319,6 +320,7 @@ export function addCreator(input: {
   verifyWith?: string[];
   wallet?: string;
   content?: string;
+  payoutCurrency?: "USDC" | "EURC";
 }): Source {
   const list = ensureLoaded();
   // If the creator supplies their OWN wallet, pay it directly (receive-only, non-custodial). Otherwise their
@@ -374,10 +376,22 @@ export function addCreator(input: {
     // The identity gate distinguishes registered creators (a payable wallet) from
     // anonymous, wallet-less sources (e.g. the "Anon" demo source, verified: false).
     balance: 0,
+    payoutCurrency: input.payoutCurrency === "EURC" ? "EURC" : undefined,
   };
   list.push(src);
   persist();
   return src;
+}
+
+/** Switch a creator's payout currency — must own a real wallet (custodial sources earn into Merit's own
+ *  custody and can't opt into a second currency there). */
+export function setPayoutCurrency(id: string, currency: "USDC" | "EURC"): Source | { error: string } {
+  const s = getSource(id);
+  if (!s) return { error: "unknown source" };
+  if (s.custodial) return { error: "a custodial source is paid in whatever currency Merit custody settles in — register your own wallet first" };
+  s.payoutCurrency = currency === "EURC" ? "EURC" : undefined;
+  if (!discovered.has(id)) persist();
+  return s;
 }
 
 export function applyOutcome(id: string, opts: { meritDelta: number; earned?: number }) {

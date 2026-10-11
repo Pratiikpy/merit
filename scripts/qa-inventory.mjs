@@ -22,6 +22,7 @@ const PAGES = [
   { slug: "insurance", path: "/insurance.html" },
   { slug: "company", path: "/company.html" },
   { slug: "credit", path: "/credit.html" },
+  { slug: "payouts", path: "/payouts.html" },
   { slug: "media", path: "/media.html" },
   { slug: "break", path: "/break.html" },
   { slug: "honesty", path: "/honesty.html" },

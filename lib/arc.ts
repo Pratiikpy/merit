@@ -40,6 +40,12 @@ export interface ArcProfile {
   memo: string;
   multicall3From: string;
   systemTransferEmitter: string;
+  /** EURC — Circle's euro-denominated stablecoin, a standard ERC-20 (unlike USDC, no dual native interface). */
+  eurc: string;
+  /** StableFX's settlement contract: holds Permit2-signed funds in escrow between trade creation and settlement. */
+  fxEscrow: string;
+  /** Uniswap's canonical Permit2 deployment — identical address on every EVM chain that has it, Arc included. */
+  permit2: string;
   /** The chain key Circle's Gateway/nanopayments SDK uses. Null on a network Circle has not shipped support
    *  for — Merit must not invent one, because a wrong key fails at settlement time, not at startup. */
   gatewayChainName: string | null;
@@ -74,6 +80,11 @@ const TESTNET: ArcProfile = {
   systemTransferEmitter: "0xfffffffffffffffffffffffffffffffffffffffe",
   gatewayChainName: "arcTestnet", // Gateway domain 26, per @circle-fin/x402-batching
   isTestnet: true,
+  // EURC and FxEscrow verified against docs.arc.io/arc/references/contract-addresses and
+  // developers.circle.com/stablefx (2026-10-11). Permit2 is the canonical Uniswap deployment.
+  eurc: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
+  fxEscrow: "0x867650F5eAe8df91445971f14d89fd84F0C9a9f8",
+  permit2: "0x000000000022D473030F116dDEE9F6B43aC78BA3",
 };
 
 /** The environment variables the mainnet profile is assembled from. */
@@ -89,6 +100,8 @@ export const MAINNET_ENV = {
   memo: "ARC_MAINNET_MEMO",
   multicall3From: "ARC_MAINNET_MULTICALL3FROM",
   gatewayChainName: "ARC_MAINNET_GATEWAY_CHAIN",
+  eurc: "ARC_MAINNET_EURC",
+  fxEscrow: "ARC_MAINNET_FX_ESCROW",
 } as const;
 
 /** Values that are identical on any EVM chain, or that Arc fixes at the protocol level rather than per
@@ -96,6 +109,7 @@ export const MAINNET_ENV = {
 const CHAIN_INVARIANT = {
   multicall3: "0xcA11bde05977b3631167028862bE2a173976CA11", // canonical CREATE2 deployment
   systemTransferEmitter: "0xfffffffffffffffffffffffffffffffffffffffe", // EIP-7708 system address
+  permit2: "0x000000000022D473030F116dDEE9F6B43aC78BA3", // canonical Uniswap Permit2 deployment
 } as const;
 
 function envVal(name: string): string {
@@ -122,6 +136,9 @@ function buildMainnet(): ArcProfile {
     systemTransferEmitter: CHAIN_INVARIANT.systemTransferEmitter,
     gatewayChainName: envVal(MAINNET_ENV.gatewayChainName) || null,
     isTestnet: false,
+    eurc: envVal(MAINNET_ENV.eurc),
+    fxEscrow: envVal(MAINNET_ENV.fxEscrow),
+    permit2: CHAIN_INVARIANT.permit2,
   };
 }
 
@@ -168,6 +185,8 @@ export function mainnetReadiness(): MainnetReadiness {
     { field: "memo", env: MAINNET_ENV.memo, gates: "memoed payouts (falls back to a plain transfer)", core: false },
     { field: "multicall3From", env: MAINNET_ENV.multicall3From, gates: "batched claims (falls back to one tx per creator)", core: false },
     { field: "gatewayChainName", env: MAINNET_ENV.gatewayChainName, gates: "Circle Gateway chain selection", core: false },
+    { field: "eurc", env: MAINNET_ENV.eurc, gates: "EURC-denominated payouts", core: false },
+    { field: "fxEscrow", env: MAINNET_ENV.fxEscrow, gates: "StableFX trade settlement", core: false },
   ];
   const missing = GATES.filter((g) => !p[g.field]).map((g) => ({ field: String(g.field), env: g.env, gates: g.gates }));
   const configured = GATES.filter((g) => !!p[g.field]).map((g) => String(g.field));
