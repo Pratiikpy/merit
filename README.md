@@ -293,6 +293,24 @@ is live on the deployment and proven with a real on-chain outcome.
 - **Cross-chain payout** (`POST /api/crosschain`, [crosschain.html](https://onmerit.xyz/crosschain.html)).
   Withdraw verified earnings from Arc to Base, Arbitrum, Optimism, or Avalanche via Circle Gateway. Live: a real
   Arc Gateway settlement tx; the cross-chain leg settles the moment the payout wallet holds destination-chain gas.
+- **Agent Credit** (`POST /api/credit`, [credit.html](https://onmerit.xyz/credit.html)).
+  Borrow against your own proven merit score and real on-chain `Stake.sol` collateral — nothing new to deploy,
+  no promises. A tier ladder on both: merit below 50 gets no credit, 50-69 unlocks 0.5x stake, 70-89 unlocks 1x,
+  90+ unlocks 2x. Repayment is verified by decoding the real USDC `Transfer` direction and amount, not by
+  accepting any tx hash the borrower hands back; an advance left overdue resolves with a genuine on-chain
+  `slash()` against the borrower's own stake. Live on Arc testnet: staked 0.03 USDC, borrowed $0.01 (tx
+  `0xad945d…`), repaid and verified (tx `0x14f244…`), borrowed again (tx `0x72d186…`), left overdue, slashed for
+  real (tx `0x074899…`) — the stake independently confirmed to drop exactly 30000→25000 atomic units via
+  `cast call stakeOf`.
+- **Global Payouts — EURC + StableFX** (`POST /api/payouts`, [payouts.html](https://onmerit.xyz/payouts.html)).
+  Pay a creator in EURC instead of USDC, still gated on the same verified-settlement history: the USDC amount
+  owed converts at a live, independently-sourced ECB reference rate (Frankfurter, never Merit's own number) and
+  settles as a real memo-wrapped EURC transfer on Arc. A second leg converts treasury USDC to EURC at Circle's
+  own StableFX RFQ rate (Permit2 + EIP-712 presign, built against Circle's real documented API end to end) —
+  gated on a Circle-issued API key with no self-serve signup, so it reports itself as pending rather than faking
+  a quote. Live on Arc testnet: a real $0.02-owed payout converted at the day's published ECB rate (0.89238) and
+  sent as 0.017848 EURC (tx `0x266b3d…`), the recipient's EURC balance independently confirmed via `balanceOf`
+  before and after.
 
 Each of these depends on the oracle. Without a ground-truth settlement layer, there is nothing to
 settle a bet, grow a benchmark, price an equilibrium, score an endpoint, release an escrow, resolve a

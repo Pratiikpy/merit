@@ -102,6 +102,19 @@ only when an oracle says the delivered work was correct — plus:
 - **Multi-step settlement**: verify → compliance-screen → simulate → memo-wrap → batch → reconcile.
 - **Treasury workflows**: prepaid balances where a refused citation costs nothing, on-chain withdrawal of the
   unspent remainder, and CCTP cross-chain payout to Base / Arbitrum / Optimism / Avalanche.
+- **Collateralized credit** (`POST /api/credit`, [credit.html](https://www.onmerit.xyz/credit.html)): a tier
+  ladder borrows against real on-chain `Stake.sol` collateral, scaled by the borrower's own verified merit
+  score (0 / 0.5x / 1x / 2x stake at merit <50 / 50-69 / 70-89 / 90+). Repayment is verified by decoding the
+  actual USDC `Transfer` direction and amount — not by trusting a supplied tx hash — and an overdue advance
+  resolves with a real on-chain `slash()`. Live on Arc testnet: staked 0.03 USDC, borrowed and repaid twice,
+  then left overdue and slashed for real — stake independently confirmed to drop exactly 30000→25000 atomic
+  units via `cast call stakeOf`.
+- **FX settlement** (`POST /api/payouts`, [payouts.html](https://www.onmerit.xyz/payouts.html)): pay a verified
+  creator in EURC at a live, independently-sourced ECB reference rate (Frankfurter — never Merit's own number),
+  settled as a real memo-wrapped EURC transfer. Live on Arc testnet: a $0.02-owed payout converted at the day's
+  published rate and sent as 0.017848 EURC, balance independently confirmed via `balanceOf` before and after. A
+  second leg (Circle's own StableFX RFQ, Permit2 + EIP-712 presign) is built end to end against Circle's real
+  documented API and reports itself honestly as pending a Circle-issued key rather than faking a quote.
 
 ---
 
