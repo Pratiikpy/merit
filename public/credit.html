@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Credit — Merit</title>
+<meta name="description" content="A cash advance against a source's proven verification record — real collateral (its on-chain stake), real tiers by merit score, real enforcement (slash on default). Performance earns reputation; reputation unlocks capital.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Agent Credit — Merit">
+<meta property="og:description" content="Credit tiers keyed on a real, already-tracked reputation signal and real on-chain collateral — not a new metric invented for this.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:72ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:22px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  h2.lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;}
+  .tierrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
+  .tier{flex:1;min-width:150px;border:1px solid #E4E4E7;border-radius:12px;padding:12px 14px;}
+  .tier .m{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6B7280;}
+  .tier .x{font-size:20px;font-weight:800;margin-top:2px;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;}
+  .pill.outstanding{background:#F4F4F5;color:#52525B;}
+  .pill.repaid{background:#DCFCE7;color:#047857;}
+  .pill.slashed{background:#FEE2E2;color:#BE123C;}
+  .card{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .cardhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .name{font-size:17px;font-weight:800;letter-spacing:-.01em;margin-bottom:8px;}
+  .row{display:flex;gap:16px;margin:8px 0;font-size:13px;color:#4B5563;flex-wrap:wrap;}
+  .row b{color:#0A0A0A;}
+  .meta{font-size:12.5px;color:#6B7280;margin-top:10px;}
+  .txtrail{margin-top:10px;display:flex;flex-direction:column;gap:4px;}
+  .txline{font-size:12.5px;color:#4B5563;}
+  .txline a{text-decoration:underline;font-weight:600;color:#0A0A0A;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}}
+</style>
+<link rel="stylesheet" href="/touch.css">
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/insurance.html">Insurance</a>
+      <a href="/company.html">Company</a>
+      <a href="/proof.html">Ledger</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Agent Credit</h1>
+  <p class="sub">A cash advance against a source's proven verification record. Performance earns reputation; reputation unlocks capital — the same ladder ARCANA validated for trading agents, applied here to Merit's own merit score. Collateral is real (the source's on-chain stake); enforcement is real (Stake.sol's own slash on default).</p>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">Advances issued</div><div class="v" id="st-total">—</div></div>
+    <div class="stat"><div class="k">Outstanding</div><div class="v" id="st-out">—</div></div>
+    <div class="stat"><div class="k">Repaid</div><div class="v" id="st-repaid">—</div></div>
+    <div class="stat"><div class="k">Recovered by slash</div><div class="v" id="st-slashed">—</div></div>
+  </div>
+
+  <h2 class="lbl">The tier ladder</h2>
+  <div class="tierrow">
+    <div class="tier"><div class="m">Merit &lt; 50</div><div class="x">No credit</div></div>
+    <div class="tier"><div class="m">Merit 50–69</div><div class="x">0.5× stake</div></div>
+    <div class="tier"><div class="m">Merit 70–89</div><div class="x">1× stake</div></div>
+    <div class="tier"><div class="m">Merit 90+</div><div class="x">2× stake</div></div>
+  </div>
+
+  <h2 class="lbl">Advances</h2>
+  <div id="advances"></div>
+  </main>
+
+  <footer class="foot" id="foot-note">An advance is a real, memo-wrapped USDC transfer from Merit's treasury to the source's own wallet — not a ledger entry. Repayment is verified on-chain, never trusted on say-so; an overdue unpaid advance is recovered by slashing the source's real stake. <a href="/api/credit" style="text-decoration:underline">Raw JSON →</a></footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function fmtDate(s){try{return new Date(s).toLocaleString();}catch(e){return '';}}
+  function fmtUsdc(n){ if (n==null) return '—'; return '$'+Number(n).toFixed(4); }
+
+  function renderCard(a){
+    var pill = '<span class="pill '+esc(a.status)+'">'+esc(a.status)+'</span>';
+    var when = a.issuedAt ? fmtDate(a.issuedAt) : '';
+    var body = '<div class="card">'
+      + '<div class="cardhead">'+pill+'<span class="mono" style="font-size:11.5px;color:#6B7280">'+esc(when)+'</span></div>'
+      + '<div class="name">'+esc(a.sourceName)+'</div>'
+      + '<div class="row"><span>advanced <b>'+fmtUsdc(a.amountUsdc)+'</b></span><span>repaid <b>'+fmtUsdc(a.repaidUsdc)+'</b></span><span>merit at issue <b>'+esc(a.meritAtIssue)+'</b></span><span>stake at issue <b>'+fmtUsdc(a.stakeAtIssue)+'</b></span><span>limit at issue <b>'+fmtUsdc(a.limitAtIssue)+'</b></span></div>';
+    var txs = (a.txs||[]).filter(function(t){ return typeof t.explorerUrl === 'string' && t.explorerUrl; });
+    if (txs.length) {
+      body += '<div class="txtrail">'+txs.map(function(t){
+        return '<div class="txline">'+esc(t.step)+' → <a href="'+esc(t.explorerUrl)+'" target="_blank" rel="noopener noreferrer nofollow">on-chain →</a></div>';
+      }).join('')+'</div>';
+    }
+    body += '<div class="meta">advance id <span class="mono">'+esc(a.id)+'</span> · due '+esc(fmtDate(a.dueAt))+'</div>';
+    body += '</div>';
+    return body;
+  }
+
+  function renderAdvances(list){
+    var el = document.getElementById('advances');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No advances yet.</div>'; return; }
+    el.innerHTML = list.map(renderCard).join('');
+  }
+
+  function renderStats(d){
+    var s = d.stats || {};
+    document.getElementById('st-total').textContent = s.total != null ? s.total : '—';
+    document.getElementById('st-out').textContent = s.outstandingUsdc != null ? fmtUsdc(s.outstandingUsdc) : '—';
+    document.getElementById('st-repaid').textContent = s.repaidUsdc != null ? fmtUsdc(s.repaidUsdc) : '—';
+    document.getElementById('st-slashed').textContent = s.slashedUsdc != null ? fmtUsdc(s.slashedUsdc) : '—';
+    var footEl = document.getElementById('foot-note');
+    var onchainNote = d.onchain
+      ? ' The on-chain path is enabled — advances and slashes settle on-chain.'
+      : ' The on-chain path is not enabled on this deployment — advances are recorded at the application level.';
+    footEl.innerHTML = 'An advance is a real, memo-wrapped USDC transfer from Merit\'s treasury to the source\'s own wallet — not a ledger entry. Repayment is verified on-chain, never trusted on say-so; an overdue unpaid advance is recovered by slashing the source\'s real stake.'+onchainNote+' <a href="/api/credit" style="text-decoration:underline">Raw JSON →</a>';
+  }
+
+  async function load(){
+    try{
+      var res = await fetch('/api/credit', {cache:'no-store'});
+      var d = await res.json();
+      renderStats(d);
+      renderAdvances(d.advances||[]);
+    }catch(e){
+      document.getElementById('advances').innerHTML = '<div class="err">Could not load the credit ledger.</div>';
+    }
+  }
+  load();
+})();
+</script>
+</body>
+</html>

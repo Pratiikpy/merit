@@ -143,8 +143,8 @@ export const MAX_MEMO_BYTES = 480;
 export interface MeritMemo {
   /** payload schema — bump if the field set ever changes */
   v: 1;
-  /** what this payment is: a custody disbursement, a prepaid withdrawal, a batch line */
-  kind: "custody-claim" | "balance-withdrawal" | "batch-payout";
+  /** what this payment is: a custody disbursement, a prepaid withdrawal, a batch line, or a credit advance */
+  kind: "custody-claim" | "balance-withdrawal" | "batch-payout" | "credit-advance";
   /** who is being paid, in Merit's own namespace (a creator/source id or a principal id) */
   id: string;
   /** the amount, in human USDC units, as an exact decimal string */
