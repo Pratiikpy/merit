@@ -155,7 +155,7 @@ only when an oracle says the delivered work was correct — plus:
 
 | | |
 |---|---|
-| Unit tests | **659 passing** (83 files) |
+| Unit tests | **705 passing** (89 files) |
 | Browser E2E | **50 passing** across 5 viewports, run against the deployed site |
 | Accessibility | **0 axe violations** (WCAG 2.1 A/AA) across all public pages |
 | Arc-native settlement | **32/32** against real Arc testnet USDC (`npm run verify-arc-native`) |
@@ -165,8 +165,10 @@ only when an oracle says the delivered work was correct — plus:
 | Autonomous pentest (Strix) | **No vulnerability found in what it covered** — semgrep across 536 rules / 381 files, plus prompt-injection of the payment verdict, hardcoded keys, command injection, path traversal and committed secrets each explicitly ruled out. The run did **not** complete (it exhausted its model budget), so this is coverage of those areas, not a clean bill of health for the whole codebase. |
 | Adversarial benchmark | **100% recall**, 90.4% precision, 94.9% F1 over 275 cases |
 
-**Not covered, stated plainly:** Arc mainnet (Merit's own contracts and the checks above are testnet only;
-the ERC-8004 registries have no mainnet address published anywhere). Merit is **not yet listed** on
+**Not covered, stated plainly:** the automated test/benchmark/pentest figures above ran against Arc testnet;
+Merit's own 7 contracts are separately deployed and live on Arc mainnet (`contracts/deployments.mainnet.json`,
+`GET /api/credit` confirms `onchain:true`), but haven't yet been run through this exact test suite on mainnet.
+The ERC-8004 registries have no mainnet address published anywhere. Merit is **not yet listed** on
 the Circle Agent Marketplace: listing goes through a Google Form and a human review at Circle, so what was
 built here is compliance with every stated prerequisite (402 when unpaid, content when paid, a published
 OpenAPI spec, a confirmed payout wallet) — the submission itself is still to be made. The Circle DCW payout path is not memo-wrapped — it is a smart-contract

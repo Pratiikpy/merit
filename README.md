@@ -15,7 +15,7 @@ recompute without trusting a Merit server.
 <a href="https://onmerit.xyz"><img src="https://img.shields.io/badge/live%20demo-onmerit.xyz-16A34A?style=flat-square" alt="Live demo" /></a>
 <a href="https://youtu.be/MuV-c3yaQwY"><img src="https://img.shields.io/badge/%E2%96%B6%20demo-2%20min%20video-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="2-minute demo video" /></a>
 <img src="https://img.shields.io/badge/Arc-testnet%205042002-0A0A0A?style=flat-square" alt="Arc testnet" />
-<img src="https://img.shields.io/badge/tests-659%20passing-3FB950?style=flat-square" alt="659 tests passing" />
+<img src="https://img.shields.io/badge/tests-705%20passing-3FB950?style=flat-square" alt="705 tests passing" />
 <img src="https://img.shields.io/badge/proof--of--citation-275--case%20adversarial%20benchmark-3FB950?style=flat-square" alt="275-case adversarial benchmark" />
 <img src="https://img.shields.io/badge/license-Apache--2.0-3178C6?style=flat-square" alt="Apache-2.0" />
 </p>
@@ -449,7 +449,7 @@ Every claim Merit makes is recomputable from Arc with no Merit server.
 
 | Command | What it does |
 |---|---|
-| `npm test` | 659 unit tests (vitest) over the pure logic: the agency decision table, crew grading and the whole-run budget guard, the receipt settlement-integrity rule, proof-of-citation matching and the deterministic numeric verifier, RSS/Atom parsing, registry persistence, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
+| `npm test` | 705 unit tests (vitest) over the pure logic: the agency decision table, crew grading and the whole-run budget guard, the receipt settlement-integrity rule, proof-of-citation matching and the deterministic numeric verifier, RSS/Atom parsing, registry persistence, the run rate-limiter, the LLM circuit-breaker, the off-topic guard, the monotonic settlement ledger, and the no-secret-leak views |
 | `npm run smoke` | end-to-end, 57 checks: sources, a full run, ledger consistency, the summary receipt, no private-key leak, the agent-labor market, a zero-budget pays-nothing invariant, off-topic pays no creators, onboarding, on-chain reputation, the MCP handshake, `verify-all`, `leaderboard`, and the `challenge` re-audit |
 | `npm run prove-moat` | one command: a verified run releases the ERC-8183 escrow; an off-topic run reverts `complete()` via the hook, then refunds |
 | `npm run audit-demo` | feeds the Auditor a genuine citation, two contradictions, and a prompt injection; pays the real one, refuses the rest |
@@ -569,10 +569,17 @@ in this repo used, and `ARC_NETWORK=mainnet` assembles the profile from `ARC_MAI
 every one of which (bar two exceptions below) is read live off Arc mainnet with `eth_chainId` / `eth_getCode`,
 never invented.
 
-Two things are still genuinely missing, not guessed around: the **ERC-8004 identity/reputation/validation
-registries have no published mainnet address** anywhere in Arc's docs, and **Merit's own 7 contracts**
-(MeritJob, MeritVerificationHook, Escrow, Stake, Insurance, PredictionMarket, AttestationVerifier) exist on
-testnet only until redeployed — see `contracts/DEPLOY-MAINNET.md`.
+**Merit's own 7 contracts are deployed and live on Arc mainnet** (chain `5042`, deployed 2026-09-24): `MeritJob`,
+`MeritVerificationHook`, `Escrow`, `Stake`, `Insurance`, `PredictionMarket`, `AttestationVerifier` — addresses
+and role wiring in [`contracts/deployments.mainnet.json`](contracts/deployments.mainnet.json), source-verified
+on Sourcify (`explorer.arc.io`'s own Blockscout verify API returns a Cloudflare challenge page instead of JSON,
+a real limitation of Arc's mainnet explorer, not a Merit gap — verified anyway, independently checkable there).
+`GET /api/credit` on production confirms `onchain:true` against the real mainnet `Stake` contract right now.
+
+One thing is still genuinely missing, not guessed around: the **ERC-8004 identity/reputation/validation
+registries have no published mainnet address** anywhere in Arc's docs — `eth_getCode` at the testnet address
+returns nothing on chain 5042. ERC-8004 writes stay testnet-only until Circle or the registry deployer ships a
+mainnet address. See `contracts/DEPLOY-MAINNET.md` for the full deployment record.
 
 The safety property is that a **missing mainnet value is never filled in with a testnet one**. Point Merit at
 mainnet with nothing configured and it reports empty values that fail loudly, rather than quietly sending real
