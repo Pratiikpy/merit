@@ -13,7 +13,7 @@ import {
   readStake,
   refreshCreditFromMirror,
 } from "@/lib/credit";
-import { getSource } from "@/lib/registry";
+import { getSource, refreshRegistryFromMirror } from "@/lib/registry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,6 +60,7 @@ export async function POST(req: Request) {
   await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
   await refreshCreditFromMirror().catch(() => {});
+  await refreshRegistryFromMirror().catch(() => {});
 
   if (action === "advance") {
     if (!gate.ok || !gate.principal) return NextResponse.json({ error: "an advance spends real USDC from Merit's treasury — authenticate with an API key" }, { status: 401 });
@@ -86,6 +87,7 @@ export async function GET(req: Request) {
   }
   const sourceId = url.searchParams.get("sourceId");
   if (sourceId) {
+    await refreshRegistryFromMirror().catch(() => {});
     const source = getSource(sourceId);
     if (!source) return NextResponse.json({ error: "unknown source" }, { status: 404 });
     const stakeUsdc = await readStake(source.wallet);

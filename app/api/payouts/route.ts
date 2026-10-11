@@ -5,7 +5,7 @@ import { checkChallengeLimit } from "@/lib/ratelimit";
 import { treasuryAddress, readTreasuryBalance } from "@/lib/treasury";
 import { eurcEnabled, eurcAddress, readEurcBalance, liveUsdToEurRate, payInEurc, listEurcPayouts, eurcPayoutStats, refreshEurcFromMirror } from "@/lib/eurc";
 import { stablefxEnabled, stablefxConfig, getQuote, convertUsdcToEurc } from "@/lib/stablefx";
-import { getSource, setPayoutCurrency } from "@/lib/registry";
+import { getSource, setPayoutCurrency, refreshRegistryFromMirror } from "@/lib/registry";
 import { isStub } from "@/lib/arc";
 
 export const runtime = "nodejs";
@@ -56,6 +56,7 @@ export async function POST(req: Request) {
 
   await refreshAuthFromMirror().catch(() => {});
   const gate = authGate(req);
+  await refreshRegistryFromMirror().catch(() => {});
 
   if (action === "set-currency") {
     if (!gate.ok) return NextResponse.json({ error: "authenticate with an API key" }, { status: 401 });
@@ -118,6 +119,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const sourceId = url.searchParams.get("sourceId");
   if (sourceId) {
+    await refreshRegistryFromMirror().catch(() => {});
     const source = getSource(sourceId);
     if (!source) return NextResponse.json({ error: "unknown source" }, { status: 404 });
     const eurcBalance = await readEurcBalance(source.wallet);
