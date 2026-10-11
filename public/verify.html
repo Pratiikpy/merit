@@ -120,8 +120,9 @@
     return '<div class="gate">'+chip+'<div><div class="gname">'+esc(name)+'</div><div class="gd">'+esc(detail)+'</div></div></div>';
   }
   function render(r){
-    var sup = r.verdict==='SUPPORTED';
-    var g = r.gates || {};
+    var card = r.card || r;
+    var sup = card.verdict==='SUPPORTED';
+    var g = card.gates || {};
     var rows='';
     // numeric
     if(g.numeric && g.numeric.ran) rows+=gateRow('Deterministic numeric verifier', g.numeric.pass?'pass':'fail', g.numeric.detail);
