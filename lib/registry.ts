@@ -217,13 +217,14 @@ function ensureLoaded(): Source[] {
   return cache;
 }
 
-function persist(localOnly = false) {
-  if (!cache) return;
+function persist(localOnly = false, explicit?: Source[]) {
+  const list = explicit ?? cache;
+  if (!list) return;
   // saveDoc writes dataDir()/registry.json atomically AND (unless localOnly) mirrors to Supabase
   // (after()-flushed on serverless), so onboarded creators survive cold starts. A Source carries only a
   // receive-only payout address (newWallet), never a private key, so the mirrored registry is key-free.
   // The fresh seed passes localOnly=true so a pre-hydration cold start can't overwrite real persisted state.
-  saveDoc("registry", cache, localOnly ? { mirror: false } : undefined);
+  saveDoc("registry", list, localOnly ? { mirror: false } : undefined);
 }
 
 // ---- Per-publisher ERC-8004 identities (discovered sources) ----
@@ -379,7 +380,12 @@ export function addCreator(input: {
     payoutCurrency: input.payoutCurrency === "EURC" ? "EURC" : undefined,
   };
   list.push(src);
-  persist();
+  // ensureLoaded() can return an UNCACHED array on a cold ephemeral instance (deliberately, to avoid a
+  // pre-hydration seed shadowing the real registry on a READ) — but that means `cache` may still be null
+  // here, and a plain persist() would silently no-op (it only ever wrote `cache`), dropping this creator
+  // entirely. Set `cache` and pass `list` explicitly so the new creator is never lost to that race.
+  cache = list;
+  persist(false, list);
   return src;
 }
 
