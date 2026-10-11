@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Insurance — Merit</title>
+<meta name="description" content="A guarantee market on Merit's own verdicts: buy coverage on a claim, and if the paid jury panel overturns the free verdict on appeal, that verified loss event pays out — parametric, no claims adjuster.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta property="og:title" content="Agentic Insurance — Merit">
+<meta property="og:description" content="Parametric coverage on Merit's own verdicts — payout triggers when the paid jury overturns the free verdict on appeal, not a human adjuster.">
+<meta property="og:image" content="/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;overflow-x:clip;}
+  body{background:#FFFFFF;font-family:'Hanken Grotesk',sans-serif;color:#0A0A0A;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;} a{color:inherit;}
+  input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:1px solid #ECECEE;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:-.02em;text-decoration:none;}
+  .logo .mk{width:30px;height:30px;border-radius:8px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(10,10,10,.4);}
+  .navlinks{display:flex;gap:4px;align-items:center;}
+  .navlinks a{font-size:13.5px;color:#6B7280;text-decoration:none;font-weight:600;padding:7px 10px;border-radius:8px;}
+  .navlinks a:hover{color:#0A0A0A;background:#F5F5F5;}
+  h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:44px 0 10px;font-weight:800;}
+  .sub{font-size:18px;color:#4B5563;margin:0 0 22px;max-width:72ch;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px;}
+  .stat{border:1px solid #ECECEE;border-radius:14px;padding:14px 16px;}
+  .stat .k{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;}
+  .stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+  h2.lbl{font-size:13px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:34px 0 12px;}
+  .card{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .field{flex:1;min-width:220px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+  input[type=text],input[type=number],textarea,select{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid #D4D4D8;border-radius:10px;color:#0A0A0A;outline:none;background:#fff;}
+  textarea{resize:vertical;min-height:76px;line-height:1.5;}
+  input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{border-color:#0A0A0A;}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#fff;background:#0A0A0A;border:none;border-radius:10px;padding:12px 20px;cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:#18181B;} .btn:disabled{opacity:.5;cursor:default;}
+  .btn.sm{font-size:13px;padding:10px 16px;border-radius:9px;}
+  .hint{font-size:12px;color:#6B7280;margin-top:8px;}
+  .note{font-size:13px;color:#92400E;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 13px;margin-top:12px;}
+  .err{border:1px solid #FECDD3;background:#FFF1F2;border-radius:10px;padding:12px 14px;color:#9F1239;font-size:13.5px;margin-top:12px;}
+  .empty{border:1px solid #E5E7EB;background:#F9FAFB;border-radius:12px;padding:16px;color:#4B5563;font-size:14px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:3px 11px;border-radius:999px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;}
+  .pill.open{background:#F4F4F5;color:#52525B;}
+  .pill.resolved{background:#E4E4E7;color:#3F3F46;}
+  .policycard{border:1px solid #E4E4E7;border-radius:16px;padding:20px;margin-bottom:16px;}
+  .policyhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .claim{font-size:18px;font-weight:800;letter-spacing:-.01em;margin-bottom:10px;}
+  .srcprev{font-size:12.5px;color:#4B5563;margin-bottom:12px;padding:10px 12px;background:#FAFAFA;border-radius:10px;border:1px solid #F3F4F6;white-space:pre-wrap;max-height:110px;overflow:auto;}
+  .covrow{display:flex;gap:16px;margin:10px 0;font-size:13px;color:#4B5563;flex-wrap:wrap;}
+  .covrow b{color:#0A0A0A;}
+  .verdictline{font-size:13px;color:#4B5563;margin:8px 0;}
+  .outcome{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:800;padding:7px 15px;border-radius:999px;white-space:nowrap;margin-bottom:10px;}
+  .outcome.paid{background:#DCFCE7;color:#047857;}
+  .outcome.released{background:#F4F4F5;color:#52525B;}
+  .reasonline{font-size:13px;color:#4B5563;margin-top:8px;padding-top:8px;border-top:1px solid #F3F4F6;}
+  .vidchip{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#52525B;background:#F4F4F5;border:1px solid #E4E4E7;border-radius:7px;padding:2px 8px;margin-top:6px;margin-right:6px;}
+  .txtrail{margin-top:10px;display:flex;flex-direction:column;gap:4px;}
+  .txline{font-size:12.5px;color:#4B5563;}
+  .txline a{text-decoration:underline;font-weight:600;color:#0A0A0A;}
+  .meta{font-size:12.5px;color:#6B7280;margin-bottom:10px;}
+  .foot{border-top:1px solid #ECECEE;padding:22px 0;font-size:13px;color:#6B7280;margin-top:30px;}
+  @media(max-width:640px){h1{font-size:30px;}.navlinks a:not(.home){display:none;}}
+</style>
+<link rel="stylesheet" href="/touch.css">
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="/"><span class="mk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17 L6.5 7.5 L12 14 L17.5 7.5 L17.5 17"></path><path d="M14.7 10.1 L17.5 7 L17.5 9.8"></path></svg></span>Merit</a>
+    <div class="navlinks">
+      <a class="home" href="/">Home</a>
+      <a href="/market.html">Markets</a>
+      <a href="/jury.html">Jury</a>
+      <a href="/proof.html">Ledger</a>
+    </div>
+  </nav>
+
+  <main>
+  <h1>Agentic Insurance</h1>
+  <p class="sub">A guarantee market on Merit's OWN verdicts. Buy coverage on a claim; Merit's free verifier decides what's insured. Resolve it by appeal — the paid, diverse jury panel re-checks the same claim. If it overturns the original call, that's the verified loss event, and coverage pays out. No claims adjuster: the appeal either agrees or it doesn't.</p>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="k">Policies bound</div><div class="v" id="st-total">—</div></div>
+    <div class="stat"><div class="k">Open</div><div class="v" id="st-open">—</div></div>
+    <div class="stat"><div class="k">Coverage paid</div><div class="v" id="st-paid">—</div></div>
+    <div class="stat"><div class="k">Coverage outstanding</div><div class="v" id="st-out">—</div></div>
+  </div>
+
+  <div id="featured"></div>
+
+  <h2 class="lbl">Buy coverage</h2>
+  <div class="card">
+    <div class="row">
+      <div class="field"><label for="in-claim">Claim</label><textarea id="in-claim" placeholder="e.g. The report states settlement crossed $4.1 trillion in 2026." spellcheck="false"></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="in-source">Source — what the claim will be checked against</label><textarea id="in-source" style="min-height:110px" placeholder="Paste the source text the verifier (and, on appeal, the jury) will check the claim against." spellcheck="false"></textarea></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="field" style="flex:0 0 150px;min-width:150px"><label for="in-coverage">Coverage (USDC)</label><input type="number" id="in-coverage" value="0.5" min="0" step="0.001"></div>
+      <div class="field" style="flex:0 0 150px;min-width:150px"><label for="in-premium">Premium (USDC)</label><input type="number" id="in-premium" value="0.05" min="0" step="0.001"></div>
+      <div class="field"><label for="in-key">API key (required to bind real coverage)</label><input type="text" id="in-key" placeholder="merit_sk_… (sent as Authorization: Bearer)" spellcheck="false" autocomplete="off"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div style="align-self:flex-end"><button class="btn" id="go">Buy coverage</button></div>
+    </div>
+    <div class="hint">Leave the API key blank to record the policy off-chain instantly — still resolvable by the same two verdicts. Supply an API key with coverage + premium to bind a real on-chain policy against Merit's own underwriter pool.</div>
+    <div id="form-note"></div>
+    <div id="form-err"></div>
+  </div>
+
+  <h2 class="lbl">Policies</h2>
+  <div id="policies"></div>
+  </main>
+
+  <footer class="foot" id="foot-note">Coverage resolves on appeal: Merit's paid jury panel re-checks the same claim against the same source. Disagreement with the original free verdict is the loss event. <a href="/api/insurance" style="text-decoration:underline">Raw JSON →</a></footer>
+</div>
+
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function fmtDate(s){try{return new Date(s).toLocaleString();}catch(e){return '';}}
+  function fmtUsdc(n){ n = Number(n)||0; return '$'+n.toFixed(4); }
+
+  function renderOutcome(policy){
+    if (policy.status !== 'resolved') return '';
+    var isPaid = policy.outcome === 'paid';
+    var badge = isPaid
+      ? '<span class="outcome paid">✓ LOSS EVENT — COVERAGE PAID</span>'
+      : '<span class="outcome released">RESERVATION RELEASED — APPEAL AGREED</span>';
+    var verdictLine = '<div class="verdictline">original verdict <b>'+esc(policy.originalVerdict)+'</b> → jury on appeal <b>'+esc(policy.juryVerdict||'—')+'</b></div>';
+    var reason = policy.juryReason ? '<div class="reasonline">'+esc(policy.juryReason)+'</div>' : '';
+    var chips = '';
+    if (policy.originalVerificationId) chips += '<span class="vidchip">verdict '+esc(policy.originalVerificationId)+'</span>';
+    if (policy.juryCertificateId) chips += '<span class="vidchip">jury cert '+esc(policy.juryCertificateId)+'</span>';
+    var txs = (policy.txs||[]).filter(function(t){ return typeof t.explorerUrl === 'string' && t.explorerUrl; });
+    var txHtml = txs.length
+      ? '<div class="txtrail">'+txs.map(function(t){
+          return '<div class="txline">'+esc(t.step)+' → <a href="'+esc(t.explorerUrl)+'" target="_blank" rel="noopener noreferrer nofollow">on-chain →</a></div>';
+        }).join('')+'</div>'
+      : '';
+    return '<div>'+badge+'</div>'+verdictLine+reason+'<div>'+chips+'</div>'+txHtml;
+  }
+
+  function renderPolicyCard(policy){
+    var pill = '<span class="pill '+esc(policy.status)+'">'+esc(policy.status)+'</span>';
+    var when = policy.createdAt ? fmtDate(policy.createdAt) : '';
+    var body = '<div class="policycard" data-policy-id="'+esc(policy.id)+'">'
+      + '<div class="policyhead">'+pill+'<span class="mono" style="font-size:11.5px;color:#6B7280">'+esc(when)+'</span></div>'
+      + '<div class="claim">'+esc(policy.claim)+'</div>'
+      + '<div class="srcprev mono">'+esc(policy.sourcePreview)+'</div>'
+      + '<div class="covrow"><span>coverage <b>'+fmtUsdc(policy.coverageUsdc)+'</b></span><span>premium <b>'+fmtUsdc(policy.premiumUsdc)+'</b></span><span>insured verdict <b>'+esc(policy.originalVerdict)+'</b></span></div>';
+
+    if (policy.status === 'resolved') {
+      body += renderOutcome(policy);
+    } else {
+      body += '<div class="row"><button class="btn sm resolve-btn">Resolve on appeal (paid jury)</button></div>';
+    }
+    body += '<div class="meta" style="margin-top:10px;margin-bottom:0">policy id <span class="mono">'+esc(policy.id)+'</span></div>';
+    body += '</div>';
+    return body;
+  }
+
+  function wirePolicyCard(el, policy){
+    var btn = el.querySelector('.resolve-btn');
+    if (!btn) return;
+    btn.addEventListener('click', async function(){
+      btn.disabled = true; btn.textContent = 'Resolving… the jury panel is voting';
+      try {
+        var res = await fetch('/api/insurance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'resolve', id: policy.id }) });
+        var d = await res.json();
+        if (!res.ok) {
+          var errEl = document.createElement('div');
+          errEl.className = 'err';
+          errEl.textContent = d.error || ('error ' + res.status);
+          el.appendChild(errEl);
+          return;
+        }
+        var fresh = document.createElement('div');
+        fresh.innerHTML = renderPolicyCard(d.policy);
+        var newCard = fresh.firstElementChild;
+        if (d.note) {
+          var noteEl = document.createElement('div');
+          noteEl.className = 'note';
+          noteEl.textContent = d.note;
+          newCard.appendChild(noteEl);
+        }
+        el.replaceWith(newCard);
+        wirePolicyCard(newCard, d.policy);
+        loadBoard();
+      } catch (e) {
+        var errEl2 = document.createElement('div');
+        errEl2.className = 'err';
+        errEl2.textContent = 'Request failed — the jury panel may be slow or the server unreachable.';
+        el.appendChild(errEl2);
+      } finally {
+        if (btn.isConnected) { btn.disabled = false; btn.textContent = 'Resolve on appeal (paid jury)'; }
+      }
+    });
+  }
+
+  function renderPolicies(list){
+    var el = document.getElementById('policies');
+    if (!list || !list.length) { el.innerHTML = '<div class="empty">No policies yet — buy the first one above.</div>'; return; }
+    el.innerHTML = list.map(renderPolicyCard).join('');
+    var cards = el.querySelectorAll('.policycard');
+    for (var i=0;i<cards.length;i++){
+      var id = cards[i].getAttribute('data-policy-id');
+      var policy = list.find(function(p){return p.id === id;});
+      if (policy) wirePolicyCard(cards[i], policy);
+    }
+  }
+
+  function renderStats(stats, onchain){
+    stats = stats || {};
+    document.getElementById('st-total').textContent = stats.total != null ? stats.total : '—';
+    document.getElementById('st-open').textContent = stats.open != null ? stats.open : '—';
+    document.getElementById('st-paid').textContent = stats.coveragePaidUsdc != null ? fmtUsdc(stats.coveragePaidUsdc) : '—';
+    document.getElementById('st-out').textContent = stats.coverageOutstandingUsdc != null ? fmtUsdc(stats.coverageOutstandingUsdc) : '—';
+    var footEl = document.getElementById('foot-note');
+    var onchainNote = onchain
+      ? ' The on-chain arbiter is enabled — payout and release settle on-chain.'
+      : ' The on-chain arbiter is not enabled on this deployment — policies resolve at the application level by the same two verdicts.';
+    footEl.innerHTML = 'Coverage resolves on appeal: Merit\'s paid jury panel re-checks the same claim against the same source. Disagreement with the original free verdict is the loss event.'+onchainNote+' <a href="/api/insurance" style="text-decoration:underline">Raw JSON →</a>';
+  }
+
+  async function loadBoard(){
+    try{
+      var res = await fetch('/api/insurance', {cache:'no-store'});
+      var d = await res.json();
+      renderStats(d.stats, d.onchain);
+      renderPolicies(d.policies||[]);
+    }catch(e){
+      document.getElementById('policies').innerHTML = '<div class="err">Could not load the policies.</div>';
+    }
+  }
+
+  async function loadFeatured(id){
+    var el = document.getElementById('featured');
+    try{
+      var res = await fetch('/api/insurance?id='+encodeURIComponent(id), {cache:'no-store'});
+      var d = await res.json();
+      if (!res.ok) { el.innerHTML = '<h2 class="lbl">Featured policy</h2><div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+      el.innerHTML = '<h2 class="lbl">Featured policy</h2>'+renderPolicyCard(d.policy);
+      var card = el.querySelector('.policycard');
+      if (card) wirePolicyCard(card, d.policy);
+    }catch(e){ el.innerHTML = '<h2 class="lbl">Featured policy</h2><div class="err">Could not load this policy.</div>'; }
+  }
+
+  // ---- buy-coverage form ----
+  var go = document.getElementById('go');
+  var claimEl = document.getElementById('in-claim'), sourceEl = document.getElementById('in-source'), coverageEl = document.getElementById('in-coverage'), premiumEl = document.getElementById('in-premium'), keyEl = document.getElementById('in-key');
+  var noteEl = document.getElementById('form-note'), errEl = document.getElementById('form-err');
+
+  go.addEventListener('click', async function(){
+    noteEl.innerHTML = ''; errEl.innerHTML = '';
+    var claim = (claimEl.value||'').trim();
+    var source = (sourceEl.value||'').trim();
+    var coverageUsdc = (coverageEl.value||'').trim();
+    var premiumUsdc = (premiumEl.value||'').trim();
+    var key = (keyEl.value||'').trim();
+    if (!claim) { errEl.innerHTML = '<div class="err">Provide the claim to insure.</div>'; return; }
+    if (!source) { errEl.innerHTML = '<div class="err">Provide the source the claim will be checked against.</div>'; return; }
+    if (!coverageUsdc || Number(coverageUsdc) <= 0) { errEl.innerHTML = '<div class="err">Coverage must be greater than 0.</div>'; return; }
+
+    go.disabled = true; go.textContent = 'Buying…';
+    try {
+      var body = { action: 'create', claim: claim, source: source };
+      if (coverageUsdc) body.coverageUsdc = Number(coverageUsdc);
+      if (premiumUsdc) body.premiumUsdc = Number(premiumUsdc);
+      var headers = { 'Content-Type': 'application/json' };
+      if (key) headers['Authorization'] = 'Bearer ' + key;
+      var res = await fetch('/api/insurance', { method: 'POST', headers: headers, body: JSON.stringify(body) });
+      var d = await res.json();
+      if (!res.ok) { errEl.innerHTML = '<div class="err">'+esc(d.error||('error '+res.status))+'</div>'; return; }
+      if (d.bindNote) noteEl.innerHTML = '<div class="note">'+esc(d.bindNote)+'</div>';
+      claimEl.value = ''; sourceEl.value = ''; coverageEl.value = ''; premiumEl.value = ''; keyEl.value = '';
+      var mount = document.getElementById('policies');
+      var empty = mount.querySelector('.empty');
+      if (empty) mount.innerHTML = '';
+      var fresh = document.createElement('div');
+      fresh.innerHTML = renderPolicyCard(d.policy);
+      var newCard = fresh.firstElementChild;
+      mount.insertBefore(newCard, mount.firstChild);
+      wirePolicyCard(newCard, d.policy);
+      loadBoard();
+    } catch (e) {
+      errEl.innerHTML = '<div class="err">Request failed — the server may be unreachable.</div>';
+    } finally {
+      go.disabled = false; go.textContent = 'Buy coverage';
+    }
+  });
+
+  var params = new URLSearchParams(window.location.search);
+  var featuredId = params.get('id');
+  if (featuredId) loadFeatured(featuredId);
+  loadBoard();
+})();
+</script>
+</body>
+</html>
