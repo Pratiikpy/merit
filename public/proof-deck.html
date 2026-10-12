@@ -116,7 +116,7 @@
 
 <div class="wrap">
   <section class="hero">
-    <div class="eyebrow">Proof deck · Arc testnet 5042002</div>
+    <div class="eyebrow">Proof deck · Arc mainnet 5042 + Arc testnet 5042002</div>
     <h1><span class="g">Every feature — working, with its real&nbsp;outcome.</span></h1>
     <p>No slideware. Each capability below is driven live and shown producing a real result: a signed verdict, USDC released to the sources that verified and refused to the ones that didn't, and on-chain transactions you can open on ArcScan and check yourself. Merit's one rule holds throughout — <span style="color:var(--ink);font-weight:600;">money moves only if the cited work is correct.</span></p>
     <div class="row">
@@ -246,6 +246,10 @@
     <div class="grid g1" style="margin-top:18px;">
       <figure class="shot"><img src="/proof-images/hub-crosschain.png" alt="Cross-chain payout via Circle Gateway" loading="lazy"><figcaption><span class="chain arc">Cross-chain payout</span> Withdraw verified earnings from Arc to <b>Base, Arbitrum, Optimism, or Avalanche</b> via Circle Gateway — the last mile of getting paid where you want it. Live: a <span class="ok">real Arc Gateway settlement tx</span>; the cross-chain leg settles the moment the payout wallet holds a little destination-chain gas.</figcaption></figure>
     </div>
+    <div class="grid g2" style="margin-top:18px;">
+      <figure class="shot"><img src="/proof-images/hub-credit.png" alt="Agent Credit — a cash advance against a source's proven verification record" loading="lazy"><figcaption><span class="chain arc">Agent Credit</span> Borrow against your own <b>proven merit score</b> and real on-chain <span class="mono">Stake.sol</span> collateral — the ARCANA-validated "performance to reputation to unlocked credit" ladder, applied to Merit's own merit score. Live on <b>Arc mainnet</b>: staked 0.02 USDC, borrowed $0.005, <span class="ok">repaid, verified by decoding the real Transfer direction</span>, not a trusted tx hash. A second real lifecycle on Arc testnet proved the other half: stake <span class="no">slashed</span> exactly 30000 to 25000 atomic units on an overdue default.</figcaption></figure>
+      <figure class="shot"><img src="/proof-images/hub-payouts.png" alt="Global Payouts — EURC direct payouts live, StableFX RFQ code-complete" loading="lazy"><figcaption><span class="chain arc">Global Payouts</span> Pay a creator in <b>EURC</b> instead of USDC, still gated on the same verification, converted at the live ECB reference rate (Frankfurter, never Merit's own number). Live: <span class="ok">$0.02 owed to 0.017848 EURC sent</span>, balance independently confirmed via <span class="mono">balanceOf</span> before and after. A second leg converts treasury USDC to EURC via Circle's own <b>StableFX</b> RFQ exchange, code-complete against Circle's documented API, <span class="no">pending only a Circle-issued key</span> with no self-serve signup.</figcaption></figure>
+    </div>
   </section>
 
   <section class="sec" id="surface">
@@ -329,6 +333,41 @@
           <li><span class="label">VerificationHook:</span><a href="https://testnet.arcscan.app/address/0xA30f58f60725a978Ac09034F4FDd32efc29e9ab1" target="_blank" rel="noopener">0xA30f…9ab1</a></li>
           <li><span class="label">Escrow:</span><a href="https://testnet.arcscan.app/address/0xbCaEA25F7D3E64B337BeB4342945544970B03Cd8" target="_blank" rel="noopener">0xbCaE…03Cd8</a></li>
           <li><span class="label">USDC:</span><span class="addr">0x3600…0000</span></li>
+        </ul>
+      </div>
+      <div class="tx">
+        <h3><span class="chain sup">Real · Arc mainnet</span> Agent Credit — advance + repayment</h3>
+        <ul>
+          <li><span class="label">stake (0.02 USDC):</span><a href="https://explorer.arc.io/address/0xbb2b10e7ec2cEF15C1321330F6ef14cC06D7260F" target="_blank" rel="noopener">Stake.sol ↗</a></li>
+          <li><span class="label">advance $0.005:</span><a href="https://explorer.arc.io/tx/0xc8d17a1dffa8f87c09022f08cb8262ffa1c70ad0df01fd090431896f604c7d0e" target="_blank" rel="noopener">0xc8d17a1d…</a></li>
+          <li><span class="label">repayment:</span><a href="https://explorer.arc.io/tx/0x2bb07ae0495bff5b780645f85dc0a9961891b097ef1640372e70266c1a08178c" target="_blank" rel="noopener">0x2bb07ae0…</a></li>
+          <li><span class="label">verified:</span><span class="addr">by decoding the real Transfer direction, not a trusted hash</span></li>
+        </ul>
+      </div>
+      <div class="tx">
+        <h3><span class="chain ref">Real · Arc testnet</span> Agent Credit — overdue default → slash</h3>
+        <ul>
+          <li><span class="label">stake before:</span><span class="addr">30000 atomic units (0.03 USDC)</span></li>
+          <li><span class="label">slash tx:</span><a href="https://testnet.arcscan.app/tx/0x07489950731faa772fb6986560f054d5d804ac4c4abdb644a349a5004810bcef" target="_blank" rel="noopener">0x074899…</a></li>
+          <li><span class="label">stake after:</span><span class="addr">25000 atomic units (0.025 USDC) — independently confirmed via cast call stakeOf</span></li>
+        </ul>
+      </div>
+      <div class="tx">
+        <h3><span class="chain sup">Real · Arc testnet</span> Global Payouts — EURC transfer</h3>
+        <ul>
+          <li><span class="label">owed:</span><span class="addr">$0.02 USDC, converted at the live ECB rate (0.89238, Frankfurter)</span></li>
+          <li><span class="label">sent:</span><a href="https://testnet.arcscan.app/tx/0x266b3d10acf4bc32acc41f705bcf9d014fc7e2ff94bfe75f6f377903f7f1df80" target="_blank" rel="noopener">0x266b3d10…</a> — 0.017848 EURC</li>
+          <li><span class="label">verified:</span><span class="addr">balanceOf before/after independently confirmed</span></li>
+        </ul>
+      </div>
+      <div class="tx">
+        <h3><span class="chain arc">Deployed contracts</span> Arc mainnet 5042</h3>
+        <ul>
+          <li><span class="label">Stake:</span><a href="https://explorer.arc.io/address/0xbb2b10e7ec2cEF15C1321330F6ef14cC06D7260F" target="_blank" rel="noopener">0xbb2b…260F</a></li>
+          <li><span class="label">MeritJob:</span><a href="https://explorer.arc.io/address/0x0A76d7De3a855b137BAb96B7A9eEdfA49880E554" target="_blank" rel="noopener">0x0A76…0E554</a></li>
+          <li><span class="label">EURC:</span><a href="https://explorer.arc.io/address/0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1" target="_blank" rel="noopener">0xbEf5…fe21c1</a></li>
+          <li><span class="label">FxEscrow:</span><a href="https://explorer.arc.io/address/0xe2E5F173576B513d994073CCbDaCBE027d43DFe6" target="_blank" rel="noopener">0xe2E5…3DFe6</a></li>
+          <li><span class="label">USDC:</span><span class="addr">0x3600…0000 (native, same address as testnet)</span></li>
         </ul>
       </div>
     </div>
