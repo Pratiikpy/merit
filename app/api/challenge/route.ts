@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSource, getSources } from "@/lib/registry";
+import { getSource, getSources, refreshRegistryFromMirror } from "@/lib/registry";
 import { judgeCitation, looksLikeInjection } from "@/lib/llm";
 import { checkChallengeLimit } from "@/lib/ratelimit";
 import { fabricatedFigures } from "@/lib/numcheck";
@@ -17,6 +17,7 @@ export const dynamic = "force-dynamic";
 // here; a skeptic can confirm a refusal holds. For clear-cut cases (the trap's contradiction, a
 // genuinely supporting source) the re-audit reproduces the verdict; that reproducibility is the point.
 export async function POST(req: Request) {
+  await refreshRegistryFromMirror().catch(() => {});
   // The judge IS an LLM call, so gate this endpoint by a global volume cap — otherwise it's an ungated way
   // to burn provider cost. (Global window, not per-IP: the legit judge-eval tool's 16 sequential calls must
   // not cascade-block; concurrency + provider load are already bounded by the LLM semaphore + breaker.)

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSources } from "@/lib/registry";
+import { getSources, refreshRegistryFromMirror } from "@/lib/registry";
 import { getSpecialists } from "@/lib/specialists";
 import { effectivePrice } from "@/lib/pricing";
 
@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 // merit (fast discovery); each entry carries an `agentId` + a `reputationUrl` so the caller can pull the
 // on-chain, recomputable proof from /api/reputation/<id> before it pays. No auth — reputation is public.
 export async function GET(req: NextRequest) {
+  await refreshRegistryFromMirror().catch(() => {});
   const q = new URL(req.url).searchParams;
   const minMerit = Math.max(0, Number(q.get("minMerit") || 0));
   const role = (q.get("role") || "").trim();

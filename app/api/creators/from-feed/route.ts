@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addCreator, setAgentId, publicView, getSources } from "@/lib/registry";
+import { addCreator, setAgentId, publicView, getSources, refreshRegistryFromMirror } from "@/lib/registry";
 import { registerIdentity } from "@/lib/reputation";
 import { looksLikeInjection } from "@/lib/llm";
 import { explorerAddr } from "@/lib/arc";
@@ -14,6 +14,7 @@ export const runtime = "nodejs";
 const MAX_CREATORS = 200;
 
 export async function POST(req: NextRequest) {
+  await refreshRegistryFromMirror().catch(() => {});
   if (getSources().filter((s) => s.kind === "Creator").length >= MAX_CREATORS) {
     return NextResponse.json({ error: "creator registration is at capacity — try again later" }, { status: 503 });
   }

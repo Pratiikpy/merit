@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getSources } from "@/lib/registry";
+import { getSources, refreshRegistryFromMirror } from "@/lib/registry";
 import { normalizeDomain } from "@/lib/passport";
 
 export const runtime = "nodejs";
@@ -14,6 +14,7 @@ function esc(s: string) {
 }
 
 export async function GET(req: NextRequest) {
+  await refreshRegistryFromMirror().catch(() => {});
   const domain = normalizeDomain(req.nextUrl.searchParams.get("domain") || "");
   const src = domain ? getSources().find((s) => normalizeDomain(s.handle) === domain) : null;
   const verified = !!src;

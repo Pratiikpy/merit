@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ARC, chainLabel, isStub, llmConfig, mainnetReadiness } from "@/lib/arc";
-import { getSources } from "@/lib/registry";
+import { getSources, refreshRegistryFromMirror } from "@/lib/registry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 // GET /api/health — deployment status + verifiable on-chain references (public
 // addresses only, never keys). Doubles as the host health check.
 export async function GET() {
+  await refreshRegistryFromMirror().catch(() => {});
   const c = llmConfig();
   return NextResponse.json({
     ok: true,

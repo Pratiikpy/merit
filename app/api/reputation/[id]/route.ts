@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSource } from "@/lib/registry";
+import { getSource, refreshRegistryFromMirror } from "@/lib/registry";
 import { getSpecialist } from "@/lib/specialists";
 import { readOnchainReputation } from "@/lib/reputation";
 import { ARC, explorerAddr } from "@/lib/arc";
@@ -24,6 +24,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
   const cached = repCache.get(id);
   if (cached && now() - cached.at < REP_TTL_MS) return NextResponse.json(cached.body);
 
+  await refreshRegistryFromMirror().catch(() => {});
   const s = getSource(id);
   const spec = s ? undefined : getSpecialist(id);
   const entity = s

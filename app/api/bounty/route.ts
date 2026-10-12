@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSource, getSources } from "@/lib/registry";
+import { getSource, getSources, refreshRegistryFromMirror } from "@/lib/registry";
 import { judgeCitation, looksLikeInjection } from "@/lib/llm";
 import { fabricatedFigures } from "@/lib/numcheck";
 import { checkChallengeLimit } from "@/lib/ratelimit";
@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 // records the outcome, and reports whether you fooled it. The board aggregates a live fool-rate — a
 // crowdsourced, never-ending judge-eval. Rate-limited (an LLM-bearing endpoint), same as /api/challenge.
 export async function POST(req: Request) {
+  await refreshRegistryFromMirror().catch(() => {});
   const gate = checkChallengeLimit(Date.now());
   if (!gate.allowed) {
     return NextResponse.json(

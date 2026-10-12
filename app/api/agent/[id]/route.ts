@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSpecialist } from "@/lib/specialists";
 import { getCtx, patchCtx, persistCtx, rehydrateCtx, type CiteResult } from "@/lib/runctx";
-import { getSources } from "@/lib/registry";
+import { getSources, refreshRegistryFromMirror } from "@/lib/registry";
 import { discoverSources } from "@/lib/discover";
 import { writeAnswer, citedNames, isCited, citationCount, verifyCitations } from "@/lib/llm";
 
@@ -15,6 +15,7 @@ export const runtime = "nodejs";
  * deliver first, get judged, then get paid (or refused).
  */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  await refreshRegistryFromMirror().catch(() => {});
   const { id } = await params;
   const spec = getSpecialist(id);
   if (!spec) return NextResponse.json({ error: "unknown specialist" }, { status: 404 });

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addCreator, setAgentId, publicView, getSources } from "@/lib/registry";
+import { addCreator, setAgentId, publicView, getSources, refreshRegistryFromMirror } from "@/lib/registry";
 import { registerIdentity } from "@/lib/reputation";
 import { looksLikeInjection } from "@/lib/llm";
 import { explorerAddr } from "@/lib/arc";
@@ -15,6 +15,7 @@ const ORIGIN = process.env.MERIT_ORIGIN || "https://onmerit.xyz";
 // as an OWNER-VERIFIED creator — the strongest claim a publisher can make, stronger than an edit-the-feed
 // marker, and it works for ANY site/CMS. Returns an embeddable, independently-falsifiable verified badge.
 export async function POST(req: NextRequest) {
+  await refreshRegistryFromMirror().catch(() => {});
   if (getSources().filter((s) => s.kind === "Creator").length >= MAX_CREATORS) {
     return NextResponse.json({ error: "creator registration is at capacity — try again later" }, { status: 503 });
   }
